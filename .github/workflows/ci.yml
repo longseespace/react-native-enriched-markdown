@@ -21,8 +21,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-        with:
-          submodules: recursive
 
       - name: Setup
         uses: ./.github/actions/setup
@@ -39,8 +37,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-        with:
-          submodules: recursive
 
       - name: Setup
         uses: ./.github/actions/setup
@@ -54,8 +50,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-        with:
-          submodules: recursive
 
       - name: Setup
         uses: ./.github/actions/setup
@@ -72,8 +66,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-        with:
-          submodules: recursive
 
       - name: Setup
         uses: ./.github/actions/setup
@@ -134,25 +126,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
-          fetch-depth: 0
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Setup
         uses: ./.github/actions/setup
-
-      - name: Initialize submodules
-        run: |
-          git submodule update --init --recursive
-          echo "Submodule status:"
-          git submodule status
-          echo "Checking MD4C directory:"
-          ls -la shared/ || echo "shared directory not found"
-          ls -la shared/MD4C/ || echo "MD4C submodule not found"
-
-      - name: Setup MD4C for iOS
-        run: ./scripts/setup-md4c.sh
 
       - name: Cache turborepo for iOS
         uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
