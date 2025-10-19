@@ -273,14 +273,10 @@ Class<RCTComponentViewProtocol> RichTextViewCls(void)
     if (fontFamily && fontFamily.length > 0) {
         UIFont *customFont = [UIFont fontWithName:fontFamily size:size];
         if (customFont) {
-            NSLog(@"🎨 FontFamily applied: %@ (size: %.1f)", fontFamily, size);
             return customFont;
-        } else {
-            NSLog(@"⚠️ FontFamily not found: %@, falling back to system font", fontFamily);
         }
     }
     
-    NSLog(@"🎨 Using system font (size: %.1f)", size);
     return [UIFont systemFontOfSize:size];
 }
 
