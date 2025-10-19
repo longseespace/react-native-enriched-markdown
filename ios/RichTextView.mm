@@ -55,7 +55,7 @@ static const CGFloat kLabelPadding = 10.0;
     _textView = [[UITextView alloc] init];
     _textView.translatesAutoresizingMaskIntoConstraints = NO;
     _textView.text = @"";
-    _textView.font = [UIFont systemFontOfSize:kDefaultFontSize];
+    _textView.font = [UIFont systemFontOfSize:16.0];
     _textView.backgroundColor = [UIColor clearColor];  
     _textView.textColor = [UIColor blackColor];
     _textView.editable = NO;
@@ -94,15 +94,8 @@ static const CGFloat kLabelPadding = 10.0;
     AttributedRenderer *renderer = [AttributedRenderer new];
     RichTextTheme *theme = [RichTextTheme defaultTheme];
     
-    // FONT SIZE PROPAGATION: Pass the current fontSize to the theme system
-    // This ensures all renderers use the same base fontSize for consistent scaling
-    // - theme.baseFont will be used by all text elements (paragraphs, links, lists)
-    // - Header renderer will scale from this base font (H1 = baseFont + 12pt, etc.)
-    // - All other elements inherit this base size for consistent typography
-    if (_textView.font) { 
-        theme.baseFont = _textView.font; 
-        NSLog(@"🎨 Theme baseFont set to: %@ (size: %.1f)", _textView.font.fontName, _textView.font.pointSize);
-    }
+    CGFloat fontSize = props.fontSize > 0 ? props.fontSize : kDefaultFontSize;
+    theme.baseFont = [UIFont systemFontOfSize:fontSize];
     if (_textView.textColor) { theme.textColor = _textView.textColor; }
     
     const auto &headerConfig = props.headerConfig;
@@ -121,7 +114,6 @@ static const CGFloat kLabelPadding = 10.0;
         
         // Add custom attribute for link detection
         [attributedText addAttribute:@"linkURL" value:url range:range];
-        NSLog(@"RichTextView: Added link %@ at range %@", url, NSStringFromRange(range));
     }
     
     _textView.attributedText = attributedText;
@@ -134,63 +126,43 @@ static const CGFloat kLabelPadding = 10.0;
     
     BOOL needsRerender = NO;
     
-    // Handle markdown content changes
     if (oldViewProps.markdown != newViewProps.markdown) {
         NSString *markdownString = [[NSString alloc] initWithUTF8String:newViewProps.markdown.c_str()];
         [self renderMarkdownContent:markdownString withProps:newViewProps];
         needsRerender = YES;
     }
     
-    // Background color is always transparent - no color prop needed
-    
-    // Handle text color changes
     if (oldViewProps.textColor != newViewProps.textColor) {
         NSString *textColorString = [[NSString alloc] initWithUTF8String:newViewProps.textColor.c_str()];
         _textView.textColor = [self hexStringToColor:textColorString];
         needsRerender = YES;
     }
     
-    // Handle font size changes
-    // FONT SIZE SCALING: This fontSize becomes the base size for all text elements
-    // - Regular text: Uses fontSize directly (e.g., 18pt)
-    // - Headers: Scaled relative to fontSize (H1 = fontSize + 12, H2 = fontSize + 10, etc.)
-    // - Links: Use fontSize directly
-    // - Lists: Use fontSize directly
-    // - All other elements: Use fontSize as base reference
     if (oldViewProps.fontSize != newViewProps.fontSize) {
         CGFloat fontSize = newViewProps.fontSize > 0 ? newViewProps.fontSize : kDefaultFontSize;
         _textView.font = [UIFont systemFontOfSize:fontSize];
         needsRerender = YES;
     }
     
-    // Handle font family changes
     if (oldViewProps.fontFamily != newViewProps.fontFamily) {
         NSString *fontFamily = [[NSString alloc] initWithUTF8String:newViewProps.fontFamily.c_str()];
         CGFloat currentSize = _textView.font.pointSize;
         UIFont *newFont = [UIFont fontWithName:fontFamily size:currentSize];
         if (newFont) {
             _textView.font = newFont;
-            NSLog(@"✅ FontFamily applied: %@ (size: %.1f)", fontFamily, currentSize);
             needsRerender = YES;
         } else {
-            NSLog(@"❌ FontFamily not found: %@, falling back to system font", fontFamily);
-            NSLog(@"💡 Try these iOS font names: Helvetica, Helvetica-Bold, Arial-BoldMT, TimesNewRomanPSMT");
             // Fallback to system font with the same size
             _textView.font = [UIFont systemFontOfSize:currentSize];
             needsRerender = YES;
         }
     }
     
-    // Handle header config changes
     if (oldViewProps.headerConfig.scale != newViewProps.headerConfig.scale ||
         oldViewProps.headerConfig.isBold != newViewProps.headerConfig.isBold) {
         needsRerender = YES;
-        NSLog(@"🎛️ HeaderConfig changed: scale %.1f->%.1f, bold %d->%d", 
-              oldViewProps.headerConfig.scale, newViewProps.headerConfig.scale,
-              oldViewProps.headerConfig.isBold, newViewProps.headerConfig.isBold);
     }
     
-    // Re-render if any text styling changed
     if (needsRerender && !newViewProps.markdown.empty()) {
         NSString *markdownString = [[NSString alloc] initWithUTF8String:newViewProps.markdown.c_str()];
         [self renderMarkdownContent:markdownString withProps:newViewProps];
