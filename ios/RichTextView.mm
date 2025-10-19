@@ -51,8 +51,6 @@ static const CGFloat kLabelPadding = 10.0;
     return self;
 }
 
-#pragma mark - Setup Methods
-
 - (void)setupTextView {
     _textView = [[UITextView alloc] init];
     _textView.translatesAutoresizingMaskIntoConstraints = NO;
@@ -222,8 +220,6 @@ Class<RCTComponentViewProtocol> RichTextViewCls(void)
     
     return [UIColor colorWithRed:red green:green blue:blue alpha:1.0f];
 }
-
-#pragma mark - Touch Handling
 
 - (void)textTapped:(UITapGestureRecognizer *)recognizer {
     /*
