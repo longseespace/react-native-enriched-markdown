@@ -37,44 +37,6 @@ This project uses git submodules for native dependencies. You need to initialize
 yarn
 ```
 
-> **Important**: The project depends on the MD4C submodule located in `shared/MD4C/`. Make sure to run the submodule initialization command before installing dependencies.
-
-### Troubleshooting Submodule Issues
-
-If you encounter issues with the submodule setup, here are common scenarios and solutions:
-
-**Scenario 1: Empty `shared/` directory**
-
-```sh
-# Check if submodule is properly initialized
-ls shared/MD4C/src/
-# If empty or missing, reinitialize:
-git submodule update --init --recursive
-```
-
-**Scenario 2: `.gitmodules` exists but submodule content is missing**
-
-```sh
-# This can happen when cloning without submodules
-# Re-add the submodule manually:
-git submodule add https://github.com/mity/md4c.git shared/MD4C
-```
-
-**Scenario 3: Submodule is in detached HEAD state**
-
-```sh
-# Update to the latest commit
-git submodule update --remote
-```
-
-> **Note**: If you continue having issues, try removing the submodule and re-adding it:
->
-> ```sh
-> git submodule deinit -f shared/MD4C
-> rm -rf shared/MD4C
-> git submodule add https://github.com/mity/md4c.git shared/MD4C
-> ```
-
 > Since the project relies on Yarn workspaces, you cannot use [`npm`](https://github.com/npm/cli) for development without manually migrating.
 
 The [example app](/example/) demonstrates usage of the library. You need to run it to test any changes you make.
