@@ -1,0 +1,162 @@
+package com.richtext.renderer
+
+import android.graphics.Typeface
+import android.text.SpannableStringBuilder
+import android.text.style.StyleSpan
+import android.text.style.UnderlineSpan
+import com.richtext.theme.RichTextTheme
+import org.commonmark.node.*
+
+interface NodeRenderer {
+    fun render(
+        node: Node,
+        builder: SpannableStringBuilder,
+        theme: RichTextTheme,
+        onLinkPress: ((String) -> Unit)?
+    )
+}
+
+class DocumentRenderer : NodeRenderer {
+    override fun render(
+        node: Node,
+        builder: SpannableStringBuilder,
+        theme: RichTextTheme,
+        onLinkPress: ((String) -> Unit)?
+    ) {
+        val document = node as Document
+        var child = document.firstChild
+        while (child != null) {
+            NodeRendererFactory.getRenderer(child).render(child, builder, theme, onLinkPress)
+            child = child.next
+        }
+    }
+}
+
+class ParagraphRenderer : NodeRenderer {
+    override fun render(
+        node: Node,
+        builder: SpannableStringBuilder,
+        theme: RichTextTheme,
+        onLinkPress: ((String) -> Unit)?
+    ) {
+        val paragraph = node as Paragraph
+        var child = paragraph.firstChild
+        while (child != null) {
+            NodeRendererFactory.getRenderer(child).render(child, builder, theme, onLinkPress)
+            child = child.next
+        }
+        builder.append("\n")
+    }
+}
+
+class HeadingRenderer : NodeRenderer {
+    override fun render(
+        node: Node,
+        builder: SpannableStringBuilder,
+        theme: RichTextTheme,
+        onLinkPress: ((String) -> Unit)?
+    ) {
+        val heading = node as Heading
+        val start = builder.length
+        
+        var child = heading.firstChild
+        while (child != null) {
+            NodeRendererFactory.getRenderer(child).render(child, builder, theme, onLinkPress)
+            child = child.next
+        }
+
+        val contentLength = builder.length - start
+        if (contentLength > 0) {
+            val isBold = theme.headerConfig.isBold
+            if (isBold) {
+                builder.setSpan(
+                    StyleSpan(Typeface.BOLD),
+                    start,
+                    start + contentLength,
+                    android.text.SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE
+                )
+            }
+        }
+        builder.append("\n")
+    }
+}
+
+class TextRenderer : NodeRenderer {
+    override fun render(
+        node: Node,
+        builder: SpannableStringBuilder,
+        theme: RichTextTheme,
+        onLinkPress: ((String) -> Unit)?
+    ) {
+        val text = node as Text
+        val content = text.literal ?: ""
+        builder.append(content)
+    }
+}
+
+class LinkRenderer : NodeRenderer {
+    override fun render(
+        node: Node,
+        builder: SpannableStringBuilder,
+        theme: RichTextTheme,
+        onLinkPress: ((String) -> Unit)?
+    ) {
+        val link = node as Link
+        val start = builder.length
+        val url = link.destination ?: ""
+
+        // Render link content
+        var child = link.firstChild
+        while (child != null) {
+            NodeRendererFactory.getRenderer(child).render(child, builder, theme, onLinkPress)
+            child = child.next
+        }
+
+        // Apply link styling if content was added
+        val contentLength = builder.length - start
+        if (contentLength > 0) {
+            builder.setSpan(
+                CustomURLSpan(url, onLinkPress),
+                start,
+                start + contentLength,
+                android.text.SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+
+            // Add underline
+            builder.setSpan(
+                UnderlineSpan(),
+                start,
+                start + contentLength,
+                android.text.SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+        }
+    }
+}
+
+class LineBreakRenderer : NodeRenderer {
+    override fun render(
+        node: Node,
+        builder: SpannableStringBuilder,
+        theme: RichTextTheme,
+        onLinkPress: ((String) -> Unit)?
+    ) {
+        builder.append("\n")
+    }
+}
+
+object NodeRendererFactory {
+    fun getRenderer(node: Node): NodeRenderer {
+        return when (node) {
+            is Document -> DocumentRenderer()
+            is Paragraph -> ParagraphRenderer()
+            is Heading -> HeadingRenderer()
+            is Text -> TextRenderer()
+            is Link -> LinkRenderer()
+            is HardLineBreak, is SoftLineBreak -> LineBreakRenderer()
+            else -> {
+                android.util.Log.w("NodeRendererFactory", "No renderer found for node type: ${node.javaClass.simpleName}")
+                TextRenderer() // Fallback to text renderer
+            }
+        }
+    }
+}
