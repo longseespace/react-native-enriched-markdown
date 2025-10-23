@@ -9,16 +9,6 @@ import android.text.style.UnderlineSpan
 import org.commonmark.node.*
 import com.richtext.theme.RichTextTheme
 
-class CustomURLSpan(url: String, private val onLinkPress: ((String) -> Unit)?) : URLSpan(url) {
-    override fun onClick(widget: android.view.View) {
-        if (onLinkPress != null) {
-            onLinkPress(url)
-        } else {
-            super.onClick(widget)
-        }
-    }
-}
-
 class Renderer {
     fun renderDocument(document: Document, theme: RichTextTheme, onLinkPress: ((String) -> Unit)? = null): SpannableString {
         val builder = SpannableStringBuilder()

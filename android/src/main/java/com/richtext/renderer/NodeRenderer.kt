@@ -5,6 +5,7 @@ import android.text.SpannableStringBuilder
 import android.text.style.StyleSpan
 import android.text.style.UnderlineSpan
 import com.richtext.theme.RichTextTheme
+import com.richtext.spans.CallbackURLSpan
 import org.commonmark.node.*
 
 interface NodeRenderer {
@@ -116,7 +117,7 @@ class LinkRenderer : NodeRenderer {
         val contentLength = builder.length - start
         if (contentLength > 0) {
             builder.setSpan(
-                CustomURLSpan(url, onLinkPress),
+                CallbackURLSpan(url, onLinkPress),
                 start,
                 start + contentLength,
                 android.text.SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE
