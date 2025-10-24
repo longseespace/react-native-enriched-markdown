@@ -2,7 +2,6 @@ package com.richtext
 
 import android.content.Context
 import android.graphics.Color
-import android.graphics.Typeface
 import android.text.method.LinkMovementMethod
 import android.util.AttributeSet
 import androidx.appcompat.widget.AppCompatTextView
@@ -54,13 +53,15 @@ class RichTextView : AppCompatTextView {
       val document = parser.parseMarkdown(markdown)
       if (document != null) {
         val styledText = renderer.renderDocument(document, onLinkPressCallback)
-        setText(styledText)
+        text = styledText
         movementMethod = LinkMovementMethod.getInstance()
       } else {
-        text = "Error parsing markdown - Document is null"
+        android.util.Log.e("RichTextView", "Failed to parse markdown - Document is null")
+        text = ""
       }
     } catch (e: Exception) {
-      text = "Error: ${e.message}"
+      android.util.Log.e("RichTextView", "Error parsing markdown: ${e.message}")
+      text = ""
     }
   }
 
