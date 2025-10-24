@@ -11,6 +11,7 @@
 #import <react/renderer/components/RichTextViewSpec/RCTComponentViewHelpers.h>
 
 #import "RCTFabricComponentsPlugins.h"
+#import <React/RCTConversions.h>
 
 using namespace facebook::react;
 
@@ -108,11 +109,6 @@ static const CGFloat kLabelPadding = 10.0;
     theme.baseFont = [self createFontWithFamily:fontFamily size:fontSize];
     if (_textView.textColor) { theme.textColor = _textView.textColor; }
     
-    const auto &headerConfig = props.headerConfig;
-    
-    theme.headerConfig.scale = headerConfig.scale > 0 ? headerConfig.scale : 2.0;
-    theme.headerConfig.isBold = headerConfig.isBold;
-    
     RenderContext *renderContext = [RenderContext new];
     NSMutableAttributedString *attributedText = [renderer renderRoot:ast theme:theme context:renderContext];
     
@@ -144,9 +140,12 @@ static const CGFloat kLabelPadding = 10.0;
         needsRerender = YES;
     }
     
-    if (oldViewProps.textColor != newViewProps.textColor) {
-        NSString *textColorString = [[NSString alloc] initWithUTF8String:newViewProps.textColor.c_str()];
-        _textView.textColor = [self hexStringToColor:textColorString];
+    if (oldViewProps.color != newViewProps.color) {
+        // Convert React Native SharedColor to UIColor
+        UIColor *color = RCTUIColorFromSharedColor(newViewProps.color);
+        if (color) {
+            _textView.textColor = color;
+        }
         needsRerender = YES;
     }
     
@@ -157,10 +156,7 @@ static const CGFloat kLabelPadding = 10.0;
         needsRerender = YES;
     }
     
-    if (oldViewProps.headerConfig.scale != newViewProps.headerConfig.scale ||
-        oldViewProps.headerConfig.isBold != newViewProps.headerConfig.isBold) {
-        needsRerender = YES;
-    }
+    // HeaderConfig removed - no longer needed
     
     if (needsRerender && !newViewProps.markdown.empty()) {
         NSString *markdownString = [[NSString alloc] initWithUTF8String:newViewProps.markdown.c_str()];
@@ -175,22 +171,6 @@ Class<RCTComponentViewProtocol> RichTextViewCls(void)
     return RichTextView.class;
 }
 
-- (UIColor *)hexStringToColor:(NSString *)hexString {
-    if (!hexString.length) return nil;
-    
-    NSString *cleanHex = [hexString stringByReplacingOccurrencesOfString:@"#" withString:@""];
-    if (cleanHex.length != 6) return nil;
-    
-    NSScanner *scanner = [NSScanner scannerWithString:cleanHex];
-    unsigned hexValue;
-    if (![scanner scanHexInt:&hexValue]) return nil;
-    
-    CGFloat red = ((hexValue >> 16) & 0xFF) / 255.0f;
-    CGFloat green = ((hexValue >> 8) & 0xFF) / 255.0f;
-    CGFloat blue = (hexValue & 0xFF) / 255.0f;
-    
-    return [UIColor colorWithRed:red green:green blue:blue alpha:1.0f];
-}
 
 // MARK: - Gesture handling
 

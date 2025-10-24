@@ -231,28 +231,8 @@
               into:(NSMutableAttributedString *)output 
          withTheme:(RichTextTheme *)theme 
            context:(RenderContext *)context {
-    // Determine level from attributes (default 1)
-    NSInteger level = [node.attributes[@"level"] integerValue];
-    if (level < 1 || level > 6) level = 1;
-    
-    // Scale header size using theme configuration
-    CGFloat size = MAX(12.0, theme.baseFont.pointSize + (7 - level) * theme.headerConfig.scale);
-    
-    // Start with base font, apply bold if needed
-    UIFont *font = [UIFont fontWithName:theme.baseFont.fontName size:size];
-    
-    // If font is not bold but headerConfig wants bold, try bold version
-    if (![theme.baseFont.fontName containsString:@"Bold"] && theme.headerConfig.isBold) {
-        // For system fonts (no fontFamily specified), use system bold directly
-        if ([theme.baseFont.fontName hasPrefix:@".SFUI"]) {
-            font = [UIFont boldSystemFontOfSize:size];
-        } else {
-            // For specified font families, try bold version
-            NSString *boldFontName = [NSString stringWithFormat:@"%@-Bold", theme.baseFont.fontName];
-            UIFont *boldFont = [UIFont fontWithName:boldFontName size:size];
-            font = boldFont ?: [UIFont boldSystemFontOfSize:size];
-        }
-    }
+
+    UIFont *font = [UIFont fontWithDescriptor:[theme.baseFont.fontDescriptor fontDescriptorWithSymbolicTraits:UIFontDescriptorTraitBold] size:theme.baseFont.pointSize];
     
     for (MarkdownASTNode *child in node.children) {
         if (child.type == MarkdownNodeTypeText && child.content) {
