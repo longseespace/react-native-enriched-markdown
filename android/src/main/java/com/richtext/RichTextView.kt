@@ -46,11 +46,9 @@ class RichTextView : AppCompatTextView {
     }
 
     private fun prepareComponent() {
-        // Initialize the component with basic TextView setup
-        text = "RichTextView - Ready for markdown!"
-        textSize = 16f
-        setTextColor(Color.BLACK)
         movementMethod = LinkMovementMethod.getInstance()
+        setPadding(0, 0, 0, 0)
+        setBackgroundColor(Color.TRANSPARENT)
     }
 
     fun setMarkdownContent(markdown: String) {
