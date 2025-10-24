@@ -2,6 +2,7 @@ import {
   codegenNativeComponent,
   type ViewProps,
   type CodegenTypes,
+  type ColorValue,
 } from 'react-native';
 
 export interface HeaderConfig {
@@ -40,9 +41,19 @@ interface NativeProps extends ViewProps {
    */
   fontFamily?: string;
   /**
+   * Font weight for all text elements.
+   * @example "normal", "bold", "100", "200", "300", "400", "500", "600", "700", "800", "900"
+   */
+  fontWeight?: string;
+  /**
+   * Font style for all text elements.
+   * @example "normal", "italic"
+   */
+  fontStyle?: string;
+  /**
    * Text color in hex format.
    */
-  textColor?: string;
+  color?: ColorValue;
   /**
    * Header configuration for scaling and boldness.
    */

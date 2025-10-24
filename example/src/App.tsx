@@ -50,7 +50,7 @@ export default function App() {
           fontSize={18}
           fontFamily="Helvetica"
           headerConfig={HEADER_CONFIG}
-          textColor="#F54927"
+          color="#F54927"
           onLinkPress={handleLinkPress}
         />
       </ScrollView>

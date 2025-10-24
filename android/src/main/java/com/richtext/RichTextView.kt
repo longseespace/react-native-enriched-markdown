@@ -2,9 +2,14 @@ package com.richtext
 
 import android.content.Context
 import android.graphics.Color
+import android.graphics.Typeface
 import android.text.method.LinkMovementMethod
 import android.util.AttributeSet
 import androidx.appcompat.widget.AppCompatTextView
+import com.facebook.react.common.ReactConstants
+import com.facebook.react.views.text.ReactTypefaceUtils.applyStyles
+import com.facebook.react.views.text.ReactTypefaceUtils.parseFontStyle
+import com.facebook.react.views.text.ReactTypefaceUtils.parseFontWeight
 import com.richtext.parser.Parser
 import com.richtext.renderer.Renderer
 import com.richtext.theme.RichTextTheme
@@ -15,6 +20,14 @@ class RichTextView : AppCompatTextView {
     private val renderer = Renderer()
     private var theme = RichTextTheme.defaultTheme()
     private var onLinkPressCallback: ((String) -> Unit)? = null
+    
+    private var typefaceDirty = false
+    private var didAttachToWindow = false
+    
+    var fontSize: Float? = null
+    private var fontFamily: String? = null
+    private var fontStyle: Int = ReactConstants.UNSET
+    private var fontWeight: Int = ReactConstants.UNSET
     
     constructor(context: Context) : super(context) {
         prepareComponent()
@@ -46,6 +59,7 @@ class RichTextView : AppCompatTextView {
             if (document != null) {
                 val styledText = renderer.renderDocument(document, theme, onLinkPressCallback)
                 setText(styledText)
+                movementMethod = LinkMovementMethod.getInstance()
             } else {
                 text = "Error parsing markdown - Document is null"
             }
@@ -78,5 +92,56 @@ class RichTextView : AppCompatTextView {
                 url
             )
         )
+    }
+
+    fun setFontSize(size: Float) {
+        fontSize = size
+        textSize = size
+        typefaceDirty = true
+        updateTypeface()
+    }
+
+    fun setFontFamily(family: String?) {
+        fontFamily = family
+        typefaceDirty = true
+        updateTypeface()
+    }
+
+    fun setFontWeight(weight: String?) {
+        val parsedWeight = parseFontWeight(weight)
+        if (parsedWeight != fontWeight) {
+            fontWeight = parsedWeight
+            typefaceDirty = true
+            updateTypeface()
+        }
+    }
+
+    fun setFontStyle(style: String?) {
+        val parsedStyle = parseFontStyle(style)
+        if (parsedStyle != fontStyle) {
+            fontStyle = parsedStyle
+            typefaceDirty = true
+            updateTypeface()
+        }
+    }
+
+    fun setColor(color: Int?) {
+        if (color != null) {
+            setTextColor(color)
+        }
+    }
+
+    fun updateTypeface() {
+        if (!typefaceDirty) return
+        typefaceDirty = false
+        
+        val newTypeface = applyStyles(typeface, fontStyle, fontWeight, fontFamily, context.assets)
+        setTypeface(newTypeface)
+    }
+
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        didAttachToWindow = true
+        updateTypeface()
     }
 }
