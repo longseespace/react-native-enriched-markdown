@@ -1,68 +1,91 @@
 package com.richtext
 
+import com.facebook.react.module.annotations.ReactModule
 import com.facebook.react.uimanager.SimpleViewManager
 import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.annotations.ReactProp
 import com.facebook.react.uimanager.UIManagerHelper
 import com.facebook.react.uimanager.ViewProps
 import com.facebook.react.uimanager.ViewDefaults
+import com.facebook.react.uimanager.ViewManagerDelegate
+import com.facebook.react.viewmanagers.RichTextViewManagerDelegate
+import com.facebook.react.viewmanagers.RichTextViewManagerInterface
 import com.richtext.events.LinkPressEvent
 
-class RichTextViewManager : SimpleViewManager<RichTextView>() {
+@ReactModule(name = RichTextViewManager.NAME)
+class RichTextViewManager : SimpleViewManager<RichTextView>(),
+  RichTextViewManagerInterface<RichTextView> {
 
-    private var reactContext: ThemedReactContext? = null
+  private val mDelegate: ViewManagerDelegate<RichTextView> = RichTextViewManagerDelegate(this)
 
-    override fun getName(): String = "RichTextView"
+  override fun getDelegate(): ViewManagerDelegate<RichTextView>? {
+    return mDelegate
+  }
 
-    override fun createViewInstance(reactContext: ThemedReactContext): RichTextView {
-        this.reactContext = reactContext
-        return RichTextView(reactContext)
+  override fun getName(): String {
+    return NAME
+  }
+
+  override fun createViewInstance(reactContext: ThemedReactContext): RichTextView {
+    return RichTextView(reactContext)
+  }
+
+  override fun getExportedCustomDirectEventTypeConstants(): MutableMap<String, Any> {
+    val map = mutableMapOf<String, Any>()
+    map.put(LinkPressEvent.EVENT_NAME, mapOf("registrationName" to LinkPressEvent.EVENT_NAME))
+    return map
+  }
+
+  @ReactProp(name = "markdown")
+  override fun setMarkdown(view: RichTextView?, markdown: String?) {
+    view?.setOnLinkPressCallback { url ->
+      emitOnLinkPress(view, url)
     }
 
-    @ReactProp(name = "markdown")
-    fun setMarkdown(view: RichTextView?, markdown: String?) {
-        view?.setOnLinkPressCallback { url ->
-            emitOnLinkPress(view, url)
-        }
+    view?.setMarkdownContent(markdown ?: "No markdown content")
+  }
 
-        view?.setMarkdownContent(markdown ?: "No markdown content")
-    }
 
-    @ReactProp(name = "fontSize", defaultFloat = ViewDefaults.FONT_SIZE_SP)
-    fun setFontSize(view: RichTextView?, fontSize: Float) {
-        view?.setFontSize(fontSize)
-    }
+  @ReactProp(name = "fontSize", defaultInt = ViewDefaults.FONT_SIZE_SP.toInt())
+  override fun setFontSize(view: RichTextView?, fontSize: Int) {
+    view?.setFontSize(fontSize.toFloat())
+  }
 
-    @ReactProp(name = "fontFamily")
-    fun setFontFamily(view: RichTextView?, family: String?) {
-        view?.setFontFamily(family)
-    }
+  @ReactProp(name = "fontFamily")
+  override fun setFontFamily(view: RichTextView?, family: String?) {
+    view?.setFontFamily(family)
+  }
 
-    @ReactProp(name = ViewProps.COLOR, customType = "Color")
-    fun setColor(view: RichTextView?, color: Int?) {
-        view?.setColor(color)
-    }
+  @ReactProp(name = ViewProps.COLOR, customType = "Color")
+  override fun setColor(view: RichTextView?, color: Int?) {
+    view?.setColor(color)
+  }
 
-    @ReactProp(name = "fontWeight")
-    fun setFontWeight(view: RichTextView?, weight: String?) {
-        view?.setFontWeight(weight)
-    }
+  @ReactProp(name = "fontWeight")
+  override fun setFontWeight(view: RichTextView?, weight: String?) {
+    view?.setFontWeight(weight)
+  }
 
-    @ReactProp(name = "fontStyle")
-    fun setFontStyle(view: RichTextView?, style: String?) {
-        view?.setFontStyle(style)
-    }
+  @ReactProp(name = "fontStyle")
+  override fun setFontStyle(view: RichTextView?, style: String?) {
+    view?.setFontStyle(style)
+  }
 
-    override fun onAfterUpdateTransaction(view: RichTextView) {
-        super.onAfterUpdateTransaction(view)
-        view.updateTypeface()
-    }
+  override fun onAfterUpdateTransaction(view: RichTextView) {
+    super.onAfterUpdateTransaction(view)
+    view.updateTypeface()
+  }
 
-    private fun emitOnLinkPress(view: RichTextView, url: String) {
-        val surfaceId = UIManagerHelper.getSurfaceId(reactContext!!)
-        val eventDispatcher = UIManagerHelper.getEventDispatcherForReactTag(reactContext!!, view.id)
-        val event = LinkPressEvent(surfaceId, view.id, url)
+  private fun emitOnLinkPress(view: RichTextView, url: String) {
+    val context = view.context as com.facebook.react.bridge.ReactContext
+    val surfaceId = UIManagerHelper.getSurfaceId(context)
+    val eventDispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, view.id)
+    val event = LinkPressEvent(surfaceId, view.id, url)
 
-        eventDispatcher?.dispatchEvent(event)
-    }
+    eventDispatcher?.dispatchEvent(event)
+  }
+
+  companion object {
+    const val NAME = "RichTextView"
+  }
 }
