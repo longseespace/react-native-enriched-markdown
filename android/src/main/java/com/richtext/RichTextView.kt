@@ -16,11 +16,6 @@ class RichTextView : AppCompatTextView {
     private var theme = RichTextTheme.defaultTheme()
     private var onLinkPressCallback: ((String) -> Unit)? = null
     
-    // State management (following enriched pattern)
-    private var isSettingValue: Boolean = false
-    private var typefaceDirty = false
-    private var didAttachToWindow = false
-
     constructor(context: Context) : super(context) {
         prepareComponent()
     }
