@@ -19,7 +19,6 @@
     
     for (MarkdownASTNode *child in node.children) {
         if (child.type == MarkdownNodeTypeText && child.content) {
-            // Always use injected text renderer
             [self.textRenderer renderNode:child 
                                     into:output 
                                withFont:font

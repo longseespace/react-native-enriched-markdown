@@ -23,7 +23,6 @@
 - (instancetype)init {
     self = [super init];
     if (self) {
-        // Create all shared renderer instances once
         _sharedTextRenderer = [TextRenderer new];
         _sharedLinkRenderer = [[LinkRenderer alloc] initWithTextRenderer:_sharedTextRenderer];
         _sharedHeadingRenderer = [[HeadingRenderer alloc] initWithTextRenderer:_sharedTextRenderer];
