@@ -133,39 +133,37 @@ static const CGFloat kLabelPadding = 10.0;
 // MARK: - Props
 
 - (void)updateProps:(Props::Shared const &)props 
-          oldProps:(Props::Shared const &)oldProps {
+oldProps:(Props::Shared const &)oldProps {
     const auto &oldViewProps = *std::static_pointer_cast<RichTextViewProps const>(_props);
     const auto &newViewProps = *std::static_pointer_cast<RichTextViewProps const>(props);
     
     BOOL needsRerender = NO;
+    BOOL stylePropChanged = NO;
     
+    // Check if markdown content changed
     if (oldViewProps.markdown != newViewProps.markdown) {
+        needsRerender = YES;
+    }
+    
+    // Check if styling props changed
+    if (oldViewProps.color != newViewProps.color) {
+        stylePropChanged = YES;
+    }
+    
+    if (oldViewProps.fontSize != newViewProps.fontSize || 
+        oldViewProps.fontFamily != newViewProps.fontFamily || 
+        oldViewProps.fontWeight != newViewProps.fontWeight || 
+        oldViewProps.fontStyle != newViewProps.fontStyle) {
+        stylePropChanged = YES;
+    }
+    
+    // If styling props changed, we need to re-render the entire content
+    // This follows the same pattern as @react-native-enriched/
+    if (stylePropChanged && !newViewProps.markdown.empty()) {
         NSString *markdownString = [[NSString alloc] initWithUTF8String:newViewProps.markdown.c_str()];
         [self renderMarkdownContent:markdownString withProps:newViewProps];
-        needsRerender = YES;
-    }
-    
-    if (oldViewProps.color != newViewProps.color) {
-        // Convert React Native SharedColor to UIColor
-        UIColor *color = RCTUIColorFromSharedColor(newViewProps.color);
-        if (color) {
-            _textView.textColor = color;
-        }
-        needsRerender = YES;
-    }
-    
-    if (oldViewProps.fontSize != newViewProps.fontSize || oldViewProps.fontFamily != newViewProps.fontFamily || oldViewProps.fontWeight != newViewProps.fontWeight || oldViewProps.fontStyle != newViewProps.fontStyle) {
-        CGFloat fontSize = newViewProps.fontSize > 0 ? newViewProps.fontSize : kDefaultFontSize;
-        NSString *fontFamily = [[NSString alloc] initWithUTF8String:newViewProps.fontFamily.c_str()];
-        NSString *fontWeight = [[NSString alloc] initWithUTF8String:newViewProps.fontWeight.c_str()];
-        NSString *fontStyle = [[NSString alloc] initWithUTF8String:newViewProps.fontStyle.c_str()];
-        _textView.font = [self createFontWithFamily:fontFamily size:fontSize weight:fontWeight style:fontStyle];
-        needsRerender = YES;
-    }
-    
-    // HeaderConfig removed - no longer needed
-    
-    if (needsRerender && !newViewProps.markdown.empty()) {
+    } else if (needsRerender && !newViewProps.markdown.empty()) {
+        // Only markdown content changed, not styling
         NSString *markdownString = [[NSString alloc] initWithUTF8String:newViewProps.markdown.c_str()];
         [self renderMarkdownContent:markdownString withProps:newViewProps];
     }
