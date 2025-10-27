@@ -1,5 +1,5 @@
 #import "HeadingRenderer.h"
-#import "../utils/SpacingUtils.h"
+#import "SpacingUtils.h"
 
 @implementation HeadingRenderer
 

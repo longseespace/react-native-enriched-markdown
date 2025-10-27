@@ -1,6 +1,6 @@
 #import "ParagraphRenderer.h"
 #import "LinkRenderer.h"
-#import "../utils/SpacingUtils.h"
+#import "SpacingUtils.h"
 
 @implementation ParagraphRenderer
 
