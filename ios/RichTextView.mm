@@ -3,6 +3,7 @@
 #import "MarkdownASTNode.h"
 #import "AttributedRenderer.h"
 #import "RenderContext.h"
+#import "RichTextConfig.h"
 
 #import <react/renderer/components/RichTextViewSpec/ComponentDescriptors.h>
 #import <react/renderer/components/RichTextViewSpec/EventEmitters.h>
@@ -92,29 +93,22 @@ static const CGFloat kLabelPadding = 10.0;
 
 // MARK: - Rendering
 
-- (void)renderMarkdownContent:(NSString *)markdownString withProps:(const RichTextViewProps &)props {
+- (void)renderMarkdownContent:(NSString *)markdownString {
     MarkdownASTNode *ast = [_parser parseMarkdown:markdownString];
     if (!ast) {
         NSLog(@"RichTextView: Failed to parse markdown");
         return;
     }
     
-    AttributedRenderer *renderer = [AttributedRenderer new];
+    AttributedRenderer *renderer = [[AttributedRenderer alloc] initWithConfig:_config];
+    RenderContext *renderContext = [RenderContext new];
     
-    CGFloat fontSize = props.fontSize > 0 ? props.fontSize : kDefaultFontSize;
-    
-    NSString *fontFamily = [[NSString alloc] initWithUTF8String:props.fontFamily.c_str()];
-    NSString *fontWeight = [[NSString alloc] initWithUTF8String:props.fontWeight.c_str()];
-    NSString *fontStyle = [[NSString alloc] initWithUTF8String:props.fontStyle.c_str()];
-    UIFont *font = [self createFontWithFamily:fontFamily size:fontSize weight:fontWeight style:fontStyle];
-    
-    // Get color from props or use textView's current color
+    UIFont *font = [_config primaryFont];
     UIColor *color = _textView.textColor ?: [UIColor blackColor];
-    if (props.color) {
-        color = RCTUIColorFromSharedColor(props.color);
+    if ([_config primaryColor]) {
+        color = [_config primaryColor];
     }
     
-    RenderContext *renderContext = [RenderContext new];
     NSMutableAttributedString *attributedText = [renderer renderRoot:ast font:font color:color context:renderContext];
     
     // Add custom attributes for links
@@ -137,35 +131,81 @@ oldProps:(Props::Shared const &)oldProps {
     const auto &oldViewProps = *std::static_pointer_cast<RichTextViewProps const>(_props);
     const auto &newViewProps = *std::static_pointer_cast<RichTextViewProps const>(props);
     
-    BOOL needsRerender = NO;
+    BOOL isFirstMount = NO;
     BOOL stylePropChanged = NO;
     
-    // Check if markdown content changed
-    if (oldViewProps.markdown != newViewProps.markdown) {
-        needsRerender = YES;
+    if (_config == nil) {
+        isFirstMount = YES;
+        _config = [[RichTextConfig alloc] init];
     }
+        
+    RichTextConfig *newConfig = [_config copy];
     
-    // Check if styling props changed
-    if (oldViewProps.color != newViewProps.color) {
+    if (newViewProps.color != oldViewProps.color) {
+        if (newViewProps.color) {
+            UIColor *uiColor = RCTUIColorFromSharedColor(newViewProps.color);
+            [newConfig setPrimaryColor:uiColor];
+        } else {
+            [newConfig setPrimaryColor:nullptr];
+        }
         stylePropChanged = YES;
     }
     
-    if (oldViewProps.fontSize != newViewProps.fontSize || 
-        oldViewProps.fontFamily != newViewProps.fontFamily || 
-        oldViewProps.fontWeight != newViewProps.fontWeight || 
-        oldViewProps.fontStyle != newViewProps.fontStyle) {
+    if (newViewProps.fontSize != oldViewProps.fontSize) {
+        if (newViewProps.fontSize > 0) {
+            NSNumber *fontSize = @(newViewProps.fontSize);
+            [newConfig setPrimaryFontSize:fontSize];
+        } else {
+            [newConfig setPrimaryFontSize:nullptr];
+        }
         stylePropChanged = YES;
     }
     
-    // If styling props changed, we need to re-render the entire content
-    // This follows the same pattern as @react-native-enriched/
-    if (stylePropChanged && !newViewProps.markdown.empty()) {
+    if (newViewProps.fontWeight != oldViewProps.fontWeight) {
+        if (!newViewProps.fontWeight.empty()) {
+            [newConfig setPrimaryFontWeight:[[NSString alloc] initWithUTF8String:newViewProps.fontWeight.c_str()]];
+        } else {
+            [newConfig setPrimaryFontWeight:nullptr];
+        }
+        stylePropChanged = YES;
+    }
+    
+    if (newViewProps.fontFamily != oldViewProps.fontFamily) {
+        if (!newViewProps.fontFamily.empty()) {
+            [newConfig setPrimaryFontFamily:[[NSString alloc] initWithUTF8String:newViewProps.fontFamily.c_str()]];
+        } else {
+            [newConfig setPrimaryFontFamily:nullptr];
+        }
+        stylePropChanged = YES;
+    }
+    
+    if (newViewProps.richTextStyle.h1.fontSize != oldViewProps.richTextStyle.h1.fontSize) {
+        [newConfig setH1FontSize:newViewProps.richTextStyle.h1.fontSize];
+        stylePropChanged = YES;
+    }
+    
+    
+    if (newViewProps.richTextStyle.h1.fontFamily != oldViewProps.richTextStyle.h1.fontFamily) {
+        if (!newViewProps.richTextStyle.h1.fontFamily.empty()) {
+            NSString *fontFamily = [[NSString alloc] initWithUTF8String:newViewProps.richTextStyle.h1.fontFamily.c_str()];
+            [newConfig setH1FontFamily:fontFamily];
+        } else {
+            [newConfig setH1FontFamily:nullptr];
+        }
+        stylePropChanged = YES;
+    }
+    
+    if (stylePropChanged) {
+        NSString *currentMarkdown = [[NSString alloc] initWithUTF8String:newViewProps.markdown.c_str()];
+        
+        _config = newConfig;
+        
+        [self renderMarkdownContent:currentMarkdown];
+    }
+    
+    if (oldViewProps.markdown != newViewProps.markdown && !stylePropChanged) {
         NSString *markdownString = [[NSString alloc] initWithUTF8String:newViewProps.markdown.c_str()];
-        [self renderMarkdownContent:markdownString withProps:newViewProps];
-    } else if (needsRerender && !newViewProps.markdown.empty()) {
-        // Only markdown content changed, not styling
-        NSString *markdownString = [[NSString alloc] initWithUTF8String:newViewProps.markdown.c_str()];
-        [self renderMarkdownContent:markdownString withProps:newViewProps];
+        [self renderMarkdownContent:markdownString];
     }
 
     [super updateProps:props oldProps:oldProps];

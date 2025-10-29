@@ -7,7 +7,7 @@ import {
 } from 'react-native';
 import { RichTextView } from 'react-native-rich-text';
 
-const sampleMarkdown = `#### Welcome to the React Native Markdown component!
+const sampleMarkdown = `# Welcome to the React Native Markdown component!
 
 This is a simple text with links.
 
@@ -16,6 +16,13 @@ Check out this [link to React Native](https://reactnative.dev) and this [GitHub 
 Built with ❤️ using React Native Fabric Architecture`;
 
 export default function App() {
+  const h1Style = {
+    h1: {
+      fontSize: 24,
+      fontFamily: 'Helvetica-Bold',
+    },
+  };
+
   const handleLinkPress = (event: { nativeEvent: { url: string } }) => {
     const { url } = event.nativeEvent;
     Alert.alert('Link Pressed!', `You tapped on: ${url}`, [
@@ -40,7 +47,8 @@ export default function App() {
       >
         <RichTextView
           markdown={sampleMarkdown}
-          style={styles.markdown}
+          style={h1Style}
+          containerStyle={styles.markdown}
           fontSize={18}
           fontFamily="Helvetica"
           color="#F54927"

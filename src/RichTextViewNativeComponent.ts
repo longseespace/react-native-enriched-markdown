@@ -5,7 +5,14 @@ import {
   type ColorValue,
 } from 'react-native';
 
-interface NativeProps extends ViewProps {
+export interface RichTextStyleInternal {
+  h1?: {
+    fontSize?: CodegenTypes.Float;
+    fontFamily?: string;
+  };
+}
+
+export interface NativeProps extends ViewProps {
   /**
    * Markdown content to render.
    * Supports standard markdown syntax including headers, links, lists, etc.
@@ -37,6 +44,11 @@ interface NativeProps extends ViewProps {
    * Text color in hex format.
    */
   color?: ColorValue;
+  /**
+   * Style configuration for markdown elements.
+   * Currently supports H1 headers only.
+   */
+  richTextStyle?: RichTextStyleInternal;
   /**
    * Callback fired when a link is pressed.
    * Receives the URL that was tapped.

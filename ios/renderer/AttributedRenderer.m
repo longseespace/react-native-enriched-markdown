@@ -16,7 +16,19 @@
                      context:(RenderContext *)context;
 @end
 
-@implementation AttributedRenderer
+@implementation AttributedRenderer {
+    id _config;
+    RendererFactory *_rendererFactory;
+}
+
+- (instancetype)initWithConfig:(id)config {
+    self = [super init];
+    if (self) {
+        _config = config;
+        _rendererFactory = [[RendererFactory alloc] initWithConfig:config];
+    }
+    return self;
+}
 
 - (NSMutableAttributedString *)renderRoot:(MarkdownASTNode *)root
                                      font:(UIFont *)font
@@ -40,7 +52,7 @@
                        color:(UIColor *)color
                      context:(RenderContext *)context
                   isTopLevel:(BOOL)isTopLevel {
-    id<NodeRenderer> renderer = [self rendererForNode:node];
+    id<NodeRenderer> renderer = [_rendererFactory rendererForNodeType:node.type];
     if (renderer) {
         [renderer renderNode:node into:out withFont:font color:color context:context];
         return;
@@ -57,7 +69,7 @@
 }
 
 - (id<NodeRenderer>)rendererForNode:(MarkdownASTNode *)node {
-    return [[RendererFactory sharedFactory] rendererForNodeType:node.type];
+    return [_rendererFactory rendererForNodeType:node.type];
 }
 
 @end

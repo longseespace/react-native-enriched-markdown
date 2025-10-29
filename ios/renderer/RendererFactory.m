@@ -5,6 +5,7 @@
 #import "HeadingRenderer.h"
 
 @implementation RendererFactory {
+    id _config;
     TextRenderer *_sharedTextRenderer;
     LinkRenderer *_sharedLinkRenderer;
     HeadingRenderer *_sharedHeadingRenderer;
@@ -25,7 +26,20 @@
     if (self) {
         _sharedTextRenderer = [TextRenderer new];
         _sharedLinkRenderer = [[LinkRenderer alloc] initWithTextRenderer:_sharedTextRenderer];
-        _sharedHeadingRenderer = [[HeadingRenderer alloc] initWithTextRenderer:_sharedTextRenderer];
+        _sharedHeadingRenderer = [[HeadingRenderer alloc] initWithTextRenderer:_sharedTextRenderer config:nil];
+        _sharedParagraphRenderer = [[ParagraphRenderer alloc] initWithLinkRenderer:_sharedLinkRenderer
+                                                                      textRenderer:_sharedTextRenderer];
+    }
+    return self;
+}
+
+- (instancetype)initWithConfig:(id)config {
+    self = [super init];
+    if (self) {
+        _config = config;
+        _sharedTextRenderer = [TextRenderer new];
+        _sharedLinkRenderer = [[LinkRenderer alloc] initWithTextRenderer:_sharedTextRenderer];
+        _sharedHeadingRenderer = [[HeadingRenderer alloc] initWithTextRenderer:_sharedTextRenderer config:config];
         _sharedParagraphRenderer = [[ParagraphRenderer alloc] initWithLinkRenderer:_sharedLinkRenderer
                                                                       textRenderer:_sharedTextRenderer];
     }

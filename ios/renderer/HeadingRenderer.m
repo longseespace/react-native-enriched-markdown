@@ -1,12 +1,14 @@
 #import "HeadingRenderer.h"
 #import "SpacingUtils.h"
+#import "StyleHeaders.h"
 
 @implementation HeadingRenderer
 
-- (instancetype)initWithTextRenderer:(id<NodeRenderer>)textRenderer {
+- (instancetype)initWithTextRenderer:(id<NodeRenderer>)textRenderer config:(id)config {
     self = [super init];
     if (self) {
         _textRenderer = textRenderer;
+        self.config = config;
     }
     return self;
 }
@@ -17,13 +19,44 @@
             color:(UIColor *)color
            context:(RenderContext *)context {
 
-    UIFont *boldFont = [UIFont fontWithDescriptor:[font.fontDescriptor fontDescriptorWithSymbolicTraits:UIFontDescriptorTraitBold] size:font.pointSize];
+    UIFont *headingFont = font;
+    
+    // Get heading level from attributes
+    NSInteger level = 1; // Default to H1
+    NSString *levelString = node.attributes[@"level"];
+    if (levelString) {
+        level = [levelString integerValue];
+    }
+    
+    // Dynamic heading style application for all levels (H1-H6)
+    HeadingStyleBase *headingStyle = [self getHeadingStyleForLevel:level];
+    if (headingStyle) {
+        headingStyle.config = self.config;
+        
+        CGFloat fontSize = [headingStyle getHeadingFontSize];
+        NSString *fontFamily = [headingStyle getHeadingFontFamily];
+
+        if (fontFamily != nil && fontFamily.length > 0) {
+            UIFont *familyFont = [UIFont fontWithName:fontFamily size:fontSize];
+            if (familyFont != nil) {
+                headingFont = familyFont;
+            } else {
+                // Fallback to base font with size
+                headingFont = [UIFont fontWithDescriptor:font.fontDescriptor size:fontSize];
+            }
+        } else {
+            headingFont = [UIFont fontWithDescriptor:font.fontDescriptor size:fontSize];
+        }
+    } else {
+        // Fallback: make bold with original size
+        headingFont = [UIFont fontWithDescriptor:[font.fontDescriptor fontDescriptorWithSymbolicTraits:UIFontDescriptorTraitBold] size:font.pointSize];
+    }
     
     for (MarkdownASTNode *child in node.children) {
         if (child.type == MarkdownNodeTypeText && child.content) {
             [self.textRenderer renderNode:child 
                                     into:output 
-                               withFont:boldFont
+                               withFont:headingFont
                                   color:color
                                  context:context];
         }
@@ -31,6 +64,21 @@
     
     NSAttributedString *spacing = createSpacing();
     [output appendAttributedString:spacing];
+}
+
+#pragma mark - Helper Methods
+
+- (HeadingStyleBase *)getHeadingStyleForLevel:(NSInteger)level {
+    switch (level) {
+        case 1: return [[H1Style alloc] init];
+        // Future: Add H2-H6 styles here
+        // case 2: return [[H2Style alloc] init];
+        // case 3: return [[H3Style alloc] init];
+        // case 4: return [[H4Style alloc] init];
+        // case 5: return [[H5Style alloc] init];
+        // case 6: return [[H6Style alloc] init];
+        default: return nil;
+    }
 }
 
 @end
