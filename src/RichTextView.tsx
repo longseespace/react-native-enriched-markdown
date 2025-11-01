@@ -15,19 +15,15 @@ export interface RichTextStyle {
 export interface RichTextViewProps
   extends Omit<NativeProps, 'richTextStyle' | 'style'> {
   /**
-   * Style configuration for markdown elements.
-   * Currently supports H1 headers only.
+   * Style configuration for markdown elements
    */
   style?: RichTextStyle;
   /**
-   * Additional style for the container view
+   * Style for the container view.
    */
   containerStyle?: ViewStyle | TextStyle;
 }
 
-/**
- * RichTextView component for rendering markdown content with customizable styling
- */
 export const RichTextView = ({
   markdown,
   fontSize,

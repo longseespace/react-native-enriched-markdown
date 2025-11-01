@@ -15,15 +15,10 @@ export interface RichTextStyleInternal {
 export interface NativeProps extends ViewProps {
   /**
    * Markdown content to render.
-   * Supports standard markdown syntax including headers, links, lists, etc.
    */
   markdown?: string;
   /**
-   * Base font size for all text elements (in points).
-   * - Regular text, links, lists: Use fontSize directly
-   * - Headers: Made bold, same size as base fontSize
-   * @example
-   * fontSize=18 → all text=18pt, headers are bold
+   * Base font size for all text elements.
    */
   fontSize?: CodegenTypes.Int32;
   /**
@@ -46,7 +41,6 @@ export interface NativeProps extends ViewProps {
   color?: ColorValue;
   /**
    * Style configuration for markdown elements.
-   * Currently supports H1 headers only.
    */
   richTextStyle?: RichTextStyleInternal;
   /**
