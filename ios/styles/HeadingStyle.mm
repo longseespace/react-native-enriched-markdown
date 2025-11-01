@@ -17,8 +17,8 @@
 - (CGFloat)fontSize {
     switch (_level) {
         case 1: return [_config h1FontSize];
-        // Future: Add H2-H6 support
-        // case 2: return [_config h2FontSize];
+        case 2: return [_config h2FontSize];
+        // Future: Add H3-H6 support
         // case 3: return [_config h3FontSize];
         // case 4: return [_config h4FontSize];
         // case 5: return [_config h5FontSize];
@@ -30,8 +30,8 @@
 - (NSString *)fontFamily {
     switch (_level) {
         case 1: return [_config h1FontFamily];
-        // Future: Add H2-H6 support
-        // case 2: return [_config h2FontFamily];
+        case 2: return [_config h2FontFamily];
+        // Future: Add H3-H6 support
         // case 3: return [_config h3FontFamily];
         // case 4: return [_config h4FontFamily];
         // case 5: return [_config h5FontFamily];

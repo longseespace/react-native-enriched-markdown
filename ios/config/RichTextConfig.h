@@ -18,6 +18,11 @@
 - (void)setH1FontSize:(CGFloat)newValue;
 - (NSString *)h1FontFamily;
 - (void)setH1FontFamily:(NSString *)newValue;
+// H2 properties
+- (CGFloat)h2FontSize;
+- (void)setH2FontSize:(CGFloat)newValue;
+- (NSString *)h2FontFamily;
+- (void)setH2FontFamily:(NSString *)newValue;
 
-// Future: H2, H3, H4, H5, H6, link, paragraph properties
+// Future: H3, H4, H5, H6, link, paragraph properties
 @end
