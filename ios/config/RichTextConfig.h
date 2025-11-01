@@ -38,6 +38,11 @@
 - (void)setH5FontSize:(CGFloat)newValue;
 - (NSString *)h5FontFamily;
 - (void)setH5FontFamily:(NSString *)newValue;
+// H6 properties
+- (CGFloat)h6FontSize;
+- (void)setH6FontSize:(CGFloat)newValue;
+- (NSString *)h6FontFamily;
+- (void)setH6FontFamily:(NSString *)newValue;
 
-// Future: H6, link, paragraph properties
+// Future: link, paragraph properties
 @end

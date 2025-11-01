@@ -24,6 +24,9 @@
     // H5 properties
     CGFloat _h5FontSize;
     NSString *_h5FontFamily;
+    // H6 properties
+    CGFloat _h6FontSize;
+    NSString *_h6FontFamily;
 }
 
 - (instancetype)init {
@@ -50,6 +53,8 @@
     copy->_h4FontFamily = [_h4FontFamily copy];
     copy->_h5FontSize = _h5FontSize;
     copy->_h5FontFamily = [_h5FontFamily copy];
+    copy->_h6FontSize = _h6FontSize;
+    copy->_h6FontFamily = [_h6FontFamily copy];
     
     return copy;
 }
@@ -181,6 +186,22 @@
 
 - (void)setH5FontFamily:(NSString *)newValue {
     _h5FontFamily = newValue;
+}
+
+- (CGFloat)h6FontSize {
+    return _h6FontSize > 0 ? _h6FontSize : 16.0;
+}
+
+- (void)setH6FontSize:(CGFloat)newValue {
+    _h6FontSize = newValue;
+}
+
+- (NSString *)h6FontFamily {
+    return _h6FontFamily;
+}
+
+- (void)setH6FontFamily:(NSString *)newValue {
+    _h6FontFamily = newValue;
 }
 
 @end
