@@ -10,6 +10,11 @@ export interface HeadingStyleInternal {
   fontFamily?: string;
 }
 
+export interface LinkStyleInternal {
+  color?: ColorValue;
+  underline?: boolean;
+}
+
 export interface RichTextStyleInternal {
   h1?: HeadingStyleInternal;
   h2?: HeadingStyleInternal;
@@ -17,6 +22,7 @@ export interface RichTextStyleInternal {
   h4?: HeadingStyleInternal;
   h5?: HeadingStyleInternal;
   h6?: HeadingStyleInternal;
+  link?: LinkStyleInternal;
 }
 
 export interface NativeProps extends ViewProps {

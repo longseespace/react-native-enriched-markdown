@@ -25,7 +25,7 @@
     self = [super init];
     if (self) {
         _sharedTextRenderer = [TextRenderer new];
-        _sharedLinkRenderer = [[LinkRenderer alloc] initWithTextRenderer:_sharedTextRenderer];
+        _sharedLinkRenderer = [[LinkRenderer alloc] initWithTextRenderer:_sharedTextRenderer config:nil];
         _sharedHeadingRenderer = [[HeadingRenderer alloc] initWithTextRenderer:_sharedTextRenderer config:nil];
         _sharedParagraphRenderer = [[ParagraphRenderer alloc] initWithLinkRenderer:_sharedLinkRenderer
                                                                       textRenderer:_sharedTextRenderer];
@@ -38,7 +38,7 @@
     if (self) {
         _config = config;
         _sharedTextRenderer = [TextRenderer new];
-        _sharedLinkRenderer = [[LinkRenderer alloc] initWithTextRenderer:_sharedTextRenderer];
+        _sharedLinkRenderer = [[LinkRenderer alloc] initWithTextRenderer:_sharedTextRenderer config:config];
         _sharedHeadingRenderer = [[HeadingRenderer alloc] initWithTextRenderer:_sharedTextRenderer config:config];
         _sharedParagraphRenderer = [[ParagraphRenderer alloc] initWithLinkRenderer:_sharedLinkRenderer
                                                                       textRenderer:_sharedTextRenderer];

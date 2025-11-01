@@ -27,11 +27,15 @@
     // H6 properties
     CGFloat _h6FontSize;
     NSString *_h6FontFamily;
+    // Link properties
+    UIColor *_linkColor;
+    BOOL _linkUnderline;
 }
 
 - (instancetype)init {
     self = [super init];
     _primaryFontNeedsRecreation = YES;
+    _linkUnderline = YES;
     return self;
 }
 
@@ -55,6 +59,8 @@
     copy->_h5FontFamily = [_h5FontFamily copy];
     copy->_h6FontSize = _h6FontSize;
     copy->_h6FontFamily = [_h6FontFamily copy];
+    copy->_linkColor = [_linkColor copy];
+    copy->_linkUnderline = _linkUnderline;
     
     return copy;
 }
@@ -202,6 +208,22 @@
 
 - (void)setH6FontFamily:(NSString *)newValue {
     _h6FontFamily = newValue;
+}
+
+- (UIColor *)linkColor {
+    return _linkColor != nullptr ? _linkColor : [UIColor blueColor];
+}
+
+- (void)setLinkColor:(UIColor *)newValue {
+    _linkColor = newValue;
+}
+
+- (BOOL)linkUnderline {
+    return _linkUnderline;
+}
+
+- (void)setLinkUnderline:(BOOL)newValue {
+    _linkUnderline = newValue;
 }
 
 @end

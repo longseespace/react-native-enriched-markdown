@@ -64,7 +64,8 @@ static const CGFloat kLabelPadding = 10.0;
     _textView.scrollEnabled = NO;
     _textView.textContainerInset = UIEdgeInsetsZero;
     _textView.textContainer.lineFragmentPadding = 0;
-    
+    // Disable UITextView's default link styling - we handle it directly in attributed strings
+    _textView.linkTextAttributes = @{};
     // Add tap gesture recognizer
     UITapGestureRecognizer *tapRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(textTapped:)];
     [_textView addGestureRecognizer:tapRecognizer];
@@ -109,7 +110,6 @@ static const CGFloat kLabelPadding = 10.0;
         NSValue *rangeValue = renderContext.linkRanges[i];
         NSRange range = [rangeValue rangeValue];
         NSString *url = renderContext.linkURLs[i];
-        
         // Add custom attribute for link detection
         [attributedText addAttribute:@"linkURL" value:url range:range];
     }
@@ -121,12 +121,10 @@ static const CGFloat kLabelPadding = 10.0;
 oldProps:(Props::Shared const &)oldProps {
     const auto &oldViewProps = *std::static_pointer_cast<RichTextViewProps const>(_props);
     const auto &newViewProps = *std::static_pointer_cast<RichTextViewProps const>(props);
-    
-    BOOL isFirstMount = NO;
+
     BOOL stylePropChanged = NO;
     
     if (_config == nil) {
-        isFirstMount = YES;
         _config = [[RichTextConfig alloc] init];
     }
         
@@ -258,6 +256,17 @@ oldProps:(Props::Shared const &)oldProps {
         } else {
             [newConfig setH6FontFamily:nullptr];
         }
+        stylePropChanged = YES;
+    }
+    
+    if (newViewProps.richTextStyle.link.color != oldViewProps.richTextStyle.link.color) {
+        UIColor *linkColor = RCTUIColorFromSharedColor(newViewProps.richTextStyle.link.color);
+        [newConfig setLinkColor:linkColor];
+        stylePropChanged = YES;
+    }
+    
+    if (newViewProps.richTextStyle.link.underline != oldViewProps.richTextStyle.link.underline) {
+        [newConfig setLinkUnderline:newViewProps.richTextStyle.link.underline];
         stylePropChanged = YES;
     }
     

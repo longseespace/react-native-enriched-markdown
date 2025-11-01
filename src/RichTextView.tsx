@@ -10,6 +10,11 @@ export interface HeadingStyle {
   fontFamily?: string;
 }
 
+export interface LinkStyle {
+  color?: string;
+  underline?: boolean;
+}
+
 export interface RichTextStyle {
   h1?: HeadingStyle;
   h2?: HeadingStyle;
@@ -17,6 +22,7 @@ export interface RichTextStyle {
   h4?: HeadingStyle;
   h5?: HeadingStyle;
   h6?: HeadingStyle;
+  link?: LinkStyle;
 }
 
 export interface RichTextViewProps

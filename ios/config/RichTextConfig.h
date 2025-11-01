@@ -43,6 +43,10 @@
 - (void)setH6FontSize:(CGFloat)newValue;
 - (NSString *)h6FontFamily;
 - (void)setH6FontFamily:(NSString *)newValue;
+// Link properties
+- (UIColor *)linkColor;
+- (void)setLinkColor:(UIColor *)newValue;
+- (BOOL)linkUnderline;
+- (void)setLinkUnderline:(BOOL)newValue;
 
-// Future: link, paragraph properties
 @end

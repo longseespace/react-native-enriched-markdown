@@ -1,5 +1,16 @@
+import { processColor, type ColorValue } from 'react-native';
 import type { RichTextStyle } from './RichTextView';
 import type { RichTextStyleInternal } from './RichTextViewNativeComponent';
+
+export const normalizeColor = (
+  color: string | undefined
+): ColorValue | undefined => {
+  if (!color) {
+    return undefined;
+  }
+
+  return processColor(color);
+};
 
 const defaultH1Style: RichTextStyleInternal['h1'] = {
   fontSize: 36,
@@ -31,6 +42,11 @@ const defaultH6Style: RichTextStyleInternal['h6'] = {
   fontFamily: 'Helvetica-Bold',
 };
 
+const defaultLinkStyle: RichTextStyleInternal['link'] = {
+  color: normalizeColor('#007AFF') as number, // iOS default link color
+  underline: true,
+};
+
 export const normalizeRichTextStyle = (
   style: RichTextStyle
 ): RichTextStyleInternal => {
@@ -58,6 +74,11 @@ export const normalizeRichTextStyle = (
     h6: {
       ...defaultH6Style,
       ...style.h6,
+    },
+    link: {
+      ...defaultLinkStyle,
+      ...style.link,
+      color: normalizeColor(style.link?.color) ?? defaultLinkStyle.color,
     },
   };
 };
