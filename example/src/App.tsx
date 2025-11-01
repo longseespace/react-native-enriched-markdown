@@ -16,13 +16,6 @@ Check out this [link to React Native](https://reactnative.dev) and this [GitHub 
 Built with ❤️ using React Native Fabric Architecture`;
 
 export default function App() {
-  const h1Style = {
-    h1: {
-      fontSize: 24,
-      fontFamily: 'Helvetica-Bold',
-    },
-  };
-
   const handleLinkPress = (event: { nativeEvent: { url: string } }) => {
     const { url } = event.nativeEvent;
     Alert.alert('Link Pressed!', `You tapped on: ${url}`, [
@@ -47,7 +40,7 @@ export default function App() {
       >
         <RichTextView
           markdown={sampleMarkdown}
-          style={h1Style}
+          style={markdownStyle}
           containerStyle={styles.markdown}
           fontSize={18}
           fontFamily="Helvetica"
@@ -58,6 +51,13 @@ export default function App() {
     </SafeAreaView>
   );
 }
+
+const markdownStyle = {
+  h1: {
+    fontSize: 24,
+    fontFamily: 'Helvetica-Bold',
+  },
+};
 
 const styles = StyleSheet.create({
   container: {
