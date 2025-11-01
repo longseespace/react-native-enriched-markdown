@@ -2,13 +2,14 @@
 #import <React/RCTFont.h>
 
 @implementation RichTextConfig {
+    // Primary font properties
     UIColor *_primaryColor;
     NSNumber *_primaryFontSize;
     NSString *_primaryFontWeight;
     NSString *_primaryFontFamily;
     UIFont *_primaryFont;
     BOOL _primaryFontNeedsRecreation;
-    
+    // H1 properties
     CGFloat _h1FontSize;
     NSString *_h1FontFamily;
 }
@@ -32,8 +33,6 @@
     
     return copy;
 }
-
-#pragma mark - Primary Font Properties
 
 - (UIColor *)primaryColor {
     return _primaryColor != nullptr ? _primaryColor : [UIColor blackColor];
@@ -83,8 +82,6 @@
     }
     return _primaryFont;
 }
-
-#pragma mark - H1 Properties
 
 - (CGFloat)h1FontSize {
     return _h1FontSize > 0 ? _h1FontSize : 32.0;

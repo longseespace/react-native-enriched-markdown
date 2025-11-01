@@ -16,7 +16,6 @@
 
 using namespace facebook::react;
 
-// Constants
 static const CGFloat kDefaultFontSize = 16.0;
 static const CGFloat kMinimumHeight = 100.0;
 static const CGFloat kLabelPadding = 10.0;
@@ -34,14 +33,10 @@ static const CGFloat kLabelPadding = 10.0;
     MarkdownParser * _parser;
 }
 
-// MARK: - Component utils
-
 + (ComponentDescriptorProvider)componentDescriptorProvider
 {
     return concreteComponentDescriptorProvider<RichTextViewComponentDescriptor>();
 }
-
-// MARK: - Init
 
 - (instancetype)initWithFrame:(CGRect)frame {
     if (self = [super initWithFrame:frame]) {
@@ -91,8 +86,6 @@ static const CGFloat kLabelPadding = 10.0;
     ]];
 }
 
-// MARK: - Rendering
-
 - (void)renderMarkdownContent:(NSString *)markdownString {
     MarkdownASTNode *ast = [_parser parseMarkdown:markdownString];
     if (!ast) {
@@ -123,8 +116,6 @@ static const CGFloat kLabelPadding = 10.0;
     
     _textView.attributedText = attributedText;
 }
-
-// MARK: - Props
 
 - (void)updateProps:(Props::Shared const &)props 
 oldProps:(Props::Shared const &)oldProps {
@@ -216,9 +207,6 @@ Class<RCTComponentViewProtocol> RichTextViewCls(void)
     return RichTextView.class;
 }
 
-
-// MARK: - Gesture handling
-
 - (void)textTapped:(UITapGestureRecognizer *)recognizer {
     /*
      * HOW LINK TAPPING WORKS:
@@ -291,8 +279,6 @@ Class<RCTComponentViewProtocol> RichTextViewCls(void)
         }
     }
 }
-
-// MARK: - Helper methods
 
 - (UIFont *)createFontWithFamily:(NSString *)fontFamily size:(CGFloat)size weight:(NSString *)weight style:(NSString *)style {
     // Use React Native's RCTFont.updateFont for consistent font handling
