@@ -14,6 +14,10 @@ export interface RichTextStyleInternal {
     fontSize?: CodegenTypes.Float;
     fontFamily?: string;
   };
+  h3?: {
+    fontSize?: CodegenTypes.Float;
+    fontFamily?: string;
+  };
 }
 
 export interface NativeProps extends ViewProps {

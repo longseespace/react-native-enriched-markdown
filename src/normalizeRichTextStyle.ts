@@ -11,6 +11,11 @@ const defaultH2Style: RichTextStyleInternal['h2'] = {
   fontFamily: 'Helvetica-Bold',
 };
 
+const defaultH3Style: RichTextStyleInternal['h3'] = {
+  fontSize: 24,
+  fontFamily: 'Helvetica-Bold',
+};
+
 export const normalizeRichTextStyle = (
   style: RichTextStyle
 ): RichTextStyleInternal => {
@@ -22,6 +27,10 @@ export const normalizeRichTextStyle = (
     h2: {
       ...defaultH2Style,
       ...style.h2,
+    },
+    h3: {
+      ...defaultH3Style,
+      ...style.h3,
     },
   };
 };

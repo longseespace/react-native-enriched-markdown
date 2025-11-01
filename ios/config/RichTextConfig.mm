@@ -15,6 +15,9 @@
     // H2 properties
     CGFloat _h2FontSize;
     NSString *_h2FontFamily;
+    // H3 properties
+    CGFloat _h3FontSize;
+    NSString *_h3FontFamily;
 }
 
 - (instancetype)init {
@@ -35,6 +38,8 @@
     copy->_h1FontFamily = [_h1FontFamily copy];
     copy->_h2FontSize = _h2FontSize;
     copy->_h2FontFamily = [_h2FontFamily copy];
+    copy->_h3FontSize = _h3FontSize;
+    copy->_h3FontFamily = [_h3FontFamily copy];
     
     return copy;
 }
@@ -118,6 +123,22 @@
 
 - (void)setH2FontFamily:(NSString *)newValue {
     _h2FontFamily = newValue;
+}
+
+- (CGFloat)h3FontSize {
+    return _h3FontSize > 0 ? _h3FontSize : 24.0;
+}
+
+- (void)setH3FontSize:(CGFloat)newValue {
+    _h3FontSize = newValue;
+}
+
+- (NSString *)h3FontFamily {
+    return _h3FontFamily;
+}
+
+- (void)setH3FontFamily:(NSString *)newValue {
+    _h3FontFamily = newValue;
 }
 
 @end

@@ -14,6 +14,10 @@ export interface RichTextStyle {
     fontSize?: number;
     fontFamily?: string;
   };
+  h3?: {
+    fontSize?: number;
+    fontFamily?: string;
+  };
 }
 
 export interface RichTextViewProps
