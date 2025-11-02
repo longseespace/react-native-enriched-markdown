@@ -3,6 +3,7 @@
 #import "MarkdownASTNode.h"
 #import "AttributedRenderer.h"
 #import "RenderContext.h"
+#import "RichTextConfig.h"
 
 #import <react/renderer/components/RichTextViewSpec/ComponentDescriptors.h>
 #import <react/renderer/components/RichTextViewSpec/EventEmitters.h>
@@ -15,7 +16,6 @@
 
 using namespace facebook::react;
 
-// Constants
 static const CGFloat kDefaultFontSize = 16.0;
 static const CGFloat kMinimumHeight = 100.0;
 static const CGFloat kLabelPadding = 10.0;
@@ -33,14 +33,10 @@ static const CGFloat kLabelPadding = 10.0;
     MarkdownParser * _parser;
 }
 
-// MARK: - Component utils
-
 + (ComponentDescriptorProvider)componentDescriptorProvider
 {
     return concreteComponentDescriptorProvider<RichTextViewComponentDescriptor>();
 }
-
-// MARK: - Init
 
 - (instancetype)initWithFrame:(CGRect)frame {
     if (self = [super initWithFrame:frame]) {
@@ -68,7 +64,8 @@ static const CGFloat kLabelPadding = 10.0;
     _textView.scrollEnabled = NO;
     _textView.textContainerInset = UIEdgeInsetsZero;
     _textView.textContainer.lineFragmentPadding = 0;
-    
+    // Disable UITextView's default link styling - we handle it directly in attributed strings
+    _textView.linkTextAttributes = @{};
     // Add tap gesture recognizer
     UITapGestureRecognizer *tapRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(textTapped:)];
     [_textView addGestureRecognizer:tapRecognizer];
@@ -90,31 +87,22 @@ static const CGFloat kLabelPadding = 10.0;
     ]];
 }
 
-// MARK: - Rendering
-
-- (void)renderMarkdownContent:(NSString *)markdownString withProps:(const RichTextViewProps &)props {
+- (void)renderMarkdownContent:(NSString *)markdownString {
     MarkdownASTNode *ast = [_parser parseMarkdown:markdownString];
     if (!ast) {
         NSLog(@"RichTextView: Failed to parse markdown");
         return;
     }
     
-    AttributedRenderer *renderer = [AttributedRenderer new];
+    AttributedRenderer *renderer = [[AttributedRenderer alloc] initWithConfig:_config];
+    RenderContext *renderContext = [RenderContext new];
     
-    CGFloat fontSize = props.fontSize > 0 ? props.fontSize : kDefaultFontSize;
-    
-    NSString *fontFamily = [[NSString alloc] initWithUTF8String:props.fontFamily.c_str()];
-    NSString *fontWeight = [[NSString alloc] initWithUTF8String:props.fontWeight.c_str()];
-    NSString *fontStyle = [[NSString alloc] initWithUTF8String:props.fontStyle.c_str()];
-    UIFont *font = [self createFontWithFamily:fontFamily size:fontSize weight:fontWeight style:fontStyle];
-    
-    // Get color from props or use textView's current color
+    UIFont *font = [_config primaryFont];
     UIColor *color = _textView.textColor ?: [UIColor blackColor];
-    if (props.color) {
-        color = RCTUIColorFromSharedColor(props.color);
+    if ([_config primaryColor]) {
+        color = [_config primaryColor];
     }
     
-    RenderContext *renderContext = [RenderContext new];
     NSMutableAttributedString *attributedText = [renderer renderRoot:ast font:font color:color context:renderContext];
     
     // Add custom attributes for links
@@ -122,7 +110,6 @@ static const CGFloat kLabelPadding = 10.0;
         NSValue *rangeValue = renderContext.linkRanges[i];
         NSRange range = [rangeValue rangeValue];
         NSString *url = renderContext.linkURLs[i];
-        
         // Add custom attribute for link detection
         [attributedText addAttribute:@"linkURL" value:url range:range];
     }
@@ -130,42 +117,170 @@ static const CGFloat kLabelPadding = 10.0;
     _textView.attributedText = attributedText;
 }
 
-// MARK: - Props
-
 - (void)updateProps:(Props::Shared const &)props 
 oldProps:(Props::Shared const &)oldProps {
     const auto &oldViewProps = *std::static_pointer_cast<RichTextViewProps const>(_props);
     const auto &newViewProps = *std::static_pointer_cast<RichTextViewProps const>(props);
-    
-    BOOL needsRerender = NO;
+
     BOOL stylePropChanged = NO;
     
-    // Check if markdown content changed
-    if (oldViewProps.markdown != newViewProps.markdown) {
-        needsRerender = YES;
+    if (_config == nil) {
+        _config = [[RichTextConfig alloc] init];
     }
+        
+    RichTextConfig *newConfig = [_config copy];
     
-    // Check if styling props changed
-    if (oldViewProps.color != newViewProps.color) {
+    if (newViewProps.color != oldViewProps.color) {
+        if (newViewProps.color) {
+            UIColor *uiColor = RCTUIColorFromSharedColor(newViewProps.color);
+            [newConfig setPrimaryColor:uiColor];
+        } else {
+            [newConfig setPrimaryColor:nullptr];
+        }
         stylePropChanged = YES;
     }
     
-    if (oldViewProps.fontSize != newViewProps.fontSize || 
-        oldViewProps.fontFamily != newViewProps.fontFamily || 
-        oldViewProps.fontWeight != newViewProps.fontWeight || 
-        oldViewProps.fontStyle != newViewProps.fontStyle) {
+    if (newViewProps.fontSize != oldViewProps.fontSize) {
+        if (newViewProps.fontSize > 0) {
+            NSNumber *fontSize = @(newViewProps.fontSize);
+            [newConfig setPrimaryFontSize:fontSize];
+        } else {
+            [newConfig setPrimaryFontSize:nullptr];
+        }
         stylePropChanged = YES;
     }
     
-    // If styling props changed, we need to re-render the entire content
-    // This follows the same pattern as @react-native-enriched/
-    if (stylePropChanged && !newViewProps.markdown.empty()) {
+    if (newViewProps.fontWeight != oldViewProps.fontWeight) {
+        if (!newViewProps.fontWeight.empty()) {
+            [newConfig setPrimaryFontWeight:[[NSString alloc] initWithUTF8String:newViewProps.fontWeight.c_str()]];
+        } else {
+            [newConfig setPrimaryFontWeight:nullptr];
+        }
+        stylePropChanged = YES;
+    }
+    
+    if (newViewProps.fontFamily != oldViewProps.fontFamily) {
+        if (!newViewProps.fontFamily.empty()) {
+            [newConfig setPrimaryFontFamily:[[NSString alloc] initWithUTF8String:newViewProps.fontFamily.c_str()]];
+        } else {
+            [newConfig setPrimaryFontFamily:nullptr];
+        }
+        stylePropChanged = YES;
+    }
+    
+    if (newViewProps.richTextStyle.h1.fontSize != oldViewProps.richTextStyle.h1.fontSize) {
+        [newConfig setH1FontSize:newViewProps.richTextStyle.h1.fontSize];
+        stylePropChanged = YES;
+    }
+    
+    
+    if (newViewProps.richTextStyle.h1.fontFamily != oldViewProps.richTextStyle.h1.fontFamily) {
+        if (!newViewProps.richTextStyle.h1.fontFamily.empty()) {
+            NSString *fontFamily = [[NSString alloc] initWithUTF8String:newViewProps.richTextStyle.h1.fontFamily.c_str()];
+            [newConfig setH1FontFamily:fontFamily];
+        } else {
+            [newConfig setH1FontFamily:nullptr];
+        }
+        stylePropChanged = YES;
+    }
+    
+    if (newViewProps.richTextStyle.h2.fontSize != oldViewProps.richTextStyle.h2.fontSize) {
+        [newConfig setH2FontSize:newViewProps.richTextStyle.h2.fontSize];
+        stylePropChanged = YES;
+    }
+    
+    if (newViewProps.richTextStyle.h2.fontFamily != oldViewProps.richTextStyle.h2.fontFamily) {
+        if (!newViewProps.richTextStyle.h2.fontFamily.empty()) {
+            NSString *fontFamily = [[NSString alloc] initWithUTF8String:newViewProps.richTextStyle.h2.fontFamily.c_str()];
+            [newConfig setH2FontFamily:fontFamily];
+        } else {
+            [newConfig setH2FontFamily:nullptr];
+        }
+        stylePropChanged = YES;
+    }
+    
+    if (newViewProps.richTextStyle.h3.fontSize != oldViewProps.richTextStyle.h3.fontSize) {
+        [newConfig setH3FontSize:newViewProps.richTextStyle.h3.fontSize];
+        stylePropChanged = YES;
+    }
+    
+    if (newViewProps.richTextStyle.h3.fontFamily != oldViewProps.richTextStyle.h3.fontFamily) {
+        if (!newViewProps.richTextStyle.h3.fontFamily.empty()) {
+            NSString *fontFamily = [[NSString alloc] initWithUTF8String:newViewProps.richTextStyle.h3.fontFamily.c_str()];
+            [newConfig setH3FontFamily:fontFamily];
+        } else {
+            [newConfig setH3FontFamily:nullptr];
+        }
+        stylePropChanged = YES;
+    }
+    
+    if (newViewProps.richTextStyle.h4.fontSize != oldViewProps.richTextStyle.h4.fontSize) {
+        [newConfig setH4FontSize:newViewProps.richTextStyle.h4.fontSize];
+        stylePropChanged = YES;
+    }
+    
+    if (newViewProps.richTextStyle.h4.fontFamily != oldViewProps.richTextStyle.h4.fontFamily) {
+        if (!newViewProps.richTextStyle.h4.fontFamily.empty()) {
+            NSString *fontFamily = [[NSString alloc] initWithUTF8String:newViewProps.richTextStyle.h4.fontFamily.c_str()];
+            [newConfig setH4FontFamily:fontFamily];
+        } else {
+            [newConfig setH4FontFamily:nullptr];
+        }
+        stylePropChanged = YES;
+    }
+    
+    if (newViewProps.richTextStyle.h5.fontSize != oldViewProps.richTextStyle.h5.fontSize) {
+        [newConfig setH5FontSize:newViewProps.richTextStyle.h5.fontSize];
+        stylePropChanged = YES;
+    }
+    
+    if (newViewProps.richTextStyle.h5.fontFamily != oldViewProps.richTextStyle.h5.fontFamily) {
+        if (!newViewProps.richTextStyle.h5.fontFamily.empty()) {
+            NSString *fontFamily = [[NSString alloc] initWithUTF8String:newViewProps.richTextStyle.h5.fontFamily.c_str()];
+            [newConfig setH5FontFamily:fontFamily];
+        } else {
+            [newConfig setH5FontFamily:nullptr];
+        }
+        stylePropChanged = YES;
+    }
+    
+    if (newViewProps.richTextStyle.h6.fontSize != oldViewProps.richTextStyle.h6.fontSize) {
+        [newConfig setH6FontSize:newViewProps.richTextStyle.h6.fontSize];
+        stylePropChanged = YES;
+    }
+    
+    if (newViewProps.richTextStyle.h6.fontFamily != oldViewProps.richTextStyle.h6.fontFamily) {
+        if (!newViewProps.richTextStyle.h6.fontFamily.empty()) {
+            NSString *fontFamily = [[NSString alloc] initWithUTF8String:newViewProps.richTextStyle.h6.fontFamily.c_str()];
+            [newConfig setH6FontFamily:fontFamily];
+        } else {
+            [newConfig setH6FontFamily:nullptr];
+        }
+        stylePropChanged = YES;
+    }
+    
+    if (newViewProps.richTextStyle.link.color != oldViewProps.richTextStyle.link.color) {
+        UIColor *linkColor = RCTUIColorFromSharedColor(newViewProps.richTextStyle.link.color);
+        [newConfig setLinkColor:linkColor];
+        stylePropChanged = YES;
+    }
+    
+    if (newViewProps.richTextStyle.link.underline != oldViewProps.richTextStyle.link.underline) {
+        [newConfig setLinkUnderline:newViewProps.richTextStyle.link.underline];
+        stylePropChanged = YES;
+    }
+    
+    if (stylePropChanged) {
+        NSString *currentMarkdown = [[NSString alloc] initWithUTF8String:newViewProps.markdown.c_str()];
+        
+        _config = newConfig;
+        
+        [self renderMarkdownContent:currentMarkdown];
+    }
+    
+    if (oldViewProps.markdown != newViewProps.markdown && !stylePropChanged) {
         NSString *markdownString = [[NSString alloc] initWithUTF8String:newViewProps.markdown.c_str()];
-        [self renderMarkdownContent:markdownString withProps:newViewProps];
-    } else if (needsRerender && !newViewProps.markdown.empty()) {
-        // Only markdown content changed, not styling
-        NSString *markdownString = [[NSString alloc] initWithUTF8String:newViewProps.markdown.c_str()];
-        [self renderMarkdownContent:markdownString withProps:newViewProps];
+        [self renderMarkdownContent:markdownString];
     }
 
     [super updateProps:props oldProps:oldProps];
@@ -175,9 +290,6 @@ Class<RCTComponentViewProtocol> RichTextViewCls(void)
 {
     return RichTextView.class;
 }
-
-
-// MARK: - Gesture handling
 
 - (void)textTapped:(UITapGestureRecognizer *)recognizer {
     /*
@@ -251,8 +363,6 @@ Class<RCTComponentViewProtocol> RichTextViewCls(void)
         }
     }
 }
-
-// MARK: - Helper methods
 
 - (UIFont *)createFontWithFamily:(NSString *)fontFamily size:(CGFloat)size weight:(NSString *)weight style:(NSString *)style {
     // Use React Native's RCTFont.updateFont for consistent font handling

@@ -1,11 +1,11 @@
 package com.richtext.renderer
 
 import android.text.SpannableStringBuilder
-import android.text.style.UnderlineSpan
 import com.richtext.spans.RichTextLinkSpan
 import com.richtext.spans.RichTextHeadingSpan
 import com.richtext.spans.RichTextParagraphSpan
 import com.richtext.spans.RichTextTextSpan
+import com.richtext.styles.RichTextStyle
 import com.richtext.utils.addSpacing
 import org.commonmark.node.*
 
@@ -17,7 +17,13 @@ interface NodeRenderer {
     )
 }
 
-class DocumentRenderer : NodeRenderer {
+data class RendererConfig(
+    val style: RichTextStyle
+)
+
+class DocumentRenderer(
+    private val config: RendererConfig? = null
+) : NodeRenderer {
     override fun render(
         node: Node,
         builder: SpannableStringBuilder,
@@ -26,13 +32,15 @@ class DocumentRenderer : NodeRenderer {
         val document = node as Document
         var child = document.firstChild
         while (child != null) {
-            NodeRendererFactory.getRenderer(child).render(child, builder, onLinkPress)
+            NodeRendererFactory.getRenderer(child, config).render(child, builder, onLinkPress)
             child = child.next
         }
     }
 }
 
-class ParagraphRenderer : NodeRenderer {
+class ParagraphRenderer(
+    private val config: RendererConfig? = null
+) : NodeRenderer {
     override fun render(
         node: Node,
         builder: SpannableStringBuilder,
@@ -43,7 +51,7 @@ class ParagraphRenderer : NodeRenderer {
 
         var child = paragraph.firstChild
         while (child != null) {
-            NodeRendererFactory.getRenderer(child).render(child, builder, onLinkPress)
+            NodeRendererFactory.getRenderer(child, config).render(child, builder, onLinkPress)
             child = child.next
         }
 
@@ -61,7 +69,9 @@ class ParagraphRenderer : NodeRenderer {
     }
 }
 
-class HeadingRenderer : NodeRenderer {
+class HeadingRenderer(
+    private val config: RendererConfig? = null
+) : NodeRenderer {
     override fun render(
         node: Node,
         builder: SpannableStringBuilder,
@@ -72,14 +82,17 @@ class HeadingRenderer : NodeRenderer {
 
         var child = heading.firstChild
         while (child != null) {
-            NodeRendererFactory.getRenderer(child).render(child, builder, onLinkPress)
+            NodeRendererFactory.getRenderer(child, config).render(child, builder, onLinkPress)
             child = child.next
         }
 
         val contentLength = builder.length - start
-        if (contentLength > 0) {
+        if (contentLength > 0 && config != null) {
             builder.setSpan(
-                RichTextHeadingSpan(heading.level),
+                RichTextHeadingSpan(
+                    heading.level,
+                    config.style
+                ),
                 start,
                 start + contentLength,
                 android.text.SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE
@@ -114,7 +127,9 @@ class TextRenderer : NodeRenderer {
     }
 }
 
-class LinkRenderer : NodeRenderer {
+class LinkRenderer(
+    private val config: RendererConfig? = null
+) : NodeRenderer {
     override fun render(
         node: Node,
         builder: SpannableStringBuilder,
@@ -126,21 +141,14 @@ class LinkRenderer : NodeRenderer {
 
         var child = link.firstChild
         while (child != null) {
-            NodeRendererFactory.getRenderer(child).render(child, builder, onLinkPress)
+            NodeRendererFactory.getRenderer(child, config).render(child, builder, onLinkPress)
             child = child.next
         }
 
         val contentLength = builder.length - start
-        if (contentLength > 0) {
+        if (contentLength > 0 && config != null) {
             builder.setSpan(
-                RichTextLinkSpan(url, onLinkPress),
-                start,
-                start + contentLength,
-                android.text.SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE
-            )
-
-            builder.setSpan(
-                UnderlineSpan(),
+                RichTextLinkSpan(url, onLinkPress, config.style),
                 start,
                 start + contentLength,
                 android.text.SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE
@@ -160,13 +168,13 @@ class LineBreakRenderer : NodeRenderer {
 }
 
 object NodeRendererFactory {
-    fun getRenderer(node: Node): NodeRenderer {
+    fun getRenderer(node: Node, config: RendererConfig? = null): NodeRenderer {
         return when (node) {
-            is Document -> DocumentRenderer()
-            is Paragraph -> ParagraphRenderer()
-            is Heading -> HeadingRenderer()
+            is Document -> DocumentRenderer(config)
+            is Paragraph -> ParagraphRenderer(config)
+            is Heading -> HeadingRenderer(config)
             is Text -> TextRenderer()
-            is Link -> LinkRenderer()
+            is Link -> LinkRenderer(config)
             is HardLineBreak, is SoftLineBreak -> LineBreakRenderer()
             else -> {
                 android.util.Log.w(

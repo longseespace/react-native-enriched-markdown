@@ -1,11 +1,13 @@
 #import "LinkRenderer.h"
+#import "RichTextConfig.h"
 
 @implementation LinkRenderer
 
-- (instancetype)initWithTextRenderer:(id<NodeRenderer>)textRenderer {
+- (instancetype)initWithTextRenderer:(id<NodeRenderer>)textRenderer config:(id)config {
     self = [super init];
     if (self) {
         _textRenderer = textRenderer;
+        self.config = config;
     }
     return self;
 }
@@ -32,12 +34,20 @@
         NSRange range = NSMakeRange(start, len);
         NSString *url = node.attributes[@"url"] ?: @"";
         
-        [output addAttributes:@{
-            NSUnderlineStyleAttributeName: @(NSUnderlineStyleSingle)
-        } range:range];
-        [output addAttribute:NSLinkAttributeName 
-                       value:url 
-                       range:range];
+        NSDictionary *existingAttributes = [output attributesAtIndex:start effectiveRange:NULL];
+        RichTextConfig *config = (RichTextConfig *)self.config;
+        
+        NSMutableDictionary *linkAttributes = [existingAttributes mutableCopy];
+        linkAttributes[NSLinkAttributeName] = url;
+        
+        UIColor *linkColor = [config linkColor];
+        linkAttributes[NSForegroundColorAttributeName] = linkColor;
+        linkAttributes[NSUnderlineColorAttributeName] = linkColor;
+        
+        BOOL shouldUnderline = [config linkUnderline];
+        linkAttributes[NSUnderlineStyleAttributeName] = shouldUnderline ? @(NSUnderlineStyleSingle) : @(NSUnderlineStyleNone);
+        
+        [output setAttributes:linkAttributes range:range];
         [context registerLinkRange:range url:url];
     }
 }

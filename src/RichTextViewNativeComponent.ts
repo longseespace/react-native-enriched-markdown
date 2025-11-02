@@ -5,18 +5,33 @@ import {
   type ColorValue,
 } from 'react-native';
 
-interface NativeProps extends ViewProps {
+interface HeadingStyleInternal {
+  fontSize: CodegenTypes.Float;
+  fontFamily: string;
+}
+
+interface LinkStyleInternal {
+  color: ColorValue;
+  underline: boolean;
+}
+
+export interface RichTextStyleInternal {
+  h1: HeadingStyleInternal;
+  h2: HeadingStyleInternal;
+  h3: HeadingStyleInternal;
+  h4: HeadingStyleInternal;
+  h5: HeadingStyleInternal;
+  h6: HeadingStyleInternal;
+  link: LinkStyleInternal;
+}
+
+export interface NativeProps extends ViewProps {
   /**
    * Markdown content to render.
-   * Supports standard markdown syntax including headers, links, lists, etc.
    */
   markdown?: string;
   /**
-   * Base font size for all text elements (in points).
-   * - Regular text, links, lists: Use fontSize directly
-   * - Headers: Made bold, same size as base fontSize
-   * @example
-   * fontSize=18 → all text=18pt, headers are bold
+   * Base font size for all text elements.
    */
   fontSize?: CodegenTypes.Int32;
   /**
@@ -37,6 +52,11 @@ interface NativeProps extends ViewProps {
    * Text color in hex format.
    */
   color?: ColorValue;
+  /**
+   * Internal style configuration for markdown elements.
+   * Always provided with complete defaults via normalizeRichTextStyle.
+   */
+  richTextStyle: RichTextStyleInternal;
   /**
    * Callback fired when a link is pressed.
    * Receives the URL that was tapped.

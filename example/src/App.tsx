@@ -7,7 +7,7 @@ import {
 } from 'react-native';
 import { RichTextView } from 'react-native-rich-text';
 
-const sampleMarkdown = `#### Welcome to the React Native Markdown component!
+const sampleMarkdown = `# Welcome to the React Native Markdown component!
 
 This is a simple text with links.
 
@@ -40,7 +40,8 @@ export default function App() {
       >
         <RichTextView
           markdown={sampleMarkdown}
-          style={styles.markdown}
+          style={markdownStyle}
+          containerStyle={styles.markdown}
           fontSize={18}
           fontFamily="Helvetica"
           color="#F54927"
@@ -50,6 +51,13 @@ export default function App() {
     </SafeAreaView>
   );
 }
+
+const markdownStyle = {
+  h1: {
+    fontSize: 24,
+    fontFamily: 'Helvetica-Bold',
+  },
+};
 
 const styles = StyleSheet.create({
   container: {

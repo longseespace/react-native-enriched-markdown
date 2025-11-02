@@ -9,8 +9,10 @@ import com.facebook.react.common.ReactConstants
 import com.facebook.react.views.text.ReactTypefaceUtils.applyStyles
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontStyle
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontWeight
+import com.facebook.react.bridge.ReadableMap
 import com.richtext.parser.Parser
 import com.richtext.renderer.Renderer
+import com.richtext.styles.RichTextStyle
 
 class RichTextView : AppCompatTextView {
 
@@ -25,6 +27,9 @@ class RichTextView : AppCompatTextView {
   private var fontFamily: String? = null
   private var fontStyle: Int = ReactConstants.UNSET
   private var fontWeight: Int = ReactConstants.UNSET
+
+  var richTextStyle: RichTextStyle? = null
+  private var currentMarkdown: String = ""
 
   constructor(context: Context) : super(context) {
     prepareComponent()
@@ -49,9 +54,18 @@ class RichTextView : AppCompatTextView {
   }
 
   fun setMarkdownContent(markdown: String) {
+    currentMarkdown = markdown
+    renderMarkdown()
+  }
+
+  fun renderMarkdown() {
     try {
-      val document = parser.parseMarkdown(markdown)
+      val document = parser.parseMarkdown(currentMarkdown)
       if (document != null) {
+        val currentStyle = requireNotNull(richTextStyle) {
+          "richTextStyle should always be provided from JS side with defaults."
+        }
+        renderer.setStyle(currentStyle)
         val styledText = renderer.renderDocument(document, onLinkPressCallback)
         text = styledText
         movementMethod = LinkMovementMethod.getInstance()
@@ -62,6 +76,15 @@ class RichTextView : AppCompatTextView {
     } catch (e: Exception) {
       android.util.Log.e("RichTextView", "Error parsing markdown: ${e.message}")
       text = ""
+    }
+  }
+
+  fun setRichTextStyle(style: ReadableMap?) {
+    val newStyle = style?.let { RichTextStyle(it) }
+    val styleChanged = richTextStyle != newStyle
+    richTextStyle = newStyle
+    if (styleChanged && currentMarkdown.isNotEmpty()) {
+      renderMarkdown()
     }
   }
 
