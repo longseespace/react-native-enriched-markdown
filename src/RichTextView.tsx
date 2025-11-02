@@ -36,7 +36,6 @@ export interface RichTextViewProps
    */
   containerStyle?: ViewStyle | TextStyle;
   /**
-   * Controls whether text is selectable and link previews are enabled.
    * - iOS: Controls text selection and link previews on long press.
    * - Android: Controls text selection.
    * @default true
