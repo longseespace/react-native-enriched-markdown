@@ -63,7 +63,6 @@ export interface NativeProps extends ViewProps {
    */
   onLinkPress?: CodegenTypes.BubblingEventHandler<{ url: string }>;
   /**
-   * Controls whether text is selectable and link previews are enabled.
    * - iOS: Controls text selection and link previews on long press.
    * - Android: Controls text selection.
    * @default true

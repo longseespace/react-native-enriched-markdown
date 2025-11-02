@@ -54,7 +54,7 @@ export const RichTextView = ({
   style = {},
   containerStyle,
   onLinkPress,
-  isSelectable = true, // Default to true (allows text selection and link previews)
+  isSelectable = true,
   ...rest
 }: RichTextViewProps) => {
   const normalizedStyle = useMemo(() => normalizeRichTextStyle(style), [style]);
