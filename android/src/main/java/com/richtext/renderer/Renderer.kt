@@ -7,19 +7,21 @@ import org.commonmark.node.*
 
 class Renderer {
     private var style: RichTextStyle? = null
+    private lateinit var rendererFactory: RendererFactory
 
     fun setStyle(style: RichTextStyle) {
         this.style = style
+        val config = RendererConfig(style)
+        rendererFactory = RendererFactory(config)
     }
 
     fun renderDocument(document: Document, onLinkPress: ((String) -> Unit)? = null): SpannableString {
         val builder = SpannableStringBuilder()
-        val currentStyle = requireNotNull(style) {
+        requireNotNull(style) {
             "richTextStyle should always be provided from JS side with defaults."
         }
-        val config = RendererConfig(currentStyle)
 
-        renderNode(document, builder, onLinkPress, config)
+        renderNode(document, builder, onLinkPress, rendererFactory)
 
         return SpannableString(builder)
     }
@@ -28,9 +30,9 @@ class Renderer {
         node: Node,
         builder: SpannableStringBuilder,
         onLinkPress: ((String) -> Unit)? = null,
-        config: RendererConfig
+        factory: RendererFactory
     ) {
-        val renderer = NodeRendererFactory.getRenderer(node, config)
-        renderer.render(node, builder, onLinkPress)
+        val renderer = factory.getRenderer(node)
+        renderer.render(node, builder, onLinkPress, factory)
     }
 }
