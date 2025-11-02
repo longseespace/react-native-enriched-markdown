@@ -44,9 +44,8 @@
         linkAttributes[NSForegroundColorAttributeName] = linkColor;
         linkAttributes[NSUnderlineColorAttributeName] = linkColor;
         
-        if ([config linkUnderline]) {
-            linkAttributes[NSUnderlineStyleAttributeName] = @(NSUnderlineStyleSingle);
-        }
+        BOOL shouldUnderline = [config linkUnderline];
+        linkAttributes[NSUnderlineStyleAttributeName] = shouldUnderline ? @(NSUnderlineStyleSingle) : @(NSUnderlineStyleNone);
         
         [output setAttributes:linkAttributes range:range];
         [context registerLinkRange:range url:url];
