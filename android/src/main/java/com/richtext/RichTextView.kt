@@ -27,7 +27,7 @@ class RichTextView : AppCompatTextView {
   private var fontFamily: String? = null
   private var fontStyle: Int = ReactConstants.UNSET
   private var fontWeight: Int = ReactConstants.UNSET
-  
+
   var richTextStyle: RichTextStyle? = null
   private var currentMarkdown: String = ""
 
@@ -57,7 +57,7 @@ class RichTextView : AppCompatTextView {
     currentMarkdown = markdown
     renderMarkdown()
   }
-  
+
   fun renderMarkdown() {
     try {
       val document = parser.parseMarkdown(currentMarkdown)
@@ -78,10 +78,14 @@ class RichTextView : AppCompatTextView {
       text = ""
     }
   }
-  
+
   fun setRichTextStyle(style: ReadableMap?) {
-    // JS always provides defaults via normalizeRichTextStyle, so style should always be present
-    richTextStyle = style?.let { RichTextStyle(it) }
+    val newStyle = style?.let { RichTextStyle(it) }
+    val styleChanged = richTextStyle != newStyle
+    richTextStyle = newStyle
+    if (styleChanged && currentMarkdown.isNotEmpty()) {
+      renderMarkdown()
+    }
   }
 
 

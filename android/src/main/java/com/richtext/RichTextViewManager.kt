@@ -79,7 +79,6 @@ class RichTextViewManager : SimpleViewManager<RichTextView>(),
   override fun onAfterUpdateTransaction(view: RichTextView) {
     super.onAfterUpdateTransaction(view)
     view.updateTypeface()
-    view.renderMarkdown()
   }
 
   private fun emitOnLinkPress(view: RichTextView, url: String) {
