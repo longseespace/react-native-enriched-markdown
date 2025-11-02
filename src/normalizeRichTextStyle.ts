@@ -42,8 +42,10 @@ const defaultH6Style: RichTextStyleInternal['h6'] = {
   fontFamily: 'Helvetica-Bold',
 };
 
+const defaultLinkColor = processColor('#007AFF') as ColorValue;
+
 const defaultLinkStyle: RichTextStyleInternal['link'] = {
-  color: normalizeColor('#007AFF') as number, // iOS default link color
+  color: defaultLinkColor,
   underline: true,
 };
 
