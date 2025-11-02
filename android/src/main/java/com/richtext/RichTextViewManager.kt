@@ -71,9 +71,15 @@ class RichTextViewManager : SimpleViewManager<RichTextView>(),
     view?.setFontStyle(style)
   }
 
+  @ReactProp(name = "richTextStyle")
+  override fun setRichTextStyle(view: RichTextView?, style: com.facebook.react.bridge.ReadableMap?) {
+    view?.setRichTextStyle(style)
+  }
+
   override fun onAfterUpdateTransaction(view: RichTextView) {
     super.onAfterUpdateTransaction(view)
     view.updateTypeface()
+    view.renderMarkdown()
   }
 
   private fun emitOnLinkPress(view: RichTextView, url: String) {

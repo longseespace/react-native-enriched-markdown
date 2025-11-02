@@ -9,13 +9,15 @@ import com.facebook.react.common.ReactConstants
 import com.facebook.react.views.text.ReactTypefaceUtils.applyStyles
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontStyle
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontWeight
+import com.facebook.react.bridge.ReadableMap
 import com.richtext.parser.Parser
 import com.richtext.renderer.Renderer
+import com.richtext.styles.RichTextStyle
 
 class RichTextView : AppCompatTextView {
 
   private val parser = Parser()
-  private val renderer = Renderer()
+  private var renderer = Renderer()
   private var onLinkPressCallback: ((String) -> Unit)? = null
 
   private var typefaceDirty = false
@@ -25,6 +27,9 @@ class RichTextView : AppCompatTextView {
   private var fontFamily: String? = null
   private var fontStyle: Int = ReactConstants.UNSET
   private var fontWeight: Int = ReactConstants.UNSET
+  
+  var richTextStyle: RichTextStyle? = null
+  private var currentMarkdown: String = ""
 
   constructor(context: Context) : super(context) {
     prepareComponent()
@@ -49,9 +54,15 @@ class RichTextView : AppCompatTextView {
   }
 
   fun setMarkdownContent(markdown: String) {
+    currentMarkdown = markdown
+    renderMarkdown()
+  }
+  
+  fun renderMarkdown() {
     try {
-      val document = parser.parseMarkdown(markdown)
+      val document = parser.parseMarkdown(currentMarkdown)
       if (document != null) {
+        renderer.setStyle(richTextStyle)
         val styledText = renderer.renderDocument(document, onLinkPressCallback)
         text = styledText
         movementMethod = LinkMovementMethod.getInstance()
@@ -63,6 +74,10 @@ class RichTextView : AppCompatTextView {
       android.util.Log.e("RichTextView", "Error parsing markdown: ${e.message}")
       text = ""
     }
+  }
+  
+  fun setRichTextStyle(style: ReadableMap?) {
+    richTextStyle = RichTextStyle(style)
   }
 
 
