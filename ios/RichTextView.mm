@@ -273,6 +273,17 @@ oldProps:(Props::Shared const &)oldProps {
         stylePropChanged = YES;
     }
     
+    // Bold style color (optional - only set if provided)
+    if (newViewProps.richTextStyle.bold.color != oldViewProps.richTextStyle.bold.color) {
+        if (newViewProps.richTextStyle.bold.color) {
+            UIColor *boldColor = RCTUIColorFromSharedColor(newViewProps.richTextStyle.bold.color);
+            [newConfig setBoldColor:boldColor];
+        } else {
+            [newConfig setBoldColor:nullptr];
+        }
+        stylePropChanged = YES;
+    }
+    
     // Control text selection and link previews via isSelectable property
     // According to Apple docs, isSelectable controls whether text selection and link previews work
     // https://developer.apple.com/documentation/uikit/uitextview/isselectable
