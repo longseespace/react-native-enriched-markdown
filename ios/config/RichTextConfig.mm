@@ -32,6 +32,8 @@
     BOOL _linkUnderline;
     // Bold properties
     UIColor *_boldColor;
+    // Emphasis properties
+    UIColor *_emphasisColor;
 }
 
 - (instancetype)init {
@@ -64,6 +66,7 @@
     copy->_linkColor = [_linkColor copy];
     copy->_linkUnderline = _linkUnderline;
     copy->_boldColor = [_boldColor copy];
+    copy->_emphasisColor = [_emphasisColor copy];
     
     return copy;
 }
@@ -235,6 +238,14 @@
 
 - (void)setBoldColor:(UIColor *)newValue {
     _boldColor = newValue;
+}
+
+- (UIColor *)emphasisColor {
+    return _emphasisColor;
+}
+
+- (void)setEmphasisColor:(UIColor *)newValue {
+    _emphasisColor = newValue;
 }
 
 @end

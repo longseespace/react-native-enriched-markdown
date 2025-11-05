@@ -283,6 +283,16 @@ oldProps:(Props::Shared const &)oldProps {
         stylePropChanged = YES;
     }
     
+    if (newViewProps.richTextStyle.em.color != oldViewProps.richTextStyle.em.color) {
+        if (newViewProps.richTextStyle.em.color) {
+            UIColor *emphasisColor = RCTUIColorFromSharedColor(newViewProps.richTextStyle.em.color);
+            [newConfig setEmphasisColor:emphasisColor];
+        } else {
+            [newConfig setEmphasisColor:nullptr];
+        }
+        stylePropChanged = YES;
+    }
+    
     // Control text selection and link previews via isSelectable property
     // According to Apple docs, isSelectable controls whether text selection and link previews work
     // https://developer.apple.com/documentation/uikit/uitextview/isselectable
