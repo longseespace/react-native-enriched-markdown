@@ -55,6 +55,12 @@ const defaultBoldStyle: RichTextStyleInternal['bold'] = {
   color: defaultBoldColor,
 };
 
+const defaultEmphasisColor = processColor('#000000') as ColorValue;
+
+const defaultEmphasisStyle: RichTextStyleInternal['em'] = {
+  color: defaultEmphasisColor,
+};
+
 export const normalizeRichTextStyle = (
   style: RichTextStyle
 ): RichTextStyleInternal => {
@@ -91,6 +97,10 @@ export const normalizeRichTextStyle = (
     bold: {
       ...defaultBoldStyle,
       color: normalizeColor(style.bold?.color) ?? defaultBoldStyle.color,
+    },
+    em: {
+      ...defaultEmphasisStyle,
+      color: normalizeColor(style.em?.color) ?? defaultEmphasisStyle.color,
     },
   };
 };

@@ -15,6 +15,8 @@ Check out this [link to React Native](https://reactnative.dev) and this [GitHub 
 
 Here's some **bold text** and regular text together. You can also have **[bold links](https://reactnative.dev)** that are both bold and clickable!
 
+You can use *emphasis* with asterisks or _emphasis_ with underscores. You can also have *[emphasized links](https://reactnative.dev)* that are both italic and clickable!
+
 Built with ❤️ using **React Native Fabric Architecture**`;
 
 export default function App() {
@@ -62,6 +64,9 @@ const markdownStyle = {
   bold: {
     color: 'blue',
   },
+  em: {
+    color: 'green',
+  },
 };
 
 const styles = StyleSheet.create({
@@ -78,6 +83,6 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 10,
     borderRadius: 8,
-    minHeight: 300,
+    height: 400,
   },
 });
