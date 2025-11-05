@@ -20,9 +20,6 @@
     if (self) {
         _config = config;
         _sharedTextRenderer = [TextRenderer new];
-        
-        // Create renderers that use RendererFactory - pass self so they can get renderers for children
-        // Note: Some renderers need to be created before others, but they all get self (factory)
         _sharedBoldRenderer = [[BoldRenderer alloc] initWithRendererFactory:self
                                                                      config:config];
         _sharedLinkRenderer = [[LinkRenderer alloc] initWithRendererFactory:self config:config];

@@ -273,7 +273,6 @@ oldProps:(Props::Shared const &)oldProps {
         stylePropChanged = YES;
     }
     
-    // Bold style color (optional - only set if provided)
     if (newViewProps.richTextStyle.bold.color != oldViewProps.richTextStyle.bold.color) {
         if (newViewProps.richTextStyle.bold.color) {
             UIColor *boldColor = RCTUIColorFromSharedColor(newViewProps.richTextStyle.bold.color);
