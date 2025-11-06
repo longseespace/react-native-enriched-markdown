@@ -51,5 +51,8 @@
 // Bold properties
 - (UIColor *)boldColor;
 - (void)setBoldColor:(UIColor *)newValue;
+// Emphasis properties
+- (UIColor *)emphasisColor;
+- (void)setEmphasisColor:(UIColor *)newValue;
 
 @end

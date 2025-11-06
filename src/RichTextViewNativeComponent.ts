@@ -19,6 +19,10 @@ interface BoldStyleInternal {
   color: ColorValue;
 }
 
+interface EmphasisStyleInternal {
+  color: ColorValue;
+}
+
 export interface RichTextStyleInternal {
   h1: HeadingStyleInternal;
   h2: HeadingStyleInternal;
@@ -28,6 +32,7 @@ export interface RichTextStyleInternal {
   h6: HeadingStyleInternal;
   link: LinkStyleInternal;
   bold: BoldStyleInternal;
+  em: EmphasisStyleInternal;
 }
 
 export interface NativeProps extends ViewProps {

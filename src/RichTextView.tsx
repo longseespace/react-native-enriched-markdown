@@ -19,6 +19,10 @@ export interface BoldStyle {
   color?: string;
 }
 
+export interface EmphasisStyle {
+  color?: string;
+}
+
 export interface RichTextStyle {
   h1?: HeadingStyle;
   h2?: HeadingStyle;
@@ -28,6 +32,7 @@ export interface RichTextStyle {
   h6?: HeadingStyle;
   link?: LinkStyle;
   bold?: BoldStyle;
+  em?: EmphasisStyle;
 }
 
 export interface RichTextViewProps
