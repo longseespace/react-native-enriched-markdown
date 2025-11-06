@@ -23,7 +23,7 @@ class RichTextEmphasisSpan(
     val currentTypeface = tp.typeface ?: Typeface.DEFAULT
     val currentStyle = currentTypeface.style
     
-    // Skip if already italic
+    // If already italic, typeface is correct - no need to recreate
     if ((currentStyle and Typeface.ITALIC) != 0) {
       return
     }
