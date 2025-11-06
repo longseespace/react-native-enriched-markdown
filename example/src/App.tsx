@@ -7,7 +7,7 @@ import {
 } from 'react-native';
 import { RichTextView } from 'react-native-rich-text';
 
-const sampleMarkdown = `# Welcome to the *React Native* Markdown component!
+const sampleMarkdown = `# Welcome to the ***React Native*** Markdown component!
 
 This is a simple text with links and __bold text__.
 

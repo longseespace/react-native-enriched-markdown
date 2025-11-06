@@ -28,7 +28,9 @@
         return font;
     }
 
-    UIFontDescriptor *boldDescriptor = [font.fontDescriptor fontDescriptorWithSymbolicTraits:UIFontDescriptorTraitBold];
+    // Combine bold with existing traits (preserve italic if present)
+    UIFontDescriptorSymbolicTraits combinedTraits = traits | UIFontDescriptorTraitBold;
+    UIFontDescriptor *boldDescriptor = [font.fontDescriptor fontDescriptorWithSymbolicTraits:combinedTraits];
     return [UIFont fontWithDescriptor:boldDescriptor size:font.pointSize] ?: font;
 }
 
@@ -49,7 +51,10 @@
     }
     
     UIFontDescriptor *fontDescriptor = font.fontDescriptor;
-    UIFontDescriptor *boldDescriptor = [fontDescriptor fontDescriptorWithSymbolicTraits:UIFontDescriptorTraitBold];
+    UIFontDescriptorSymbolicTraits existingTraits = fontDescriptor.symbolicTraits;
+    // Combine bold with existing traits (preserve italic if present)
+    UIFontDescriptorSymbolicTraits combinedTraits = existingTraits | UIFontDescriptorTraitBold;
+    UIFontDescriptor *boldDescriptor = [fontDescriptor fontDescriptorWithSymbolicTraits:combinedTraits];
     UIFont *boldFont = [UIFont fontWithDescriptor:boldDescriptor size:font.pointSize];
     
     [_rendererFactory renderChildrenOfNode:node

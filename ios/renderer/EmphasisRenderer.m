@@ -28,7 +28,9 @@
         return font;
     }
 
-    UIFontDescriptor *italicDescriptor = [font.fontDescriptor fontDescriptorWithSymbolicTraits:UIFontDescriptorTraitItalic];
+    // Combine italic with existing traits (preserve bold if present)
+    UIFontDescriptorSymbolicTraits combinedTraits = traits | UIFontDescriptorTraitItalic;
+    UIFontDescriptor *italicDescriptor = [font.fontDescriptor fontDescriptorWithSymbolicTraits:combinedTraits];
     return [UIFont fontWithDescriptor:italicDescriptor size:font.pointSize] ?: font;
 }
 
@@ -42,14 +44,23 @@
     UIColor *emphasisColor = color;
     if (_config) {
         RichTextConfig *config = (RichTextConfig *)_config;
+        UIColor *configBoldColor = [config boldColor];
         UIColor *configEmphasisColor = [config emphasisColor];
-        if (configEmphasisColor) {
+        
+        // If we're nested inside bold (color matches boldColor), preserve bold color
+        // Only use emphasis color if bold color is not set or colors differ
+        if (configBoldColor && [color isEqual:configBoldColor]) {
+            emphasisColor = configBoldColor;
+        } else if (configEmphasisColor) {
             emphasisColor = configEmphasisColor;
         }
     }
     
     UIFontDescriptor *fontDescriptor = font.fontDescriptor;
-    UIFontDescriptor *italicDescriptor = [fontDescriptor fontDescriptorWithSymbolicTraits:UIFontDescriptorTraitItalic];
+    UIFontDescriptorSymbolicTraits existingTraits = fontDescriptor.symbolicTraits;
+    // Combine italic with existing traits (preserve bold if present)
+    UIFontDescriptorSymbolicTraits combinedTraits = existingTraits | UIFontDescriptorTraitItalic;
+    UIFontDescriptor *italicDescriptor = [fontDescriptor fontDescriptorWithSymbolicTraits:combinedTraits];
     UIFont *italicFont = [UIFont fontWithDescriptor:italicDescriptor size:font.pointSize];
     
     [_rendererFactory renderChildrenOfNode:node
