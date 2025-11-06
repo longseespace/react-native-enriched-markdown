@@ -40,12 +40,12 @@
     }
     
     RichTextConfig *config = (RichTextConfig *)_config;
-    UIColor *configBoldColor = [config boldColor];
+    UIColor *configStrongColor = [config strongColor];
     UIColor *configEmphasisColor = [config emphasisColor];
     
-    // If nested inside bold (color matches boldColor), preserve bold color
-    if (configBoldColor && [color isEqual:configBoldColor]) {
-        return configBoldColor;
+    // If nested inside strong (color matches strongColor), preserve strong color
+    if (configStrongColor && [color isEqual:configStrongColor]) {
+        return configStrongColor;
     }
     
     return configEmphasisColor ?: color;

@@ -273,12 +273,12 @@ oldProps:(Props::Shared const &)oldProps {
         stylePropChanged = YES;
     }
     
-    if (newViewProps.richTextStyle.bold.color != oldViewProps.richTextStyle.bold.color) {
-        if (newViewProps.richTextStyle.bold.color) {
-            UIColor *boldColor = RCTUIColorFromSharedColor(newViewProps.richTextStyle.bold.color);
-            [newConfig setBoldColor:boldColor];
+    if (newViewProps.richTextStyle.strong.color != oldViewProps.richTextStyle.strong.color) {
+        if (newViewProps.richTextStyle.strong.color) {
+            UIColor *strongColor = RCTUIColorFromSharedColor(newViewProps.richTextStyle.strong.color);
+            [newConfig setStrongColor:strongColor];
         } else {
-            [newConfig setBoldColor:nullptr];
+            [newConfig setStrongColor:nullptr];
         }
         stylePropChanged = YES;
     }

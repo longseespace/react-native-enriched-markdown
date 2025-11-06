@@ -48,9 +48,9 @@
 - (void)setLinkColor:(UIColor *)newValue;
 - (BOOL)linkUnderline;
 - (void)setLinkUnderline:(BOOL)newValue;
-// Bold properties
-- (UIColor *)boldColor;
-- (void)setBoldColor:(UIColor *)newValue;
+// Strong properties
+- (UIColor *)strongColor;
+- (void)setStrongColor:(UIColor *)newValue;
 // Emphasis properties
 - (UIColor *)emphasisColor;
 - (void)setEmphasisColor:(UIColor *)newValue;

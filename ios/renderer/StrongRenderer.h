@@ -1,7 +1,7 @@
 #pragma once
 #import "NodeRenderer.h"
 
-@interface BoldRenderer : NSObject <NodeRenderer>
+@interface StrongRenderer : NSObject <NodeRenderer>
 - (instancetype)initWithRendererFactory:(id)rendererFactory
                                  config:(id)config;
 @end
