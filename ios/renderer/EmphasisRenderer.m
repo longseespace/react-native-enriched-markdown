@@ -34,6 +34,23 @@
     return [UIFont fontWithDescriptor:italicDescriptor size:font.pointSize] ?: font;
 }
 
+- (UIColor *)emphasisColorFromColor:(UIColor *)color {
+    if (!_config) {
+        return color;
+    }
+    
+    RichTextConfig *config = (RichTextConfig *)_config;
+    UIColor *configBoldColor = [config boldColor];
+    UIColor *configEmphasisColor = [config emphasisColor];
+    
+    // If nested inside bold (color matches boldColor), preserve bold color
+    if (configBoldColor && [color isEqual:configBoldColor]) {
+        return configBoldColor;
+    }
+    
+    return configEmphasisColor ?: color;
+}
+
 - (void)renderNode:(MarkdownASTNode *)node
              into:(NSMutableAttributedString *)output
           withFont:(UIFont *)font
@@ -41,21 +58,7 @@
            context:(RenderContext *)context {
     NSUInteger start = output.length;
     
-    UIColor *emphasisColor = color;
-    if (_config) {
-        RichTextConfig *config = (RichTextConfig *)_config;
-        UIColor *configBoldColor = [config boldColor];
-        UIColor *configEmphasisColor = [config emphasisColor];
-        
-        // If we're nested inside bold (color matches boldColor), preserve bold color
-        // Only use emphasis color if bold color is not set or colors differ
-        if (configBoldColor && [color isEqual:configBoldColor]) {
-            emphasisColor = configBoldColor;
-        } else if (configEmphasisColor) {
-            emphasisColor = configEmphasisColor;
-        }
-    }
-    
+    UIColor *emphasisColor = [self emphasisColorFromColor:color];
     UIFont *italicFont = [self ensureFontIsItalic:font];
     
     [_rendererFactory renderChildrenOfNode:node
@@ -69,17 +72,11 @@
         NSRange range = NSMakeRange(start, len);
         NSDictionary *existingAttributes = [output attributesAtIndex:start effectiveRange:NULL];
         UIFont *currentFont = existingAttributes[NSFontAttributeName];
+        UIFont *verifiedItalicFont = [self ensureFontIsItalic:currentFont ?: italicFont];
         
-        if (currentFont) {
-            UIFont *verifiedItalicFont = [self ensureFontIsItalic:currentFont];
-            if (![verifiedItalicFont isEqual:currentFont]) {
-                NSMutableDictionary *emphasisAttributes = [existingAttributes mutableCopy];
-                emphasisAttributes[NSFontAttributeName] = verifiedItalicFont;
-                [output setAttributes:emphasisAttributes range:range];
-            }
-        } else {
+        if (![verifiedItalicFont isEqual:currentFont]) {
             NSMutableDictionary *emphasisAttributes = [existingAttributes ?: @{} mutableCopy];
-            emphasisAttributes[NSFontAttributeName] = italicFont;
+            emphasisAttributes[NSFontAttributeName] = verifiedItalicFont;
             [output setAttributes:emphasisAttributes range:range];
         }
     }
