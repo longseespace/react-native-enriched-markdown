@@ -28,7 +28,12 @@ class RichTextBoldSpan(
       return
     }
 
-    val boldTypeface = Typeface.create(currentTypeface, Typeface.BOLD)
+    // Combine with existing style (preserve italic if present)
+    val combinedStyle = when {
+      (currentStyle and Typeface.ITALIC) != 0 -> Typeface.BOLD_ITALIC
+      else -> Typeface.BOLD
+    }
+    val boldTypeface = Typeface.create(currentTypeface, combinedStyle)
     tp.typeface = boldTypeface
   }
 

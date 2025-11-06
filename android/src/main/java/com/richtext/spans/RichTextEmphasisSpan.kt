@@ -28,13 +28,18 @@ class RichTextEmphasisSpan(
       return
     }
     
-    val italicTypeface = Typeface.create(currentTypeface, Typeface.ITALIC)
+    // Combine with existing style (preserve bold if present)
+    val combinedStyle = when {
+      (currentStyle and Typeface.BOLD) != 0 -> Typeface.BOLD_ITALIC
+      else -> Typeface.ITALIC
+    }
+    val italicTypeface = Typeface.create(currentTypeface, combinedStyle)
     tp.typeface = italicTypeface
   }
 
   private fun applyEmphasisColor(tp: TextPaint) {
-    // Preserve link color - don't override if link span was already applied
-    tp.applyColorPreserving(style.getEmphasisColor(), style.getLinkColor())
+    // Preserve link color and bold color - don't override if link or bold span was already applied
+    tp.applyColorPreserving(style.getEmphasisColor(), style.getLinkColor(), style.getBoldColor())
   }
 }
 
