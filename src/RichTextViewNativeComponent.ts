@@ -15,7 +15,7 @@ interface LinkStyleInternal {
   underline: boolean;
 }
 
-interface BoldStyleInternal {
+interface StrongStyleInternal {
   color: ColorValue;
 }
 
@@ -31,7 +31,7 @@ export interface RichTextStyleInternal {
   h5: HeadingStyleInternal;
   h6: HeadingStyleInternal;
   link: LinkStyleInternal;
-  bold: BoldStyleInternal;
+  strong: StrongStyleInternal;
   em: EmphasisStyleInternal;
 }
 

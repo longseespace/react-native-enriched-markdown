@@ -49,10 +49,10 @@ const defaultLinkStyle: RichTextStyleInternal['link'] = {
   underline: true,
 };
 
-const defaultBoldColor = processColor('#000000') as ColorValue;
+const defaultStrongColor = processColor('#000000') as ColorValue;
 
-const defaultBoldStyle: RichTextStyleInternal['bold'] = {
-  color: defaultBoldColor,
+const defaultStrongStyle: RichTextStyleInternal['strong'] = {
+  color: defaultStrongColor,
 };
 
 const defaultEmphasisColor = processColor('#000000') as ColorValue;
@@ -94,9 +94,9 @@ export const normalizeRichTextStyle = (
       ...style.link,
       color: normalizeColor(style.link?.color) ?? defaultLinkStyle.color,
     },
-    bold: {
-      ...defaultBoldStyle,
-      color: normalizeColor(style.bold?.color) ?? defaultBoldStyle.color,
+    strong: {
+      ...defaultStrongStyle,
+      color: normalizeColor(style.strong?.color) ?? defaultStrongStyle.color,
     },
     em: {
       ...defaultEmphasisStyle,

@@ -30,8 +30,8 @@
     // Link properties
     UIColor *_linkColor;
     BOOL _linkUnderline;
-    // Bold properties
-    UIColor *_boldColor;
+    // Strong properties
+    UIColor *_strongColor;
     // Emphasis properties
     UIColor *_emphasisColor;
 }
@@ -65,7 +65,7 @@
     copy->_h6FontFamily = [_h6FontFamily copy];
     copy->_linkColor = [_linkColor copy];
     copy->_linkUnderline = _linkUnderline;
-    copy->_boldColor = [_boldColor copy];
+    copy->_strongColor = [_strongColor copy];
     copy->_emphasisColor = [_emphasisColor copy];
     
     return copy;
@@ -232,12 +232,12 @@
     _linkUnderline = newValue;
 }
 
-- (UIColor *)boldColor {
-    return _boldColor;
+- (UIColor *)strongColor {
+    return _strongColor;
 }
 
-- (void)setBoldColor:(UIColor *)newValue {
-    _boldColor = newValue;
+- (void)setStrongColor:(UIColor *)newValue {
+    _strongColor = newValue;
 }
 
 - (UIColor *)emphasisColor {

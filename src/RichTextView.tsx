@@ -15,7 +15,7 @@ export interface LinkStyle {
   underline?: boolean;
 }
 
-export interface BoldStyle {
+export interface StrongStyle {
   color?: string;
 }
 
@@ -31,7 +31,7 @@ export interface RichTextStyle {
   h5?: HeadingStyle;
   h6?: HeadingStyle;
   link?: LinkStyle;
-  bold?: BoldStyle;
+  strong?: StrongStyle;
   em?: EmphasisStyle;
 }
 

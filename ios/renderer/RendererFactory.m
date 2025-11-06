@@ -3,7 +3,7 @@
 #import "TextRenderer.h"
 #import "LinkRenderer.h"
 #import "HeadingRenderer.h"
-#import "BoldRenderer.h"
+#import "StrongRenderer.h"
 #import "EmphasisRenderer.h"
 #import "RenderContext.h"
 
@@ -12,7 +12,7 @@
     TextRenderer *_sharedTextRenderer;
     LinkRenderer *_sharedLinkRenderer;
     HeadingRenderer *_sharedHeadingRenderer;
-    BoldRenderer *_sharedBoldRenderer;
+    StrongRenderer *_sharedStrongRenderer;
     EmphasisRenderer *_sharedEmphasisRenderer;
     ParagraphRenderer *_sharedParagraphRenderer;
 }
@@ -22,8 +22,8 @@
     if (self) {
         _config = config;
         _sharedTextRenderer = [TextRenderer new];
-        _sharedBoldRenderer = [[BoldRenderer alloc] initWithRendererFactory:self
-                                                                     config:config];
+        _sharedStrongRenderer = [[StrongRenderer alloc] initWithRendererFactory:self
+                                                                         config:config];
         _sharedEmphasisRenderer = [[EmphasisRenderer alloc] initWithRendererFactory:self
                                                                              config:config];
         _sharedLinkRenderer = [[LinkRenderer alloc] initWithRendererFactory:self config:config];
@@ -45,7 +45,7 @@
         case MarkdownNodeTypeHeading:
             return _sharedHeadingRenderer;
         case MarkdownNodeTypeStrong:
-            return _sharedBoldRenderer;
+            return _sharedStrongRenderer;
         case MarkdownNodeTypeEmphasis:
             return _sharedEmphasisRenderer;
         default: 

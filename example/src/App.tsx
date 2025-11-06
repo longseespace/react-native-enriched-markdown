@@ -61,7 +61,7 @@ const markdownStyle = {
     fontSize: 24,
     fontFamily: 'Helvetica-Bold',
   },
-  bold: {
+  strong: {
     color: 'blue',
   },
   em: {

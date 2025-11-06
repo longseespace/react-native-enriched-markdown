@@ -1,10 +1,10 @@
-#import "BoldRenderer.h"
+#import "StrongRenderer.h"
 #import "MarkdownASTNode.h"
 #import "RenderContext.h"
 #import "RichTextConfig.h"
 #import "RendererFactory.h"
 
-@implementation BoldRenderer {
+@implementation StrongRenderer {
     RendererFactory *_rendererFactory;
     id _config;
 }
@@ -34,14 +34,14 @@
     return [UIFont fontWithDescriptor:boldDescriptor size:font.pointSize] ?: font;
 }
 
-- (UIColor *)boldColorFromColor:(UIColor *)color {
+- (UIColor *)strongColorFromColor:(UIColor *)color {
     if (!_config) {
         return color;
     }
     
     RichTextConfig *config = (RichTextConfig *)_config;
-    UIColor *configBoldColor = [config boldColor];
-    return configBoldColor ?: color;
+    UIColor *configStrongColor = [config strongColor];
+    return configStrongColor ?: color;
 }
 
 - (void)renderNode:(MarkdownASTNode *)node
@@ -51,13 +51,13 @@
            context:(RenderContext *)context {
     NSUInteger start = output.length;
     
-    UIColor *boldColor = [self boldColorFromColor:color];
-    UIFont *boldFont = [self ensureFontIsBold:font];
+    UIColor *strongColor = [self strongColorFromColor:color];
+    UIFont *strongFont = [self ensureFontIsBold:font];
     
     [_rendererFactory renderChildrenOfNode:node
                                       into:output
-                                  withFont:boldFont
-                                     color:boldColor
+                                  withFont:strongFont
+                                     color:strongColor
                                     context:context];
     
     NSUInteger len = output.length - start;
@@ -65,12 +65,12 @@
         NSRange range = NSMakeRange(start, len);
         NSDictionary *existingAttributes = [output attributesAtIndex:start effectiveRange:NULL];
         UIFont *currentFont = existingAttributes[NSFontAttributeName];
-        UIFont *verifiedBoldFont = [self ensureFontIsBold:currentFont ?: boldFont];
+        UIFont *verifiedStrongFont = [self ensureFontIsBold:currentFont ?: strongFont];
         
-        if (![verifiedBoldFont isEqual:currentFont]) {
-            NSMutableDictionary *boldAttributes = [existingAttributes ?: @{} mutableCopy];
-            boldAttributes[NSFontAttributeName] = verifiedBoldFont;
-            [output setAttributes:boldAttributes range:range];
+        if (![verifiedStrongFont isEqual:currentFont]) {
+            NSMutableDictionary *strongAttributes = [existingAttributes ?: @{} mutableCopy];
+            strongAttributes[NSFontAttributeName] = verifiedStrongFont;
+            [output setAttributes:strongAttributes range:range];
         }
     }
 }
