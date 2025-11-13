@@ -2,7 +2,6 @@
 #import "MarkdownASTNode.h"
 #import "md4c.h"
 
-// Context for MD4C callbacks
 typedef struct {
     MarkdownASTNode *root;
     NSMutableArray<MarkdownASTNode *> *nodeStack;
@@ -153,11 +152,11 @@ static int md4c_text_callback(MD_TEXTTYPE type, const MD_CHAR *text, MD_SIZE siz
 
     // Handle text content (normal text, code text, etc.)
     // MD_TEXT_CODE is text inside code spans, which should be rendered as text nodes
-    if (size > 0 && text && (type == MD_TEXT_NORMAL || type == MD_TEXT_CODE)) {
+    if (size > 0 && (type == MD_TEXT_NORMAL || type == MD_TEXT_CODE)) {
         NSString *textString = [[NSString alloc] initWithBytes:text
                                                         length:size
                                                       encoding:NSUTF8StringEncoding];
-        if (textString && textString.length > 0) {
+        if (textString) {
             MarkdownASTNode *textNode = [[MarkdownASTNode alloc] initWithType:MarkdownNodeTypeText];
             textNode.content = textString;
             addInlineNodeToContext(textNode, context);
