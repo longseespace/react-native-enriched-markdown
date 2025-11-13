@@ -17,7 +17,7 @@ Here's some **bold text** and regular text together. You can also have **[bold l
 
 You can use *emphasis* with asterisks or _emphasis_ with underscores. You can also have *[emphasized links](https://reactnative.dev)* that are both italic and clickable!
 
-You can use inline code like \`const x = 42\` or \`function test() {}\` within text. You can also combine code with **strong** like **\`bold code\`** or *emphasis* like *\`italic code\`* . You can even combine both: ***\`bold and italic code\`*** .
+You can use inline code like \`const x = 42\` or \`function test() {}\` within text. You can also combine code with **strong** like **\`getUserData()\`** or *emphasis* like *\`isValid\`*. You can even combine both: ***\`handleClick\`***.
 
 Built with ❤️ using **React Native Fabric Architecture**`;
 
