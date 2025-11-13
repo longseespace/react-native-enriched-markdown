@@ -83,14 +83,14 @@ static const CGFloat kLabelPadding = 10.0;
 - (void)didAddSubview:(UIView *)subview {
     [super didAddSubview:subview];
     
-    // Set up layout manager when text view is added (like react-native-live-markdown pattern)
+    // Set up layout manager when text view is added
     if (subview == _textView) {
         [self setupLayoutManager];
     }
 }
 
 - (void)willRemoveSubview:(UIView *)subview {
-    // Clean up layout manager when text view is removed (like react-native-live-markdown pattern)
+    // Clean up layout manager when text view is removed
     if (subview == _textView && _textView.layoutManager != nil) {
         NSLayoutManager *layoutManager = _textView.layoutManager;
         if ([object_getClass(layoutManager) isEqual:[RichTextLayoutManager class]]) {
@@ -157,7 +157,7 @@ static const CGFloat kLabelPadding = 10.0;
         [attributedText addAttribute:@"linkURL" value:url range:range];
     }
     
-    // Set config on the layout manager (like react-native-live-markdown pattern)
+    // Set config on the layout manager
     // Use setValue:forKey: for runtime class changes (more reliable than direct property access)
     NSLayoutManager *layoutManager = _textView.layoutManager;
     if ([layoutManager isKindOfClass:[RichTextLayoutManager class]]) {
@@ -184,9 +184,9 @@ oldProps:(Props::Shared const &)oldProps {
         _config = [[RichTextConfig alloc] init];
     }
         
-    // Update existing config object's properties (like react-native-live-markdown pattern)
+    // Update existing config object's properties
     // Instead of creating a new config, we update the existing one that the layout manager references
-    
+
     if (newViewProps.color != oldViewProps.color) {
         if (newViewProps.color) {
             UIColor *uiColor = RCTUIColorFromSharedColor(newViewProps.color);
@@ -378,7 +378,6 @@ oldProps:(Props::Shared const &)oldProps {
     }
     
     // Update config reference on layout manager if it's not already set
-    // (like react-native-live-markdown pattern - they set it once, then update the object's properties)
     NSLayoutManager *layoutManager = _textView.layoutManager;
     if ([layoutManager isKindOfClass:[RichTextLayoutManager class]]) {
         RichTextConfig *currentConfig = [layoutManager valueForKey:@"config"];
