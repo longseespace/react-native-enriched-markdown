@@ -86,9 +86,9 @@ class RichTextView : AppCompatTextView {
       text = ""
     }
     
-    // TextView's setText() already calls requestLayout() and invalidate() internally
-    // We need to ensure onDraw() is called for code backgrounds after layout is ready
-    // Use post() to ensure invalidation happens after the current layout pass
+    // Invalidate after layout is calculated to ensure code backgrounds are drawn.
+    // setText() invalidates immediately, but layout may not be ready yet.
+    // Using post() defers invalidation until after the current layout pass completes.
     if (codeBackground != null) {
       post {
         invalidate()
@@ -193,16 +193,7 @@ class RichTextView : AppCompatTextView {
     didAttachToWindow = true
     updateTypeface()
   }
-
-  override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
-    super.onLayout(changed, left, top, right, bottom)
-    // Invalidate when layout changes to ensure code backgrounds are redrawn
-    // We're already on the UI thread, so invalidate() is sufficient
-    if (changed && codeBackground != null) {
-      invalidate()
-    }
-  }
-
+  
   override fun onDraw(canvas: Canvas) {
     val currentLayout = layout ?: return super.onDraw(canvas)
     val currentText = text as? Spanned ?: return super.onDraw(canvas)
