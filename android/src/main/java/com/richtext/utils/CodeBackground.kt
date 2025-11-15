@@ -14,12 +14,12 @@ import kotlin.math.min
 class CodeBackground(
   private val style: RichTextStyle
 ) {
-  private val cornerRadius = 6.0f
-  private val borderWidth = 1.0f
-  private val halfStroke = borderWidth / 2f
-  // Through this variable we could set height for the inline code.
-  // Potentially this should be removed in the future - when we establish approach for the consistent height
-  private val heightReductionFactor = 0.0f
+  companion object {
+    private const val CORNER_RADIUS = 6.0f
+    private const val BORDER_WIDTH = 1.0f
+  }
+  
+  private val halfStroke = BORDER_WIDTH / 2f
 
   fun draw(canvas: Canvas, text: Spanned, layout: Layout) {
     val codeStyle = style.getCodeStyle()
@@ -46,11 +46,10 @@ class CodeBackground(
   }
 
   private fun getLineBounds(layout: Layout, line: Int): Pair<Int, Int> {
-    val lineTop = layout.getLineTopWithoutPadding(line)
-    val lineBottom = layout.getLineBottomWithoutPadding(line)
-    val lineHeight = lineBottom - lineTop
-    val reduction = (lineHeight * heightReductionFactor).toInt()
-    return Pair(lineTop + reduction, lineBottom - reduction)
+    return Pair(
+      layout.getLineTopWithoutPadding(line),
+      layout.getLineBottomWithoutPadding(line)
+    )
   }
 
   private fun createPaint(style: Paint.Style, color: Int) = Paint().apply {
@@ -58,7 +57,7 @@ class CodeBackground(
     this.color = color
     isAntiAlias = true
     if (style == Paint.Style.STROKE) {
-      strokeWidth = borderWidth
+      strokeWidth = BORDER_WIDTH
       strokeJoin = Paint.Join.ROUND
       strokeCap = Paint.Cap.ROUND
     }
@@ -80,8 +79,8 @@ class CodeBackground(
       max(startOffset, endOffset).toFloat(),
       bottom.toFloat()
     )
-    canvas.drawRoundRect(rect, cornerRadius, cornerRadius, createPaint(Paint.Style.FILL, backgroundColor))
-    canvas.drawRoundRect(rect, cornerRadius, cornerRadius, createPaint(Paint.Style.STROKE, borderColor))
+    canvas.drawRoundRect(rect, CORNER_RADIUS, CORNER_RADIUS, createPaint(Paint.Style.FILL, backgroundColor))
+    canvas.drawRoundRect(rect, CORNER_RADIUS, CORNER_RADIUS, createPaint(Paint.Style.STROKE, borderColor))
   }
 
   private fun drawMultiLine(
@@ -128,47 +127,47 @@ class CodeBackground(
   ) {
     val rect = RectF(min(start, end).toFloat(), top.toFloat(), max(start, end).toFloat(), bottom.toFloat())
     val radii = if (isLeft) {
-      floatArrayOf(cornerRadius, cornerRadius, 0f, 0f, 0f, 0f, cornerRadius, cornerRadius)
+      floatArrayOf(CORNER_RADIUS, CORNER_RADIUS, 0f, 0f, 0f, 0f, CORNER_RADIUS, CORNER_RADIUS)
     } else {
-      floatArrayOf(0f, 0f, cornerRadius, cornerRadius, cornerRadius, cornerRadius, 0f, 0f)
+      floatArrayOf(0f, 0f, CORNER_RADIUS, CORNER_RADIUS, CORNER_RADIUS, CORNER_RADIUS, 0f, 0f)
     }
+    
+    // Draw fill
     canvas.drawPath(Path().apply { addRoundRect(rect, radii, Path.Direction.CW) }, createPaint(Paint.Style.FILL, backgroundColor))
-    drawRoundedBorder(canvas, rect, borderColor, isLeft)
-  }
-
-  private fun drawRoundedBorder(canvas: Canvas, rect: RectF, borderColor: Int, isLeft: Boolean) {
+    
+    // Draw border
     val paint = createPaint(Paint.Style.STROKE, borderColor)
-    val x = if (isLeft) rect.left + halfStroke else rect.right - halfStroke
+    val borderX = if (isLeft) rect.left + halfStroke else rect.right - halfStroke
     val topY = rect.top + halfStroke
     val bottomY = rect.bottom - halfStroke
 
     if (isLeft) {
-      canvas.drawPath(createLeftBorderPath(x, rect, topY, bottomY), paint)
-      canvas.drawLine(rect.left + cornerRadius, topY, rect.right, topY, paint)
-      canvas.drawLine(rect.left + cornerRadius, bottomY, rect.right, bottomY, paint)
+      canvas.drawPath(createRoundedBorderPath(borderX, rect, topY, bottomY, isLeft = true), paint)
+      canvas.drawLine(rect.left + CORNER_RADIUS, topY, rect.right, topY, paint)
+      canvas.drawLine(rect.left + CORNER_RADIUS, bottomY, rect.right, bottomY, paint)
     } else {
-      canvas.drawLine(rect.left, topY, rect.right - cornerRadius, topY, paint)
-      canvas.drawLine(rect.left, bottomY, rect.right - cornerRadius, bottomY, paint)
-      canvas.drawPath(createRightBorderPath(x, rect, topY, bottomY), paint)
+      canvas.drawLine(rect.left, topY, rect.right - CORNER_RADIUS, topY, paint)
+      canvas.drawLine(rect.left, bottomY, rect.right - CORNER_RADIUS, bottomY, paint)
+      canvas.drawPath(createRoundedBorderPath(borderX, rect, topY, bottomY, isLeft = false), paint)
     }
   }
 
-  private fun createLeftBorderPath(x: Float, rect: RectF, topY: Float, bottomY: Float) = Path().apply {
-    moveTo(x, rect.top + cornerRadius)
-    quadTo(x, rect.top, rect.left + cornerRadius, topY)
-    moveTo(rect.left + cornerRadius, bottomY)
-    quadTo(x, rect.bottom, x, rect.bottom - cornerRadius)
-    moveTo(x, rect.top + cornerRadius)
-    lineTo(x, rect.bottom - cornerRadius)
-  }
-
-  private fun createRightBorderPath(x: Float, rect: RectF, topY: Float, bottomY: Float) = Path().apply {
-    moveTo(rect.right - cornerRadius, topY)
-    quadTo(rect.right, topY, x, rect.top + cornerRadius)
-    moveTo(x, rect.bottom - cornerRadius)
-    quadTo(rect.right, bottomY, rect.right - cornerRadius, bottomY)
-    moveTo(x, rect.top + cornerRadius)
-    lineTo(x, rect.bottom - cornerRadius)
+  private fun createRoundedBorderPath(borderX: Float, rect: RectF, topY: Float, bottomY: Float, isLeft: Boolean) = Path().apply {
+    if (isLeft) {
+      moveTo(borderX, rect.top + CORNER_RADIUS)
+      quadTo(borderX, rect.top, rect.left + CORNER_RADIUS, topY)
+      moveTo(rect.left + CORNER_RADIUS, bottomY)
+      quadTo(borderX, rect.bottom, borderX, rect.bottom - CORNER_RADIUS)
+      moveTo(borderX, rect.top + CORNER_RADIUS)
+      lineTo(borderX, rect.bottom - CORNER_RADIUS)
+    } else {
+      moveTo(rect.right - CORNER_RADIUS, topY)
+      quadTo(rect.right, topY, borderX, rect.top + CORNER_RADIUS)
+      moveTo(borderX, rect.bottom - CORNER_RADIUS)
+      quadTo(rect.right, bottomY, rect.right - CORNER_RADIUS, bottomY)
+      moveTo(borderX, rect.top + CORNER_RADIUS)
+      lineTo(borderX, rect.bottom - CORNER_RADIUS)
+    }
   }
 
   private fun drawMiddleBorders(canvas: Canvas, rect: RectF, borderColor: Int) {
