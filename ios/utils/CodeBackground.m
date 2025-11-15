@@ -8,6 +8,10 @@ static const CGFloat kCodeBackgroundBorderWidth = 1.0;
 // Potentially this should be removed in the future - when we establish approach for the consistent height
 static const CGFloat kCodeBackgroundHeightReductionFactor = 0.0;
 
+static inline CGFloat HalfStroke(void) {
+    return kCodeBackgroundBorderWidth / 2.0;
+}
+
 @implementation CodeBackground {
     RichTextConfig *_config;
 }
@@ -85,16 +89,13 @@ static const CGFloat kCodeBackgroundHeightReductionFactor = 0.0;
     if (CGRectIsEmpty(rect) || CGRectIsInfinite(rect)) return;
     
     UIBezierPath *path = [UIBezierPath bezierPathWithRoundedRect:rect cornerRadius:kCodeBackgroundCornerRadius];
+    
     [backgroundColor setFill];
     [path fill];
     
-    if (!borderColor) return;
-    
-    [borderColor setStroke];
-    path.lineWidth = kCodeBackgroundBorderWidth;
-    path.lineCapStyle = kCGLineCapRound;
-    path.lineJoinStyle = kCGLineJoinRound;
-    [path stroke];
+    if (borderColor) {
+        [self strokePath:path withColor:borderColor];
+    }
 }
 
 - (void)drawMultiLineBackground:(NSRange)glyphRange
@@ -103,85 +104,55 @@ static const CGFloat kCodeBackgroundHeightReductionFactor = 0.0;
                         atPoint:(CGPoint)origin
                backgroundColor:(UIColor *)backgroundColor
                     borderColor:(UIColor *)borderColor {
-    NSMutableArray<NSValue *> *lineRects = [NSMutableArray array];
-    NSMutableArray<NSValue *> *fragmentRects = [NSMutableArray array];
+    NSArray<NSValue *> *lineFragments = [self collectLineFragmentsForGlyphRange:glyphRange
+                                                                  layoutManager:layoutManager
+                                                                  textContainer:textContainer];
+    if (lineFragments.count < 2) return; // Need at least boundingRect and fragmentRect for one line
     
-    [layoutManager enumerateLineFragmentsForGlyphRange:glyphRange usingBlock:^(CGRect rect, CGRect usedRect, NSTextContainer *container, NSRange lineGlyphRange, BOOL *stop) {
-        NSRange intersection = NSIntersectionRange(lineGlyphRange, glyphRange);
-        if (intersection.length > 0) {
-            CGRect boundingRect = [self boundingRectForGlyphRange:intersection layoutManager:layoutManager textContainer:textContainer];
-            [lineRects addObject:[NSValue valueWithCGRect:boundingRect]];
-            [fragmentRects addObject:[NSValue valueWithCGRect:rect]];
-        }
-    }];
-    
-    if (lineRects.count == 0) return;
+    NSUInteger lineCount = lineFragments.count / 2;
     
     // Draw start line (rounded left, no right border)
-    CGRect firstRect = [lineRects[0] CGRectValue];
-    CGRect firstFragmentRect = [fragmentRects[0] CGRectValue];
-    CGRect adjustedFirstRect = [self adjustedRect:firstRect atPoint:origin];
-    adjustedFirstRect.size.width = CGRectGetMaxX(firstFragmentRect) + origin.x - adjustedFirstRect.origin.x;
-    [self drawRoundedEdge:adjustedFirstRect backgroundColor:backgroundColor borderColor:borderColor isLeft:YES];
+    [self drawStartLine:lineFragments[0] fragmentRect:lineFragments[1]
+        backgroundColor:backgroundColor borderColor:borderColor origin:origin];
     
     // Draw middle lines (no left border, no rounded corners)
-    for (NSUInteger i = 1; i < lineRects.count - 1; i++) {
-        CGRect fragmentRect = [fragmentRects[i] CGRectValue];
-        CGRect middleRect = [self adjustedRect:fragmentRect atPoint:origin];
-        middleRect.origin.x = fragmentRect.origin.x + origin.x;
-        middleRect.size.width = fragmentRect.size.width;
-        
-        [backgroundColor setFill];
-        UIRectFill(middleRect);
-        
-        if (borderColor) {
-            [self drawMiddleBorders:middleRect borderColor:borderColor];
-        }
+    if (lineCount > 2) {
+        NSRange middleRange = NSMakeRange(2, (lineCount - 2) * 2);
+        [self drawMiddleLines:[lineFragments subarrayWithRange:middleRange]
+            backgroundColor:backgroundColor borderColor:borderColor origin:origin];
     }
     
     // Draw end line (rounded right, no left border)
-    if (lineRects.count > 1) {
-        CGRect lastRect = [lineRects[lineRects.count - 1] CGRectValue];
-        CGRect lastFragmentRect = [fragmentRects[fragmentRects.count - 1] CGRectValue];
-        CGRect adjustedLastRect = [self adjustedRect:lastRect atPoint:origin];
-        adjustedLastRect.origin.x = lastFragmentRect.origin.x + origin.x;
-        adjustedLastRect.size.width = CGRectGetMaxX(lastRect) + origin.x - adjustedLastRect.origin.x;
-        [self drawRoundedEdge:adjustedLastRect backgroundColor:backgroundColor borderColor:borderColor isLeft:NO];
+    if (lineCount > 1) {
+        NSUInteger lastIndex = lineFragments.count - 2;
+        [self drawEndLine:lineFragments[lastIndex] fragmentRect:lineFragments[lastIndex + 1]
+            backgroundColor:backgroundColor borderColor:borderColor origin:origin];
     }
 }
+
+#pragma mark - Drawing Methods
 
 - (void)drawRoundedEdge:(CGRect)rect
         backgroundColor:(UIColor *)backgroundColor
             borderColor:(UIColor *)borderColor
                 isLeft:(BOOL)isLeft {
-    // Fill background
+    [self fillRoundedEdge:rect backgroundColor:backgroundColor isLeft:isLeft];
+    if (borderColor) {
+        [self strokeRoundedEdge:rect borderColor:borderColor isLeft:isLeft];
+    }
+}
+
+- (void)fillRoundedEdge:(CGRect)rect backgroundColor:(UIColor *)backgroundColor isLeft:(BOOL)isLeft {
     UIBezierPath *fillPath = [self createRoundedFillPath:rect isLeft:isLeft];
     [backgroundColor setFill];
     [fillPath fill];
-    
-    // Draw borders
-    if (!borderColor) return;
-    
-    CGContextRef context = UIGraphicsGetCurrentContext();
-    CGContextSaveGState(context);
-    [self configureBorderContext:context borderColor:borderColor];
-    
-    CGFloat halfStroke = kCodeBackgroundBorderWidth / 2.0;
-    CGFloat topY = rect.origin.y + halfStroke;
-    CGFloat bottomY = CGRectGetMaxY(rect) - halfStroke;
-    
-    [self drawRoundedBorder:rect topY:topY bottomY:bottomY context:context isLeft:isLeft];
-    
-    // Draw top and bottom borders
-    CGFloat startX = isLeft ? (rect.origin.x + kCodeBackgroundCornerRadius) : rect.origin.x;
-    CGFloat endX = isLeft ? CGRectGetMaxX(rect) : (CGRectGetMaxX(rect) - kCodeBackgroundCornerRadius);
-    CGContextMoveToPoint(context, startX, topY);
-    CGContextAddLineToPoint(context, endX, topY);
-    CGContextMoveToPoint(context, startX, bottomY);
-    CGContextAddLineToPoint(context, endX, bottomY);
-    CGContextStrokePath(context);
-    
-    CGContextRestoreGState(context);
+}
+
+- (void)strokeRoundedEdge:(CGRect)rect borderColor:(UIColor *)borderColor isLeft:(BOOL)isLeft {
+    CGFloat topY = rect.origin.y + HalfStroke();
+    CGFloat bottomY = CGRectGetMaxY(rect) - HalfStroke();
+    UIBezierPath *borderPath = [self createRoundedBorderPath:rect topY:topY bottomY:bottomY isLeft:isLeft];
+    [self strokePath:borderPath withColor:borderColor];
 }
 
 - (UIBezierPath *)createRoundedFillPath:(CGRect)rect isLeft:(BOOL)isLeft {
@@ -213,59 +184,119 @@ static const CGFloat kCodeBackgroundHeightReductionFactor = 0.0;
 }
 
 - (void)drawMiddleBorders:(CGRect)rect borderColor:(UIColor *)borderColor {
-    CGContextRef context = UIGraphicsGetCurrentContext();
-    CGContextSaveGState(context);
-    [self configureBorderContext:context borderColor:borderColor];
+    CGFloat topY = rect.origin.y + HalfStroke();
+    CGFloat bottomY = CGRectGetMaxY(rect) - HalfStroke();
     
-    CGFloat halfStroke = kCodeBackgroundBorderWidth / 2.0;
-    CGFloat topY = rect.origin.y + halfStroke;
-    CGFloat bottomY = CGRectGetMaxY(rect) - halfStroke;
-    CGFloat rightX = CGRectGetMaxX(rect) - halfStroke;
+    UIBezierPath *path = [UIBezierPath bezierPath];
+    [path moveToPoint:CGPointMake(rect.origin.x, topY)];
+    [path addLineToPoint:CGPointMake(CGRectGetMaxX(rect), topY)];
+    [path moveToPoint:CGPointMake(rect.origin.x, bottomY)];
+    [path addLineToPoint:CGPointMake(CGRectGetMaxX(rect), bottomY)];
     
-    CGContextMoveToPoint(context, rect.origin.x, topY);
-    CGContextAddLineToPoint(context, CGRectGetMaxX(rect), topY);
-    CGContextMoveToPoint(context, rightX, rect.origin.y);
-    CGContextAddLineToPoint(context, rightX, CGRectGetMaxY(rect));
-    CGContextMoveToPoint(context, rect.origin.x, bottomY);
-    CGContextAddLineToPoint(context, CGRectGetMaxX(rect), bottomY);
-    
-    CGContextStrokePath(context);
-    CGContextRestoreGState(context);
+    [self strokePath:path withColor:borderColor];
 }
 
-- (void)configureBorderContext:(CGContextRef)context borderColor:(UIColor *)borderColor {
-    CGContextSetStrokeColorWithColor(context, borderColor.CGColor);
-    CGContextSetLineWidth(context, kCodeBackgroundBorderWidth);
-    CGContextSetLineCap(context, kCGLineCapRound);
-    CGContextSetLineJoin(context, kCGLineJoinRound);
-}
+#pragma mark - Path Creation
 
-- (void)drawRoundedBorder:(CGRect)rect topY:(CGFloat)topY bottomY:(CGFloat)bottomY context:(CGContextRef)context isLeft:(BOOL)isLeft {
-    CGFloat halfStroke = kCodeBackgroundBorderWidth / 2.0;
-    CGFloat borderX = isLeft ? (rect.origin.x + halfStroke) : (CGRectGetMaxX(rect) - halfStroke);
+- (UIBezierPath *)createRoundedBorderPath:(CGRect)rect topY:(CGFloat)topY bottomY:(CGFloat)bottomY isLeft:(BOOL)isLeft {
+    CGFloat borderX = isLeft ? (rect.origin.x + HalfStroke()) : (CGRectGetMaxX(rect) - HalfStroke());
     CGFloat cornerX = isLeft ? (rect.origin.x + kCodeBackgroundCornerRadius) : (CGRectGetMaxX(rect) - kCodeBackgroundCornerRadius);
     CGFloat edgeX = isLeft ? rect.origin.x : CGRectGetMaxX(rect);
     
     UIBezierPath *path = [UIBezierPath bezierPath];
     
     if (isLeft) {
-        [path moveToPoint:CGPointMake(borderX, rect.origin.y + kCodeBackgroundCornerRadius)];
-        [path addQuadCurveToPoint:CGPointMake(cornerX, topY) controlPoint:CGPointMake(borderX, rect.origin.y)];
-        [path moveToPoint:CGPointMake(cornerX, bottomY)];
-        [path addQuadCurveToPoint:CGPointMake(borderX, CGRectGetMaxY(rect) - kCodeBackgroundCornerRadius)
-                      controlPoint:CGPointMake(borderX, CGRectGetMaxY(rect))];
-        [path addLineToPoint:CGPointMake(borderX, rect.origin.y + kCodeBackgroundCornerRadius)];
+        [self addLeftRoundedBorderToPath:path rect:rect borderX:borderX cornerX:cornerX topY:topY bottomY:bottomY];
     } else {
-        [path moveToPoint:CGPointMake(cornerX, topY)];
-        [path addQuadCurveToPoint:CGPointMake(borderX, rect.origin.y + kCodeBackgroundCornerRadius)
-                      controlPoint:CGPointMake(edgeX, rect.origin.y)];
-        [path moveToPoint:CGPointMake(borderX, CGRectGetMaxY(rect) - kCodeBackgroundCornerRadius)];
-        [path addQuadCurveToPoint:CGPointMake(cornerX, bottomY)
-                      controlPoint:CGPointMake(edgeX, CGRectGetMaxY(rect))];
-        [path addLineToPoint:CGPointMake(borderX, rect.origin.y + kCodeBackgroundCornerRadius)];
+        [self addRightRoundedBorderToPath:path rect:rect borderX:borderX cornerX:cornerX edgeX:edgeX topY:topY bottomY:bottomY];
     }
     
-    CGContextAddPath(context, path.CGPath);
+    return path;
+}
+
+- (void)addLeftRoundedBorderToPath:(UIBezierPath *)path rect:(CGRect)rect borderX:(CGFloat)borderX cornerX:(CGFloat)cornerX topY:(CGFloat)topY bottomY:(CGFloat)bottomY {
+    [path moveToPoint:CGPointMake(borderX, rect.origin.y + kCodeBackgroundCornerRadius)];
+    [path addQuadCurveToPoint:CGPointMake(cornerX, topY) controlPoint:CGPointMake(borderX, rect.origin.y)];
+    [path addLineToPoint:CGPointMake(CGRectGetMaxX(rect), topY)];
+    [path moveToPoint:CGPointMake(borderX, rect.origin.y + kCodeBackgroundCornerRadius)];
+    [path addLineToPoint:CGPointMake(borderX, CGRectGetMaxY(rect) - kCodeBackgroundCornerRadius)];
+    [path addQuadCurveToPoint:CGPointMake(cornerX, bottomY) controlPoint:CGPointMake(borderX, CGRectGetMaxY(rect))];
+    [path addLineToPoint:CGPointMake(CGRectGetMaxX(rect), bottomY)];
+}
+
+- (void)addRightRoundedBorderToPath:(UIBezierPath *)path rect:(CGRect)rect borderX:(CGFloat)borderX cornerX:(CGFloat)cornerX edgeX:(CGFloat)edgeX topY:(CGFloat)topY bottomY:(CGFloat)bottomY {
+    [path moveToPoint:CGPointMake(rect.origin.x, topY)];
+    [path addLineToPoint:CGPointMake(cornerX, topY)];
+    [path addQuadCurveToPoint:CGPointMake(borderX, rect.origin.y + kCodeBackgroundCornerRadius) controlPoint:CGPointMake(edgeX, rect.origin.y)];
+    [path moveToPoint:CGPointMake(borderX, rect.origin.y + kCodeBackgroundCornerRadius)];
+    [path addLineToPoint:CGPointMake(borderX, CGRectGetMaxY(rect) - kCodeBackgroundCornerRadius)];
+    [path addQuadCurveToPoint:CGPointMake(cornerX, bottomY) controlPoint:CGPointMake(edgeX, CGRectGetMaxY(rect))];
+    [path addLineToPoint:CGPointMake(rect.origin.x, bottomY)];
+}
+
+#pragma mark - Helper Methods
+
+- (NSArray<NSValue *> *)collectLineFragmentsForGlyphRange:(NSRange)glyphRange
+                                            layoutManager:(NSLayoutManager *)layoutManager
+                                            textContainer:(NSTextContainer *)textContainer {
+    NSMutableArray<NSValue *> *fragments = [NSMutableArray array];
+    
+    [layoutManager enumerateLineFragmentsForGlyphRange:glyphRange usingBlock:^(CGRect rect, CGRect usedRect, NSTextContainer *container, NSRange lineGlyphRange, BOOL *stop) {
+        NSRange intersection = NSIntersectionRange(lineGlyphRange, glyphRange);
+        if (intersection.length > 0) {
+            CGRect boundingRect = [self boundingRectForGlyphRange:intersection layoutManager:layoutManager textContainer:textContainer];
+            [fragments addObject:[NSValue valueWithCGRect:boundingRect]];
+            [fragments addObject:[NSValue valueWithCGRect:rect]];
+        }
+    }];
+    
+    return fragments;
+}
+
+- (void)drawStartLine:(NSValue *)boundingRectValue
+          fragmentRect:(NSValue *)fragmentRectValue
+        backgroundColor:(UIColor *)backgroundColor
+            borderColor:(UIColor *)borderColor
+                 origin:(CGPoint)origin {
+    CGRect boundingRect = [boundingRectValue CGRectValue];
+    CGRect fragmentRect = [fragmentRectValue CGRectValue];
+    
+    CGRect rect = [self adjustedRect:boundingRect atPoint:origin];
+    rect.size.width = CGRectGetMaxX(fragmentRect) + origin.x - rect.origin.x;
+    [self drawRoundedEdge:rect backgroundColor:backgroundColor borderColor:borderColor isLeft:YES];
+}
+
+- (void)drawMiddleLines:(NSArray<NSValue *> *)fragments
+        backgroundColor:(UIColor *)backgroundColor
+            borderColor:(UIColor *)borderColor
+                 origin:(CGPoint)origin {
+    for (NSUInteger i = 0; i < fragments.count; i += 2) {
+        CGRect fragmentRect = [fragments[i + 1] CGRectValue];
+        CGRect middleRect = [self adjustedRect:fragmentRect atPoint:origin];
+        middleRect.origin.x = fragmentRect.origin.x + origin.x;
+        middleRect.size.width = fragmentRect.size.width;
+        
+        [backgroundColor setFill];
+        UIRectFill(middleRect);
+        
+        if (borderColor) {
+            [self drawMiddleBorders:middleRect borderColor:borderColor];
+        }
+    }
+}
+
+- (void)drawEndLine:(NSValue *)boundingRectValue
+        fragmentRect:(NSValue *)fragmentRectValue
+        backgroundColor:(UIColor *)backgroundColor
+            borderColor:(UIColor *)borderColor
+                 origin:(CGPoint)origin {
+    CGRect boundingRect = [boundingRectValue CGRectValue];
+    CGRect fragmentRect = [fragmentRectValue CGRectValue];
+    
+    CGRect rect = [self adjustedRect:boundingRect atPoint:origin];
+    rect.origin.x = fragmentRect.origin.x + origin.x;
+    rect.size.width = CGRectGetMaxX(boundingRect) + origin.x - rect.origin.x;
+    [self drawRoundedEdge:rect backgroundColor:backgroundColor borderColor:borderColor isLeft:NO];
 }
 
 - (CGRect)adjustedRect:(CGRect)rect atPoint:(CGPoint)origin {
@@ -280,6 +311,14 @@ static const CGFloat kCodeBackgroundHeightReductionFactor = 0.0;
                       textContainer:(NSTextContainer *)textContainer {
     if (glyphRange.location == NSNotFound || glyphRange.length == 0) return CGRectZero;
     return [layoutManager boundingRectForGlyphRange:glyphRange inTextContainer:textContainer];
+}
+
+- (void)strokePath:(UIBezierPath *)path withColor:(UIColor *)color {
+    [color setStroke];
+    path.lineWidth = kCodeBackgroundBorderWidth;
+    path.lineCapStyle = kCGLineCapRound;
+    path.lineJoinStyle = kCGLineJoinRound;
+    [path stroke];
 }
 
 @end

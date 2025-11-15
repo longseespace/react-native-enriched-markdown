@@ -40,7 +40,7 @@ class CodeBackground(
       if (startLine == endLine) {
         drawSingleLine(canvas, layout, startLine, startOffset, endOffset, backgroundColor, borderColor)
       } else {
-        drawMultiLine(canvas, layout, startLine, endLine, startOffset, endOffset, backgroundColor, borderColor)
+        drawMultiLine(canvas, layout, startLine, endLine, spanStart, spanEnd, backgroundColor, borderColor)
       }
     }
   }
@@ -89,22 +89,28 @@ class CodeBackground(
     layout: Layout,
     startLine: Int,
     endLine: Int,
-    startOffset: Int,
-    endOffset: Int,
+    spanStart: Int,
+    spanEnd: Int,
     backgroundColor: Int,
     borderColor: Int
   ) {
+    // Draw start line (rounded left, no right border)
+    val startOffset = layout.getPrimaryHorizontal(spanStart).toInt()
     val lineEndOffset = layout.getLineRight(startLine).toInt()
     val (startTop, startBottom) = getLineBounds(layout, startLine)
     drawRoundedEdge(canvas, startOffset, startTop, lineEndOffset, startBottom, backgroundColor, borderColor, isLeft = true)
 
+    // Draw middle lines (no left or right borders, only top and bottom)
     for (line in startLine + 1 until endLine) {
       val (top, bottom) = getLineBounds(layout, line)
+      // For middle lines, use full line width to match iOS behavior and ensure borders are visible
       val rect = RectF(layout.getLineLeft(line), top.toFloat(), layout.getLineRight(line), bottom.toFloat())
       canvas.drawRect(rect, createPaint(Paint.Style.FILL, backgroundColor))
       drawMiddleBorders(canvas, rect, borderColor)
     }
 
+    // Draw end line (rounded right, no left border)
+    val endOffset = layout.getPrimaryHorizontal(spanEnd).toInt()
     val lineStartOffset = layout.getLineLeft(endLine).toInt()
     val (endTop, endBottom) = getLineBounds(layout, endLine)
     drawRoundedEdge(canvas, lineStartOffset, endTop, endOffset, endBottom, backgroundColor, borderColor, isLeft = false)
@@ -169,8 +175,8 @@ class CodeBackground(
     val paint = createPaint(Paint.Style.STROKE, borderColor)
     val topY = rect.top + halfStroke
     val bottomY = rect.bottom - halfStroke
+    // Middle lines only have top and bottom borders (no left or right borders)
     canvas.drawLine(rect.left, topY, rect.right, topY, paint)
-    canvas.drawLine(rect.right - halfStroke, rect.top, rect.right - halfStroke, rect.bottom, paint)
     canvas.drawLine(rect.left, bottomY, rect.right, bottomY, paint)
   }
 }
