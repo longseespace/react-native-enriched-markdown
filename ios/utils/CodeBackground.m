@@ -277,6 +277,7 @@ static inline CGFloat HalfStroke(void) {
         }
     }
     
+    // Check last line if it has normal text
     if (boundingRects.count > 1) {
         NSUInteger lastIndex = boundingRects.count - 1;
         CGRect lastBounding = [boundingRects[lastIndex] CGRectValue];
@@ -287,29 +288,37 @@ static inline CGFloat HalfStroke(void) {
     }
     
     // Use adjacent line if available
-    if (lineGlyphRanges.count > 0) {
-        NSRange firstRange = [lineGlyphRanges[0] rangeValue];
-        if (firstRange.location > 0) {
-            NSRange effectiveRange;
-            CGRect prevRect = [layoutManager lineFragmentRectForGlyphAtIndex:firstRange.location - 1 effectiveRange:&effectiveRange];
-            if (prevRect.size.height > 0) return prevRect.size.height;
-        }
-        
-        NSRange lastRange = [lineGlyphRanges[lineGlyphRanges.count - 1] rangeValue];
-        NSUInteger nextIndex = NSMaxRange(lastRange);
-        if (nextIndex < layoutManager.numberOfGlyphs) {
-            NSRange effectiveRange;
-            CGRect nextRect = [layoutManager lineFragmentRectForGlyphAtIndex:nextIndex effectiveRange:&effectiveRange];
-            if (nextRect.size.height > 0) return nextRect.size.height;
+    if (lineGlyphRanges.count == 0) {
+        return [self fallbackHeightFromFragments:fragmentRects];
+    }
+    
+    NSRange firstRange = [lineGlyphRanges[0] rangeValue];
+    if (firstRange.location > 0) {
+        NSRange effectiveRange;
+        CGRect prevRect = [layoutManager lineFragmentRectForGlyphAtIndex:firstRange.location - 1 effectiveRange:&effectiveRange];
+        if (prevRect.size.height > 0) {
+            return prevRect.size.height;
         }
     }
     
-    // Fallback: max height from fragments (guaranteed to be > 0)
+    NSRange lastRange = [lineGlyphRanges[lineGlyphRanges.count - 1] rangeValue];
+    NSUInteger nextIndex = NSMaxRange(lastRange);
+    if (nextIndex < layoutManager.numberOfGlyphs) {
+        NSRange effectiveRange;
+        CGRect nextRect = [layoutManager lineFragmentRectForGlyphAtIndex:nextIndex effectiveRange:&effectiveRange];
+        if (nextRect.size.height > 0) {
+            return nextRect.size.height;
+        }
+    }
+    
+    return [self fallbackHeightFromFragments:fragmentRects];
+}
+
+- (CGFloat)fallbackHeightFromFragments:(NSArray<NSValue *> *)fragmentRects {
     CGFloat maxHeight = 0;
     for (NSValue *value in fragmentRects) {
         maxHeight = MAX(maxHeight, [value CGRectValue].size.height);
     }
-    // Absolute fallback: use first fragment height (guaranteed to exist and be > 0)
     return maxHeight > 0 ? maxHeight : [fragmentRects[0] CGRectValue].size.height;
 }
 
