@@ -46,7 +46,7 @@ export interface NativeProps extends ViewProps {
   /**
    * Markdown content to render.
    */
-  markdown?: string;
+  markdown: string;
   /**
    * Base font size for all text elements.
    */
