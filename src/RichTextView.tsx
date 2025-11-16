@@ -52,12 +52,6 @@ export interface RichTextViewProps
    * Style for the container view.
    */
   containerStyle?: ViewStyle | TextStyle;
-  /**
-   * - iOS: Controls text selection and link previews on long press.
-   * - Android: Controls text selection.
-   * @default true
-   */
-  isSelectable?: boolean;
 }
 
 export const RichTextView = ({
