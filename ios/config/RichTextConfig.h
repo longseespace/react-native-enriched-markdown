@@ -54,5 +54,12 @@
 // Emphasis properties
 - (UIColor *)emphasisColor;
 - (void)setEmphasisColor:(UIColor *)newValue;
+// Code properties
+- (UIColor *)codeColor;
+- (void)setCodeColor:(UIColor *)newValue;
+- (UIColor *)codeBackgroundColor;
+- (void)setCodeBackgroundColor:(UIColor *)newValue;
+- (UIColor *)codeBorderColor;
+- (void)setCodeBorderColor:(UIColor *)newValue;
 
 @end

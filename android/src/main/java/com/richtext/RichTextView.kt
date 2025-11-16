@@ -10,9 +10,12 @@ import com.facebook.react.views.text.ReactTypefaceUtils.applyStyles
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontStyle
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontWeight
 import com.facebook.react.bridge.ReadableMap
+import android.graphics.Canvas
+import android.text.Spanned
 import com.richtext.parser.Parser
 import com.richtext.renderer.Renderer
 import com.richtext.styles.RichTextStyle
+import com.richtext.utils.CodeBackground
 
 class RichTextView : AppCompatTextView {
 
@@ -30,6 +33,7 @@ class RichTextView : AppCompatTextView {
 
   var richTextStyle: RichTextStyle? = null
   private var currentMarkdown: String = ""
+  private var codeBackground: CodeBackground? = null
 
   constructor(context: Context) : super(context) {
     prepareComponent()
@@ -68,15 +72,27 @@ class RichTextView : AppCompatTextView {
         }
         renderer.setStyle(currentStyle)
         val styledText = renderer.renderDocument(document, onLinkPressCallback)
+        codeBackground = CodeBackground(currentStyle)
         text = styledText
         movementMethod = LinkMovementMethod.getInstance()
       } else {
         android.util.Log.e("RichTextView", "Failed to parse markdown - Document is null")
+        codeBackground = null
         text = ""
       }
     } catch (e: Exception) {
       android.util.Log.e("RichTextView", "Error parsing markdown: ${e.message}")
+      codeBackground = null
       text = ""
+    }
+    
+    // Invalidate after layout is calculated to ensure code backgrounds are drawn.
+    // setText() invalidates immediately, but layout may not be ready yet.
+    // Using post() defers invalidation until after the current layout pass completes.
+    if (codeBackground != null) {
+      post {
+        invalidate()
+      }
     }
   }
 
@@ -176,5 +192,18 @@ class RichTextView : AppCompatTextView {
     super.onAttachedToWindow()
     didAttachToWindow = true
     updateTypeface()
+  }
+  
+  override fun onDraw(canvas: Canvas) {
+    val currentLayout = layout ?: return super.onDraw(canvas)
+    val currentText = text as? Spanned ?: return super.onDraw(canvas)
+    val codeBg = codeBackground ?: return super.onDraw(canvas)
+    
+    canvas.save()
+    canvas.translate(totalPaddingLeft.toFloat(), totalPaddingTop.toFloat())
+    codeBg.draw(canvas, currentText, currentLayout)
+    canvas.restore()
+    
+    super.onDraw(canvas)
   }
 }

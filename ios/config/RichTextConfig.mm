@@ -34,6 +34,10 @@
     UIColor *_strongColor;
     // Emphasis properties
     UIColor *_emphasisColor;
+    // Code properties
+    UIColor *_codeColor;
+    UIColor *_codeBackgroundColor;
+    UIColor *_codeBorderColor;
 }
 
 - (instancetype)init {
@@ -67,6 +71,9 @@
     copy->_linkUnderline = _linkUnderline;
     copy->_strongColor = [_strongColor copy];
     copy->_emphasisColor = [_emphasisColor copy];
+    copy->_codeColor = [_codeColor copy];
+    copy->_codeBackgroundColor = [_codeBackgroundColor copy];
+    copy->_codeBorderColor = [_codeBorderColor copy];
     
     return copy;
 }
@@ -246,6 +253,30 @@
 
 - (void)setEmphasisColor:(UIColor *)newValue {
     _emphasisColor = newValue;
+}
+
+- (UIColor *)codeColor {
+    return _codeColor;
+}
+
+- (void)setCodeColor:(UIColor *)newValue {
+    _codeColor = newValue;
+}
+
+- (UIColor *)codeBackgroundColor {
+    return _codeBackgroundColor;
+}
+
+- (void)setCodeBackgroundColor:(UIColor *)newValue {
+    _codeBackgroundColor = newValue;
+}
+
+- (UIColor *)codeBorderColor {
+    return _codeBorderColor;
+}
+
+- (void)setCodeBorderColor:(UIColor *)newValue {
+    _codeBorderColor = newValue;
 }
 
 @end
