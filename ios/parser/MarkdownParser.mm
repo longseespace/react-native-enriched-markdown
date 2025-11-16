@@ -169,7 +169,7 @@ static int md4c_text_callback(MD_TEXTTYPE type, const MD_CHAR *text, MD_SIZE siz
 @implementation MarkdownParser
 
 - (MarkdownASTNode *)parseMarkdown:(NSString *)markdown {
-    if (!markdown || markdown.length == 0) {
+    if (markdown.length == 0) {
         return [[MarkdownASTNode alloc] initWithType:MarkdownNodeTypeDocument];
     }
     

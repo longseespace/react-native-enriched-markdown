@@ -100,7 +100,7 @@ class RichTextView : AppCompatTextView {
     val newStyle = style?.let { RichTextStyle(it) }
     val styleChanged = richTextStyle != newStyle
     richTextStyle = newStyle
-    if (styleChanged && currentMarkdown.isNotEmpty()) {
+    if (styleChanged) {
       renderMarkdown()
     }
   }
