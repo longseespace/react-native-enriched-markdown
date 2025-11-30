@@ -1,0 +1,202 @@
+#import "RichTextImageAttachment.h"
+#import "RichTextConfig.h"
+#import "RichTextRuntimeKeys.h"
+#import <UIKit/UIKit.h>
+#import <objc/runtime.h>
+
+@interface RichTextImageAttachment ()
+
+@property (nonatomic, strong) NSString *imageURL;
+@property (nonatomic, weak) RichTextConfig *config;
+@property (nonatomic, assign) BOOL isInline;
+@property (nonatomic, weak) NSTextContainer *textContainer;
+@property (nonatomic, strong) UIImage *originalImage;
+@property (nonatomic, strong) UIImage *loadedImage;
+@property (nonatomic, strong) NSURLSessionDataTask *loadingTask;
+
+@end
+
+@implementation RichTextImageAttachment
+
+- (instancetype)initWithImageURL:(NSString *)imageURL
+                          config:(RichTextConfig *)config
+                        isInline:(BOOL)isInline {
+    self = [super init];
+    if (self) {
+        _imageURL = imageURL;
+        _config = config;
+        _isInline = isInline;
+        
+        // Create placeholder - width will be recalculated in attachmentBoundsForTextContainer
+        CGFloat height = [self height];
+        self.bounds = CGRectMake(0, 0, height, height);
+        UIGraphicsImageRenderer *renderer = [[UIGraphicsImageRenderer alloc] initWithSize:CGSizeMake(height, height)];
+        self.image = [renderer imageWithActions:^(UIGraphicsImageRendererContext * _Nonnull rendererContext) {}];
+        
+        if (isInline) {
+            [self loadImage];
+        }
+    }
+    return self;
+}
+
+- (CGFloat)height {
+    return self.isInline ? [self.config inlineImageSize] : [self.config imageHeight];
+}
+
+- (CGRect)attachmentBoundsForTextContainer:(NSTextContainer *)textContainer
+                      proposedLineFragment:(CGRect)lineFrag
+                             glyphPosition:(CGPoint)position
+                            characterIndex:(NSUInteger)charIndex {
+    self.textContainer = textContainer;
+    
+    CGFloat height = [self height];
+    
+    if (self.isInline) {
+        return CGRectMake(0, 0, height, height);
+    }
+    
+    // Block images: use text container width × targetHeight from TS
+    CGFloat width = lineFrag.size.width > 0 ? lineFrag.size.width : height;
+    return CGRectMake(0, 0, width, height);
+}
+
+- (UITextView *)textViewFromTextContainer:(NSTextContainer *)textContainer {
+    return objc_getAssociatedObject(textContainer, kRichTextTextViewKey);
+}
+
+- (UIImage *)imageForBounds:(CGRect)imageBounds
+                textContainer:(NSTextContainer *)textContainer
+              characterIndex:(NSUInteger)charIndex {
+    self.textContainer = textContainer;
+    
+    if (self.loadedImage) {
+        return self.loadedImage;
+    }
+    
+    // Scale original image on-demand when bounds are available (dynamic sizing)
+    if (self.originalImage && imageBounds.size.width > 0) {
+        CGFloat height = [self height];
+        CGFloat targetWidth = self.isInline ? height : imageBounds.size.width;
+        CGFloat borderRadius = self.config ? [self.config imageBorderRadius] : 0.0;
+        UIImage *scaledImage = [self scaleImage:self.originalImage toWidth:targetWidth height:height borderRadius:borderRadius];
+        
+        if (scaledImage) {
+            self.loadedImage = scaledImage;
+            self.bounds = CGRectMake(0, 0, targetWidth, height);
+            return scaledImage;
+        }
+    }
+    
+    if (self.imageURL.length > 0) {
+        [self loadImage];
+    }
+    
+    return self.image;
+}
+
+
+- (void)loadImage {
+    if (self.imageURL.length == 0) return;
+    
+    NSURL *url = [NSURL URLWithString:self.imageURL];
+    if (!url || !url.scheme) return;
+    
+    // Cancel any existing download task
+    [self.loadingTask cancel];
+    
+    NSURLSession *session = [NSURLSession sharedSession];
+    __weak typeof(self) weakSelf = self;
+    self.loadingTask = [session dataTaskWithURL:url completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) return;
+        
+        if (error || !data) return;
+        
+        UIImage *image = [UIImage imageWithData:data];
+        if (!image) return;
+        
+        // Switch to main thread for UI updates
+        dispatch_async(dispatch_get_main_queue(), ^{
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) return;
+            
+            strongSelf.originalImage = image;
+            
+            // Get text view from text container and update
+            UITextView *textView = [strongSelf textViewFromTextContainer:strongSelf.textContainer];
+            if (textView) {
+                [strongSelf updateTextViewForLoadedImage:textView];
+            }
+        });
+    }];
+    
+    [self.loadingTask resume];
+}
+
+- (UIImage *)scaleImage:(UIImage *)image toWidth:(CGFloat)targetWidth height:(CGFloat)targetHeight borderRadius:(CGFloat)borderRadius {
+    if (!image) return nil;
+    
+    CGSize imageSize = image.size;
+    if (imageSize.width == 0 || imageSize.height == 0) return image;
+    
+    // Inline: scale to fit height. Block: aspect fill (scale to fill both dimensions)
+    CGFloat scale = self.isInline 
+        ? targetHeight / imageSize.height
+        : MAX(targetWidth / imageSize.width, targetHeight / imageSize.height);
+    
+    CGSize scaledSize = CGSizeMake(imageSize.width * scale, imageSize.height * scale);
+    CGSize finalSize = self.isInline 
+        ? CGSizeMake(targetHeight, targetHeight)
+        : CGSizeMake(targetWidth, targetHeight);
+    
+    UIGraphicsImageRenderer *renderer = [[UIGraphicsImageRenderer alloc] initWithSize:finalSize];
+    return [renderer imageWithActions:^(UIGraphicsImageRendererContext * _Nonnull rendererContext) {
+        CGContextRef context = rendererContext.CGContext;
+        
+        if (borderRadius > 0) {
+            UIBezierPath *roundedPath = [UIBezierPath bezierPathWithRoundedRect:CGRectMake(0, 0, finalSize.width, finalSize.height)
+                                                               cornerRadius:borderRadius];
+            CGContextAddPath(context, roundedPath.CGPath);
+            CGContextClip(context);
+        }
+        
+        // Draw image: inline at origin, block centered
+        CGRect drawRect = self.isInline
+            ? CGRectMake(0, 0, scaledSize.width, scaledSize.height)
+            : CGRectMake((targetWidth - scaledSize.width) / 2.0,
+                        (targetHeight - scaledSize.height) / 2.0,
+                        scaledSize.width, scaledSize.height);
+        [image drawInRect:drawRect];
+    }];
+}
+
+- (void)updateTextViewForLoadedImage:(UITextView *)textView {
+    if (!textView) return;
+    
+    NSAttributedString *currentText = textView.attributedText;
+    if (!currentText || currentText.length == 0) return;
+    
+    // UITextView caches attachment images - reset text to force re-query of image property
+    textView.attributedText = [currentText copy];
+    
+    // Invalidate layout to trigger redraw with new image
+    NSRange fullRange = NSMakeRange(0, currentText.length);
+    [textView.layoutManager invalidateLayoutForCharacterRange:fullRange actualCharacterRange:NULL];
+    [textView.layoutManager ensureLayoutForTextContainer:textView.textContainer];
+    [textView invalidateIntrinsicContentSize];
+    [textView setNeedsLayout];
+    [textView setNeedsDisplay];
+    
+    UIView *superview = textView.superview;
+    if (superview) {
+        [superview invalidateIntrinsicContentSize];
+        [superview setNeedsLayout];
+    }
+}
+
+- (void)dealloc {
+    [self.loadingTask cancel];
+}
+
+@end
