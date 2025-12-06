@@ -9,6 +9,7 @@
 @property (nonatomic, strong) NSString *imageURL;
 @property (nonatomic, weak) RichTextConfig *config;
 @property (nonatomic, assign) BOOL isInline;
+@property (nonatomic, assign) CGFloat cachedHeight;
 @property (nonatomic, weak) NSTextContainer *textContainer;
 @property (nonatomic, strong) UIImage *originalImage;
 @property (nonatomic, strong) UIImage *loadedImage;
@@ -27,10 +28,12 @@
         _config = config;
         _isInline = isInline;
         
+        // Cache height calculation to avoid repeated method calls
+        _cachedHeight = isInline ? [config inlineImageSize] : [config imageHeight];
+        
         // Create placeholder - width will be recalculated in attachmentBoundsForTextContainer
-        CGFloat height = [self height];
-        self.bounds = CGRectMake(0, 0, height, height);
-        UIGraphicsImageRenderer *renderer = [[UIGraphicsImageRenderer alloc] initWithSize:CGSizeMake(height, height)];
+        self.bounds = CGRectMake(0, 0, _cachedHeight, _cachedHeight);
+        UIGraphicsImageRenderer *renderer = [[UIGraphicsImageRenderer alloc] initWithSize:CGSizeMake(_cachedHeight, _cachedHeight)];
         self.image = [renderer imageWithActions:^(UIGraphicsImageRendererContext * _Nonnull rendererContext) {}];
         
         if (isInline) {
@@ -41,7 +44,7 @@
 }
 
 - (CGFloat)height {
-    return self.isInline ? [self.config inlineImageSize] : [self.config imageHeight];
+    return _cachedHeight;
 }
 
 - (CGRect)attachmentBoundsForTextContainer:(NSTextContainer *)textContainer
@@ -50,15 +53,13 @@
                             characterIndex:(NSUInteger)charIndex {
     self.textContainer = textContainer;
     
-    CGFloat height = [self height];
-    
     if (self.isInline) {
-        return CGRectMake(0, 0, height, height);
+        return CGRectMake(0, 0, _cachedHeight, _cachedHeight);
     }
     
     // Block images: use text container width × targetHeight from TS
-    CGFloat width = lineFrag.size.width > 0 ? lineFrag.size.width : height;
-    return CGRectMake(0, 0, width, height);
+    CGFloat width = lineFrag.size.width > 0 ? lineFrag.size.width : _cachedHeight;
+    return CGRectMake(0, 0, width, _cachedHeight);
 }
 
 - (UITextView *)textViewFromTextContainer:(NSTextContainer *)textContainer {
@@ -76,14 +77,13 @@
     
     // Scale original image on-demand when bounds are available (dynamic sizing)
     if (self.originalImage && imageBounds.size.width > 0) {
-        CGFloat height = [self height];
-        CGFloat targetWidth = self.isInline ? height : imageBounds.size.width;
+        CGFloat targetWidth = self.isInline ? _cachedHeight : imageBounds.size.width;
         CGFloat borderRadius = self.config ? [self.config imageBorderRadius] : 0.0;
-        UIImage *scaledImage = [self scaleImage:self.originalImage toWidth:targetWidth height:height borderRadius:borderRadius];
+        UIImage *scaledImage = [self scaleImage:self.originalImage toWidth:targetWidth height:_cachedHeight borderRadius:borderRadius];
         
         if (scaledImage) {
             self.loadedImage = scaledImage;
-            self.bounds = CGRectMake(0, 0, targetWidth, height);
+            self.bounds = CGRectMake(0, 0, targetWidth, _cachedHeight);
             return scaledImage;
         }
     }
