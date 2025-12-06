@@ -271,14 +271,22 @@ class RichTextImageSpan(
       }
       val height = customHeight ?: if (isInline) width else style.getImageStyle().height.toInt()
       
-      return object : Drawable() {
-        override fun draw(canvas: Canvas) {}
-        override fun setAlpha(alpha: Int) {}
-        override fun setColorFilter(colorFilter: android.graphics.ColorFilter?) {}
-        override fun getOpacity(): Int = android.graphics.PixelFormat.TRANSLUCENT
-        override fun getIntrinsicWidth(): Int = width
-        override fun getIntrinsicHeight(): Int = height
-      }
+      return PlaceholderDrawable(width, height)
+    }
+    
+    /**
+     * Simple placeholder drawable for image spans before the actual image loads.
+     */
+    private class PlaceholderDrawable(
+      private val width: Int,
+      private val height: Int
+    ) : Drawable() {
+      override fun draw(canvas: Canvas) {}
+      override fun setAlpha(alpha: Int) {}
+      override fun setColorFilter(colorFilter: android.graphics.ColorFilter?) {}
+      override fun getOpacity(): Int = android.graphics.PixelFormat.TRANSLUCENT
+      override fun getIntrinsicWidth(): Int = width
+      override fun getIntrinsicHeight(): Int = height
     }
   }
 }
