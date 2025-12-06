@@ -45,7 +45,7 @@ class RichTextImageSpan(
 
   init {
     if (isInline) {
-      loadImageWithGlide(context)
+      loadImageWithGlide()
     }
   }
   
@@ -75,7 +75,7 @@ class RichTextImageSpan(
     if (!isInline && loadedDrawable == null) {
       view.post {
         if (view.width > 0 && loadedDrawable == null) {
-          loadImageWithGlide(view.context)
+          loadImageWithGlide()
         }
       }
     }
@@ -111,13 +111,15 @@ class RichTextImageSpan(
     }
   }
 
-  private fun loadImageWithGlide(context: Context) {
+  private fun loadImageWithGlide() {
     if (imageUrl.isBlank()) return
     
     val uri = Uri.parse(imageUrl).takeIf { it.scheme != null } ?: return
     val currentWidth = getWidth()
     
     if (currentWidth <= 0 && !isInline) return
+    
+    val borderRadiusPx = (imageStyle.borderRadius * context.resources.displayMetrics.density).toInt()
     
     Glide.with(context)
       .load(uri)
@@ -127,13 +129,8 @@ class RichTextImageSpan(
           resource: Drawable,
           transition: Transition<in Drawable>?
         ) {
-          val borderRadiusPx = (style.getImageStyle().borderRadius * context.resources.displayMetrics.density).toInt()
           loadedDrawable = ScaledImageDrawable(resource, currentWidth, height, borderRadiusPx)
-          
-          // Trigger redraw with batching to reduce flickering
-          viewRef?.get()?.let { view ->
-            scheduleViewUpdate(view)
-          }
+          viewRef?.get()?.let { scheduleViewUpdate(it) }
         }
 
         override fun onLoadCleared(placeholder: Drawable?) {
