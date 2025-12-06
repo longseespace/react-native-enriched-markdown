@@ -84,8 +84,16 @@ class RichTextImageSpan(
   override fun getDrawable(): Drawable {
     val drawable = loadedDrawable ?: placeholderDrawable
     if (drawable.bounds.isEmpty) {
-      val drawableWidth = if (isInline) height else getWidth().takeIf { it > 0 } ?: drawable.intrinsicWidth
-      val drawableHeight = if (isInline) drawable.intrinsicHeight.takeIf { it > 0 } ?: height else height
+      val drawableWidth = if (isInline) {
+        height
+      } else {
+        getWidth().takeIf { it > 0 } ?: drawable.intrinsicWidth
+      }
+      val drawableHeight = if (isInline) {
+        drawable.intrinsicHeight.takeIf { it > 0 } ?: height
+      } else {
+        height
+      }
       drawable.setBounds(0, 0, drawableWidth, drawableHeight)
     }
     return drawable
