@@ -260,6 +260,7 @@ class RichTextImageSpan(
       customHeight: Int?,
       fontSize: Float?
     ): Drawable {
+      val imageStyle = style.getImageStyle()
       val width = if (isInline) {
         // Calculate inline image size (same logic as instance method, but needed here for constructor)
         val inlineImageStyle = style.getInlineImageStyle()
@@ -271,9 +272,9 @@ class RichTextImageSpan(
       } else {
         // For block images, placeholder width doesn't matter - actual width will be set from TextView in getDrawable()
         // Use height as placeholder width to avoid layout issues
-        (customHeight ?: style.getImageStyle().height.toInt())
+        (customHeight ?: imageStyle.height.toInt())
       }
-      val height = customHeight ?: if (isInline) width else style.getImageStyle().height.toInt()
+      val height = customHeight ?: if (isInline) width else imageStyle.height.toInt()
       
       return PlaceholderDrawable(width, height)
     }
