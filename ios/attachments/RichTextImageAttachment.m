@@ -57,8 +57,6 @@
                       proposedLineFragment:(CGRect)lineFrag
                              glyphPosition:(CGPoint)position
                             characterIndex:(NSUInteger)charIndex {
-    self.textContainer = textContainer;
-    
     if (self.isInline) {
         return CGRectMake(0, 0, _cachedHeight, _cachedHeight);
     }
