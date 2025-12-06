@@ -34,9 +34,7 @@
         _cachedBorderRadius = config ? [config imageBorderRadius] : 0.0;
         
         // Create placeholder - width will be recalculated in attachmentBoundsForTextContainer
-        self.bounds = CGRectMake(0, 0, _cachedHeight, _cachedHeight);
-        UIGraphicsImageRenderer *renderer = [[UIGraphicsImageRenderer alloc] initWithSize:CGSizeMake(_cachedHeight, _cachedHeight)];
-        self.image = [renderer imageWithActions:^(UIGraphicsImageRendererContext * _Nonnull rendererContext) {}];
+        self.image = [self createPlaceholderImageWithSize:_cachedHeight];
         
         if (isInline) {
             [self loadImage];
@@ -47,6 +45,12 @@
 
 - (CGFloat)height {
     return _cachedHeight;
+}
+
+- (UIImage *)createPlaceholderImageWithSize:(CGFloat)size {
+    self.bounds = CGRectMake(0, 0, size, size);
+    UIGraphicsImageRenderer *renderer = [[UIGraphicsImageRenderer alloc] initWithSize:CGSizeMake(size, size)];
+    return [renderer imageWithActions:^(UIGraphicsImageRendererContext * _Nonnull rendererContext) {}];
 }
 
 - (CGRect)attachmentBoundsForTextContainer:(NSTextContainer *)textContainer
