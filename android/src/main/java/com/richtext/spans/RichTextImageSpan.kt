@@ -69,7 +69,12 @@ class RichTextImageSpan(
   /**
    * Registers a RichTextView with this span so it can be notified when images load.
    * Called automatically by RichTextView when text is set.
-   * For block images, this waits for layout to complete before loading images.
+   * 
+   * Block images wait for TextView width because:
+   * - Block images should fill the full width of the TextView
+   * - TextView width is not available during span creation (constructor)
+   * - We need the actual width to scale images correctly and avoid layout issues
+   * - Inline images don't need TextView width as they use fixed height-based sizing
    */
   fun registerTextView(view: RichTextView) {
     viewRef = WeakReference(view)
@@ -80,6 +85,7 @@ class RichTextImageSpan(
   
   /**
    * Schedules image loading for block images after layout is complete.
+   * Uses post() to wait for the view's layout pass to complete, ensuring width is available.
    */
   private fun scheduleBlockImageLoad(view: RichTextView) {
     view.post {
@@ -210,7 +216,13 @@ class RichTextImageSpan(
 
   /**
    * Schedules a batched update for the view to redraw loaded images.
-   * Batches multiple image loads within 50ms to reduce flickering.
+   * 
+   * Batching mechanism purpose:
+   * - Multiple images may load simultaneously (e.g., page with many images)
+   * - Without batching, each image load would trigger a separate redraw
+   * - This causes flickering and performance issues
+   * - Batching collects multiple loads within 50ms and triggers a single redraw
+   * - Cancels any pending update if a new image loads, ensuring we always use the latest state
    */
   private fun scheduleViewUpdate(view: RichTextView) {
     // Cancel any pending update for this view
