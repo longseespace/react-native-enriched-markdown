@@ -58,11 +58,11 @@ class RichTextImageSpan(
    */
   private fun calculateInlineImageSize(fontSize: Float?): Int {
     val inlineImageStyle = style.getInlineImageStyle()
-    val baseSizePx = inlineImageStyle.size
+    val baseImageSizePx = inlineImageStyle.size
     // Use fontSize if provided, otherwise fall back to default
     // TODO: Get paragraph fontSize from style instead of using DEFAULT_FONT_SIZE
     val currentFontSize = fontSize ?: DEFAULT_FONT_SIZE
-    val scaledSizePx = baseSizePx * (currentFontSize / DEFAULT_FONT_SIZE)
+    val scaledSizePx = baseImageSizePx * (currentFontSize / DEFAULT_FONT_SIZE)
     return scaledSizePx.toInt()
   }
   
@@ -131,19 +131,19 @@ class RichTextImageSpan(
     if (imageUrl.isBlank()) return
     
     val uri = Uri.parse(imageUrl).takeIf { it.scheme != null } ?: return
-    val currentWidth = getWidth()
+    val targetWidth = getWidth()
     
-    if (currentWidth <= 0 && !isInline) return
+    if (targetWidth <= 0 && !isInline) return
     
     Glide.with(context)
       .load(uri)
-      .override(currentWidth, height)
+      .override(targetWidth, height)
       .into(object : CustomTarget<Drawable>() {
         override fun onResourceReady(
           resource: Drawable,
           transition: Transition<in Drawable>?
         ) {
-          loadedDrawable = ScaledImageDrawable(resource, currentWidth, height, borderRadiusPx)
+          loadedDrawable = ScaledImageDrawable(resource, targetWidth, height, borderRadiusPx)
           viewRef?.get()?.let { scheduleViewUpdate(it) }
         }
 
@@ -259,11 +259,11 @@ class RichTextImageSpan(
       val width = if (isInline) {
         // Calculate inline image size (same logic as instance method, but needed here for constructor)
         val inlineImageStyle = style.getInlineImageStyle()
-        val baseSizePx = inlineImageStyle.size
+        val baseImageSizePx = inlineImageStyle.size
         // Use fontSize if provided, otherwise fall back to default
         // TODO: Get paragraph fontSize from style instead of using DEFAULT_FONT_SIZE
         val currentFontSize = fontSize ?: DEFAULT_FONT_SIZE
-        (baseSizePx * (currentFontSize / DEFAULT_FONT_SIZE)).toInt()
+        (baseImageSizePx * (currentFontSize / DEFAULT_FONT_SIZE)).toInt()
       } else {
         // For block images, placeholder width doesn't matter - actual width will be set from TextView in getDrawable()
         // Use height as placeholder width to avoid layout issues
