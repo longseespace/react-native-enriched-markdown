@@ -45,7 +45,10 @@ static const CGFloat kMinimumValidDimension = 0.0;
         // For inline images: placeholder uses cached height (square)
         // For block images: placeholder width will be recalculated in attachmentBoundsForTextContainer
         // when the text container width becomes available during layout
-        self.image = [self createPlaceholderImageWithSize:_cachedHeight];
+        // This prevents layout shifts when the actual image loads asynchronously
+        self.bounds = CGRectMake(0, 0, _cachedHeight, _cachedHeight);
+        UIGraphicsImageRenderer *renderer = [[UIGraphicsImageRenderer alloc] initWithSize:CGSizeMake(_cachedHeight, _cachedHeight)];
+        self.image = [renderer imageWithActions:^(UIGraphicsImageRendererContext * _Nonnull rendererContext) {}];
         
         // Start loading immediately for both inline and block images
         // Inline images: scale immediately after loading (size is fixed)
@@ -53,15 +56,6 @@ static const CGFloat kMinimumValidDimension = 0.0;
         [self loadImage];
     }
     return self;
-}
-
-- (UIImage *)createPlaceholderImageWithSize:(CGFloat)size {
-    // Create a transparent placeholder image to reserve space in the text layout
-    // This prevents layout shifts when the actual image loads asynchronously
-    // The placeholder is replaced by the actual image once loaded and scaled
-    self.bounds = CGRectMake(0, 0, size, size);
-    UIGraphicsImageRenderer *renderer = [[UIGraphicsImageRenderer alloc] initWithSize:CGSizeMake(size, size)];
-    return [renderer imageWithActions:^(UIGraphicsImageRendererContext * _Nonnull rendererContext) {}];
 }
 
 - (CGRect)attachmentBoundsForTextContainer:(NSTextContainer *)textContainer
