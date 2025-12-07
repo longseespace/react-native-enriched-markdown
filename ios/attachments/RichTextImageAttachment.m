@@ -170,7 +170,7 @@
     if (!image) return nil;
     
     CGSize originalImageSize = image.size;
-    if (originalImageSize.width == 0 || originalImageSize.height == 0) return image;
+    if (originalImageSize.width == 0 || originalImageSize.height == 0) return nil;
     
     // Calculate scale factor: inline fits height, block fills both dimensions (aspect fill)
     CGFloat scaleFactor;
