@@ -63,15 +63,15 @@
                             characterIndex:(NSUInteger)charIndex {
     if (self.isInline) {
         // Inline images use fixed square size based on cached height
-        return CGRectMake(0, 0, _cachedHeight, _cachedHeight);
+        return CGRectMake(0, 0, self.cachedHeight, self.cachedHeight);
     }
     
     // Block images: wait for text container width to be available
     // During initial layout, lineFrag.size.width may be 0, so we fallback to cached height
     // The actual width will be used when imageForBounds is called with proper bounds
     // This ensures block images fill the full width of the text container
-    CGFloat width = lineFrag.size.width > 0 ? lineFrag.size.width : _cachedHeight;
-    return CGRectMake(0, 0, width, _cachedHeight);
+    CGFloat width = lineFrag.size.width > 0 ? lineFrag.size.width : self.cachedHeight;
+    return CGRectMake(0, 0, width, self.cachedHeight);
 }
 
 - (UITextView *)textViewFromTextContainer:(NSTextContainer *)textContainer {
@@ -116,15 +116,15 @@
         return nil;
     }
     
-    CGFloat targetWidth = self.isInline ? _cachedHeight : imageBounds.size.width;
+    CGFloat targetWidth = self.isInline ? self.cachedHeight : imageBounds.size.width;
     UIImage *scaledImage = [self scaleImage:self.originalImage 
                                     toWidth:targetWidth 
-                                     height:_cachedHeight 
-                               borderRadius:_cachedBorderRadius];
+                                     height:self.cachedHeight 
+                               borderRadius:self.cachedBorderRadius];
     
     if (scaledImage) {
         self.loadedImage = scaledImage;
-        self.bounds = CGRectMake(0, 0, targetWidth, _cachedHeight);
+        self.bounds = CGRectMake(0, 0, targetWidth, self.cachedHeight);
     }
     
     return scaledImage;
