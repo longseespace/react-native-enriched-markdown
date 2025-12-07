@@ -29,9 +29,8 @@
         _config = config;
         _isInline = isInline;
         
-        // Cache config values to avoid repeated method calls
         _cachedHeight = isInline ? [config inlineImageSize] : [config imageHeight];
-        _cachedBorderRadius = config ? [config imageBorderRadius] : 0.0;
+        _cachedBorderRadius = [config imageBorderRadius];
         
         // Create placeholder - width will be recalculated in attachmentBoundsForTextContainer
         self.image = [self createPlaceholderImageWithSize:_cachedHeight];
@@ -57,7 +56,6 @@
         return CGRectMake(0, 0, _cachedHeight, _cachedHeight);
     }
     
-    // Block images: use text container width × targetHeight from TS
     CGFloat width = lineFrag.size.width > 0 ? lineFrag.size.width : _cachedHeight;
     return CGRectMake(0, 0, width, _cachedHeight);
 }
