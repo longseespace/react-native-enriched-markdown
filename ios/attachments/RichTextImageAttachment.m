@@ -39,11 +39,10 @@
         // when the text container width becomes available during layout
         self.image = [self createPlaceholderImageWithSize:_cachedHeight];
         
-        // Inline images can load immediately since they use a fixed size
-        // Block images wait for text container width via imageForBounds before loading/scaling
-        if (isInline) {
-            [self loadImage];
-        }
+        // Start loading immediately for both inline and block images
+        // Inline images: scale immediately after loading (size is fixed)
+        // Block images: wait for bounds to scale, but start downloading early for better performance
+        [self loadImage];
     }
     return self;
 }
@@ -88,10 +87,9 @@
         return self.loadedImage;
     }
     
-    // Dynamic sizing: Scale original image on-demand when bounds are available
-    // This approach ensures block images use the correct text container width,
-    // which may not be available during initial attachment creation.
-    // For block images, we wait here until imageBounds.size.width is valid before scaling.
+    // Scale original image on-demand when bounds are available
+    // For block images: wait until imageBounds.size.width is valid before scaling
+    // For inline images: scale immediately after loading (handled in loadImage completion)
     if (self.originalImage && imageBounds.size.width > 0) {
         UIImage *scaledImage = [self scaleAndCacheImageForBounds:imageBounds];
         if (scaledImage) {
@@ -99,15 +97,8 @@
         }
     }
     
-    // Start loading if not already loaded
-    // Block images: This will be called when imageForBounds is invoked with valid bounds
-    // Inline images: Already started loading in init
-    if (self.imageURL.length > 0 && !self.originalImage) {
-        [self loadImage];
-    }
-    
     // Return transparent placeholder until image loads and is scaled
-    // The placeholder ensures proper layout spacing while the image loads asynchronously
+    // Image loading started in init, so we just wait for it to complete
     return self.image;
 }
 
