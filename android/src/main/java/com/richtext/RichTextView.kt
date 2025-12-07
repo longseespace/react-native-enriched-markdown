@@ -183,6 +183,20 @@ class RichTextView : AppCompatTextView {
   
   override fun onDetachedFromWindow() {
     super.onDetachedFromWindow()
+    // Clean up any pending image update callbacks to prevent memory leaks
+    cleanupPendingImageUpdates()
+  }
+  
+  /**
+   * Cancels and removes any pending image update callbacks for this view.
+   * Called when the view is detached to prevent memory leaks.
+   */
+  private fun cleanupPendingImageUpdates() {
+    val pendingRunnable = RichTextImageSpan.pendingUpdates[this]
+    pendingRunnable?.let {
+      removeCallbacks(it)
+      RichTextImageSpan.pendingUpdates.remove(this)
+    }
   }
   
   override fun onDraw(canvas: Canvas) {
