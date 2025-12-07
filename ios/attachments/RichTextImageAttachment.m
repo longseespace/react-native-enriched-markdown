@@ -29,12 +29,18 @@
         _config = config;
         _isInline = isInline;
         
+        // Cache config values to avoid repeated method calls
         _cachedHeight = isInline ? [config inlineImageSize] : [config imageHeight];
         _cachedBorderRadius = [config imageBorderRadius];
         
-        // Create placeholder - width will be recalculated in attachmentBoundsForTextContainer
+        // Create transparent placeholder image to reserve space in the text layout
+        // For inline images: placeholder uses cached height (square)
+        // For block images: placeholder width will be recalculated in attachmentBoundsForTextContainer
+        // when the text container width becomes available during layout
         self.image = [self createPlaceholderImageWithSize:_cachedHeight];
         
+        // Inline images can load immediately since they use a fixed size
+        // Block images wait for text container width via imageForBounds before loading/scaling
         if (isInline) {
             [self loadImage];
         }
@@ -43,6 +49,9 @@
 }
 
 - (UIImage *)createPlaceholderImageWithSize:(CGFloat)size {
+    // Create a transparent placeholder image to reserve space in the text layout
+    // This prevents layout shifts when the actual image loads asynchronously
+    // The placeholder is replaced by the actual image once loaded and scaled
     self.bounds = CGRectMake(0, 0, size, size);
     UIGraphicsImageRenderer *renderer = [[UIGraphicsImageRenderer alloc] initWithSize:CGSizeMake(size, size)];
     return [renderer imageWithActions:^(UIGraphicsImageRendererContext * _Nonnull rendererContext) {}];
@@ -53,9 +62,14 @@
                              glyphPosition:(CGPoint)position
                             characterIndex:(NSUInteger)charIndex {
     if (self.isInline) {
+        // Inline images use fixed square size based on cached height
         return CGRectMake(0, 0, _cachedHeight, _cachedHeight);
     }
     
+    // Block images: wait for text container width to be available
+    // During initial layout, lineFrag.size.width may be 0, so we fallback to cached height
+    // The actual width will be used when imageForBounds is called with proper bounds
+    // This ensures block images fill the full width of the text container
     CGFloat width = lineFrag.size.width > 0 ? lineFrag.size.width : _cachedHeight;
     return CGRectMake(0, 0, width, _cachedHeight);
 }
@@ -69,12 +83,15 @@
               characterIndex:(NSUInteger)charIndex {
     self.textContainer = textContainer;
     
-    // Return cached scaled image if available
+    // Return cached scaled image if available (avoids re-scaling on every layout pass)
     if (self.loadedImage) {
         return self.loadedImage;
     }
     
-    // Scale original image on-demand when bounds are available (dynamic sizing)
+    // Dynamic sizing: Scale original image on-demand when bounds are available
+    // This approach ensures block images use the correct text container width,
+    // which may not be available during initial attachment creation.
+    // For block images, we wait here until imageBounds.size.width is valid before scaling.
     if (self.originalImage && imageBounds.size.width > 0) {
         UIImage *scaledImage = [self scaleAndCacheImageForBounds:imageBounds];
         if (scaledImage) {
@@ -83,11 +100,14 @@
     }
     
     // Start loading if not already loaded
+    // Block images: This will be called when imageForBounds is invoked with valid bounds
+    // Inline images: Already started loading in init
     if (self.imageURL.length > 0 && !self.originalImage) {
         [self loadImage];
     }
     
-    // Return placeholder until image loads
+    // Return transparent placeholder until image loads and is scaled
+    // The placeholder ensures proper layout spacing while the image loads asynchronously
     return self.image;
 }
 
