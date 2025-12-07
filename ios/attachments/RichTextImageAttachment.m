@@ -43,10 +43,6 @@
     return self;
 }
 
-- (CGFloat)height {
-    return _cachedHeight;
-}
-
 - (UIImage *)createPlaceholderImageWithSize:(CGFloat)size {
     self.bounds = CGRectMake(0, 0, size, size);
     UIGraphicsImageRenderer *renderer = [[UIGraphicsImageRenderer alloc] initWithSize:CGSizeMake(size, size)];
