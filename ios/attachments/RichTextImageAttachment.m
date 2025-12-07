@@ -30,7 +30,11 @@
         _isInline = isInline;
         
         // Cache config values to avoid repeated method calls
-        _cachedHeight = isInline ? [config inlineImageSize] : [config imageHeight];
+        if (isInline) {
+            _cachedHeight = [config inlineImageSize];
+        } else {
+            _cachedHeight = [config imageHeight];
+        }
         _cachedBorderRadius = [config imageBorderRadius];
         
         // Create transparent placeholder image to reserve space in the text layout
@@ -69,7 +73,12 @@
     // During initial layout, lineFrag.size.width may be 0, so we fallback to cached height
     // The actual width will be used when imageForBounds is called with proper bounds
     // This ensures block images fill the full width of the text container
-    CGFloat width = lineFrag.size.width > 0 ? lineFrag.size.width : self.cachedHeight;
+    CGFloat width;
+    if (lineFrag.size.width > 0) {
+        width = lineFrag.size.width;
+    } else {
+        width = self.cachedHeight;
+    }
     return CGRectMake(0, 0, width, self.cachedHeight);
 }
 
@@ -106,7 +115,13 @@
         return nil;
     }
     
-    CGFloat targetWidth = self.isInline ? self.cachedHeight : imageBounds.size.width;
+    CGFloat targetWidth;
+    if (self.isInline) {
+        targetWidth = self.cachedHeight;
+    } else {
+        targetWidth = imageBounds.size.width;
+    }
+    
     UIImage *scaledImage = [self scaleImage:self.originalImage 
                                     toWidth:targetWidth 
                                      height:self.cachedHeight 
