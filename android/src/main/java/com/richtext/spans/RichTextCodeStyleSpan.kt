@@ -8,9 +8,8 @@ import com.richtext.styles.RichTextStyle
 
 class RichTextCodeStyleSpan(
   private val style: RichTextStyle,
-  private val blockStyle: BlockStyle
+  private val blockStyle: BlockStyle,
 ) : MetricAffectingSpan() {
-
   override fun updateDrawState(tp: TextPaint) {
     applyMonospacedFont(tp)
     applyCodeColor(tp)
@@ -27,12 +26,13 @@ class RichTextCodeStyleSpan(
 
     val currentTypeface = paint.typeface ?: Typeface.DEFAULT
     val preservedStyle = currentTypeface.style and (Typeface.BOLD or Typeface.ITALIC)
-    
-    paint.typeface = if (preservedStyle != 0) {
-      Typeface.create(Typeface.MONOSPACE, preservedStyle)
-    } else {
-      Typeface.MONOSPACE
-    }
+
+    paint.typeface =
+      if (preservedStyle != 0) {
+        Typeface.create(Typeface.MONOSPACE, preservedStyle)
+      } else {
+        Typeface.MONOSPACE
+      }
   }
 
   private fun applyCodeColor(tp: TextPaint) {

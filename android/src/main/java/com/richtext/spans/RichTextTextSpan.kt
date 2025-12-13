@@ -8,9 +8,8 @@ import com.richtext.utils.applyBlockStyleFont
 
 class RichTextTextSpan(
   private val blockStyle: BlockStyle,
-  private val context: Context
+  private val context: Context,
 ) : MetricAffectingSpan() {
-
   override fun updateDrawState(tp: TextPaint) {
     applyBlockStyle(tp)
   }

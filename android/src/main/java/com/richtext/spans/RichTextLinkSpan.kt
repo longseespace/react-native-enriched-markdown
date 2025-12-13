@@ -14,9 +14,8 @@ class RichTextLinkSpan(
   private val onLinkPress: ((String) -> Unit)?,
   private val style: RichTextStyle,
   private val blockStyle: BlockStyle,
-  private val context: Context
+  private val context: Context,
 ) : ClickableSpan() {
-
   override fun onClick(widget: View) {
     if (onLinkPress != null) {
       onLinkPress(url)
@@ -28,10 +27,10 @@ class RichTextLinkSpan(
 
   override fun updateDrawState(textPaint: TextPaint) {
     super.updateDrawState(textPaint)
-    
+
     textPaint.textSize = blockStyle.fontSize
     textPaint.applyBlockStyleFont(blockStyle, context)
-    
+
     textPaint.color = style.getLinkColor()
     textPaint.isUnderlineText = style.getLinkUnderline()
   }

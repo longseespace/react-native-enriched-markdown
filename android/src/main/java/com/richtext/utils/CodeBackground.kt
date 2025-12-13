@@ -16,13 +16,13 @@ import kotlin.math.min
  * Handles both single-line and multi-line code blocks with proper border rendering.
  */
 class CodeBackground(
-  private val style: RichTextStyle
+  private val style: RichTextStyle,
 ) {
   companion object {
     private const val CORNER_RADIUS = 6.0f
     private const val BORDER_WIDTH = 1.0f
   }
-  
+
   // Half stroke width for centering border lines within the stroke width
   private val halfStroke = BORDER_WIDTH / 2f
 
@@ -30,7 +30,11 @@ class CodeBackground(
    * Draws code backgrounds for all code spans in the text.
    * Finds all RichTextCodeStyleSpan instances and draws backgrounds for each.
    */
-  fun draw(canvas: Canvas, text: Spanned, layout: Layout) {
+  fun draw(
+    canvas: Canvas,
+    text: Spanned,
+    layout: Layout,
+  ) {
     val codeStyle = style.getCodeStyle()
     val backgroundColor = codeStyle.backgroundColor
     val borderColor = codeStyle.borderColor
@@ -54,14 +58,19 @@ class CodeBackground(
     }
   }
 
-  private fun getLineBounds(layout: Layout, line: Int): Pair<Int, Int> {
-    return Pair(
+  private fun getLineBounds(
+    layout: Layout,
+    line: Int,
+  ): Pair<Int, Int> =
+    Pair(
       layout.getLineTopWithoutPadding(line),
-      layout.getLineBottomWithoutPadding(line)
+      layout.getLineBottomWithoutPadding(line),
     )
-  }
 
-  private fun createPaint(style: Paint.Style, color: Int) = Paint().apply {
+  private fun createPaint(
+    style: Paint.Style,
+    color: Int,
+  ) = Paint().apply {
     this.style = style
     this.color = color
     isAntiAlias = true
@@ -79,15 +88,16 @@ class CodeBackground(
     startOffset: Int,
     endOffset: Int,
     backgroundColor: Int,
-    borderColor: Int
+    borderColor: Int,
   ) {
     val (top, bottom) = getLineBounds(layout, line)
-    val rect = RectF(
-      min(startOffset, endOffset).toFloat(),
-      top.toFloat(),
-      max(startOffset, endOffset).toFloat(),
-      bottom.toFloat()
-    )
+    val rect =
+      RectF(
+        min(startOffset, endOffset).toFloat(),
+        top.toFloat(),
+        max(startOffset, endOffset).toFloat(),
+        bottom.toFloat(),
+      )
     canvas.drawRoundRect(rect, CORNER_RADIUS, CORNER_RADIUS, createPaint(Paint.Style.FILL, backgroundColor))
     canvas.drawRoundRect(rect, CORNER_RADIUS, CORNER_RADIUS, createPaint(Paint.Style.STROKE, borderColor))
   }
@@ -105,10 +115,10 @@ class CodeBackground(
     spanStart: Int,
     spanEnd: Int,
     backgroundColor: Int,
-    borderColor: Int
+    borderColor: Int,
   ) {
     val referenceHeight = findReferenceHeight(layout, startLine, endLine, spanStart, spanEnd)
-    
+
     // Draw start line (rounded left, no right border)
     val startOffset = layout.getPrimaryHorizontal(spanStart).toInt()
     val lineEndOffset = layout.getLineRight(startLine).toInt()
@@ -120,11 +130,11 @@ class CodeBackground(
     for (line in startLine + 1 until endLine) {
       val (top, bottom) = getLineBounds(layout, line)
       val (adjustedTop, adjustedBottom) = adjustLineHeight(top, bottom, referenceHeight, previousBottom)
-      
+
       val rect = RectF(layout.getLineLeft(line), adjustedTop.toFloat(), layout.getLineRight(line), adjustedBottom.toFloat())
       canvas.drawRect(rect, createPaint(Paint.Style.FILL, backgroundColor))
       drawMiddleBorders(canvas, rect, borderColor)
-      
+
       previousBottom = adjustedBottom
     }
 
@@ -134,15 +144,21 @@ class CodeBackground(
     val (endTop, endBottom) = getLineBounds(layout, endLine)
     drawRoundedEdge(canvas, lineStartOffset, endTop, endOffset, endBottom, backgroundColor, borderColor, isLeft = false)
   }
-  
+
   /**
    * Gets reference line height for consistent code block rendering.
    * Uses normal text's line height from layout paint, since code font is 85% of normal font size.
-   * 
+   *
    * TODO: Get lineHeight from TypeScript side (via RichTextStyle config) instead of calculating from layout paint.
    * This would provide a single source of truth and handle custom line spacing more accurately.
    */
-  private fun findReferenceHeight(layout: Layout, startLine: Int, endLine: Int, spanStart: Int, spanEnd: Int): Int {
+  private fun findReferenceHeight(
+    layout: Layout,
+    startLine: Int,
+    endLine: Int,
+    spanStart: Int,
+    spanEnd: Int,
+  ): Int {
     // Use normal text line height from layout paint - this ensures consistent height for both inline and standalone code
     // The layout's paint contains the normal text font metrics (before code span modifications)
     // This is equivalent to iOS using primaryFont.lineHeight from config
@@ -151,8 +167,11 @@ class CodeBackground(
     // Line height = descent - ascent (standard Android line height calculation)
     return (fontMetrics.descent - fontMetrics.ascent).toInt()
   }
-  
-  private fun getLineHeight(layout: Layout, line: Int): Int {
+
+  private fun getLineHeight(
+    layout: Layout,
+    line: Int,
+  ): Int {
     val (top, bottom) = getLineBounds(layout, line)
     return bottom - top
   }
@@ -161,7 +180,12 @@ class CodeBackground(
    * Adjusts line height to match reference height for consistent rendering.
    * Expands lines that are shorter than reference, ensuring no gaps between lines.
    */
-  private fun adjustLineHeight(top: Int, bottom: Int, referenceHeight: Int, previousBottom: Int): Pair<Int, Int> {
+  private fun adjustLineHeight(
+    top: Int,
+    bottom: Int,
+    referenceHeight: Int,
+    previousBottom: Int,
+  ): Pair<Int, Int> {
     val lineHeight = bottom - top
     return if (referenceHeight > 0 && lineHeight < referenceHeight) {
       // Expand centered, but ensure top doesn't go above previous line's bottom
@@ -187,18 +211,19 @@ class CodeBackground(
     bottom: Int,
     backgroundColor: Int,
     borderColor: Int,
-    isLeft: Boolean
+    isLeft: Boolean,
   ) {
     val rect = RectF(min(start, end).toFloat(), top.toFloat(), max(start, end).toFloat(), bottom.toFloat())
     // Radii: left edge = rounded top-left and bottom-left, right edge = rounded top-right and bottom-right
-    val radii = if (isLeft) {
-      floatArrayOf(CORNER_RADIUS, CORNER_RADIUS, 0f, 0f, 0f, 0f, CORNER_RADIUS, CORNER_RADIUS)
-    } else {
-      floatArrayOf(0f, 0f, CORNER_RADIUS, CORNER_RADIUS, CORNER_RADIUS, CORNER_RADIUS, 0f, 0f)
-    }
-    
+    val radii =
+      if (isLeft) {
+        floatArrayOf(CORNER_RADIUS, CORNER_RADIUS, 0f, 0f, 0f, 0f, CORNER_RADIUS, CORNER_RADIUS)
+      } else {
+        floatArrayOf(0f, 0f, CORNER_RADIUS, CORNER_RADIUS, CORNER_RADIUS, CORNER_RADIUS, 0f, 0f)
+      }
+
     canvas.drawPath(Path().apply { addRoundRect(rect, radii, Path.Direction.CW) }, createPaint(Paint.Style.FILL, backgroundColor))
-    
+
     val paint = createPaint(Paint.Style.STROKE, borderColor)
     val borderX = if (isLeft) rect.left + halfStroke else rect.right - halfStroke
     val topY = rect.top + halfStroke
@@ -219,7 +244,13 @@ class CodeBackground(
    * Creates a path for the rounded border edge (left or right side).
    * Uses quadratic curves for smooth rounded corners at top and bottom.
    */
-  private fun createRoundedBorderPath(borderX: Float, rect: RectF, topY: Float, bottomY: Float, isLeft: Boolean) = Path().apply {
+  private fun createRoundedBorderPath(
+    borderX: Float,
+    rect: RectF,
+    topY: Float,
+    bottomY: Float,
+    isLeft: Boolean,
+  ) = Path().apply {
     if (isLeft) {
       moveTo(borderX, rect.top + CORNER_RADIUS)
       quadTo(borderX, rect.top, rect.left + CORNER_RADIUS, topY)
@@ -237,7 +268,11 @@ class CodeBackground(
     }
   }
 
-  private fun drawMiddleBorders(canvas: Canvas, rect: RectF, borderColor: Int) {
+  private fun drawMiddleBorders(
+    canvas: Canvas,
+    rect: RectF,
+    borderColor: Int,
+  ) {
     val paint = createPaint(Paint.Style.STROKE, borderColor)
     val topY = rect.top + halfStroke
     val bottomY = rect.bottom - halfStroke
