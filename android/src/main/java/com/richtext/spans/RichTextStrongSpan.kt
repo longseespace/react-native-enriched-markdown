@@ -23,24 +23,21 @@ class RichTextStrongSpan(
   }
 
   private fun applyStrongStyle(tp: TextPaint) {
-    // Preserve code fontSize if code is nested inside strong text.
-    // Code uses 0.85 * block fontSize, so we detect and preserve that size.
+    // Preserve code fontSize if code is nested inside strong text
     val codeFontSize = blockStyle.fontSize * 0.85f
     if (kotlin.math.abs(tp.textSize - codeFontSize) > 0.1f) {
-      // Not code fontSize, so inherit block fontSize
       tp.textSize = blockStyle.fontSize
     }
     
-    // Get base typeface from block fontFamily, or fall back to current typeface
+    // Get base typeface from block fontFamily or current typeface
     val baseTypeface = blockStyle.fontFamily.takeIf { it.isNotEmpty() }
       ?.let { Typeface.create(it, Typeface.NORMAL) }
       ?: (tp.typeface ?: Typeface.DEFAULT)
     
-    // Apply bold trait, preserving italic if already present
-    val currentStyle = baseTypeface.style
-    tp.typeface = if ((currentStyle and Typeface.BOLD) == 0) {
-      val newStyle = currentStyle or Typeface.BOLD
-      Typeface.create(baseTypeface, newStyle)
+    // Apply bold trait, preserving italic if present
+    val style = baseTypeface.style
+    tp.typeface = if ((style and Typeface.BOLD) == 0) {
+      Typeface.create(baseTypeface, style or Typeface.BOLD)
     } else {
       baseTypeface
     }
