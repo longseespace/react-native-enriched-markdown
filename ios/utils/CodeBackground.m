@@ -269,15 +269,16 @@ static inline CGFloat HalfStroke(void) {
  * Falls back to paragraph font size if not found.
  */
 - (CGFloat)findReferenceHeightForRange:(NSRange)range textStorage:(NSTextStorage *)textStorage {
-    if (range.location != NSNotFound && range.length > 0 && textStorage) {
-        id lineHeightValue = [textStorage attribute:@"RichTextBlockLineHeight" atIndex:range.location effectiveRange:NULL];
-        if ([lineHeightValue isKindOfClass:[NSNumber class]]) {
-            return [lineHeightValue doubleValue];
-        }
+    if (range.location == NSNotFound || range.length == 0 || !textStorage) {
+        return [_config paragraphFontSize] * 1.2;
     }
     
-    // Fallback to paragraph font size if line height not found
-    return [_config paragraphFontSize] * 1.2; // Approximate line height multiplier
+    NSNumber *lineHeightValue = [textStorage attribute:@"RichTextBlockLineHeight" atIndex:range.location effectiveRange:NULL];
+    if (lineHeightValue) {
+        return [lineHeightValue doubleValue];
+    }
+    
+    return [_config paragraphFontSize] * 1.2;
 }
 
 
