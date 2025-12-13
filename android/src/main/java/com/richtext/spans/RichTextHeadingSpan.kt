@@ -8,12 +8,11 @@ import com.richtext.utils.applyTypefacePreserving
 
 class RichTextHeadingSpan(
   private val level: Int,
-  private val style: RichTextStyle
+  private val style: RichTextStyle,
 ) : AbsoluteSizeSpan(style.getHeadingFontSize(level).toInt()) {
-
   private val cachedTypeface: Typeface? by lazy {
     val fontFamily = style.getHeadingFontFamily(level)
-    fontFamily.takeIf { it.isNotEmpty() }?.let { 
+    fontFamily.takeIf { it.isNotEmpty() }?.let {
       Typeface.create(it, Typeface.NORMAL)
     }
   }

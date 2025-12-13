@@ -4,7 +4,6 @@ import android.text.TextPaint
 import android.text.style.MetricAffectingSpan
 
 class RichTextParagraphSpan : MetricAffectingSpan() {
-
   override fun updateDrawState(tp: TextPaint) {
     // Paragraph-specific styling can be added here
     // For now, we just use default paragraph styling

@@ -43,6 +43,8 @@
     "lint-clang:android:fix": "find android/ \\( -iname \"*.h\" -o -iname \"*.cpp\" \\) | grep -v -e build | xargs npx clang-format -i",
     "lint-clang": "yarn lint-clang:ios && yarn lint-clang:android",
     "lint-clang:fix": "yarn lint-clang:ios:fix && yarn lint-clang:android:fix",
+    "lint-kotlin": "cd example/android && ./gradlew :react-native-rich-text:ktlintCheck",
+    "lint-kotlin:fix": "cd example/android && ./gradlew :react-native-rich-text:ktlintFormat",
     "clean": "del-cli android/build example/android/build example/android/app/build example/ios/build lib",
     "prepare": "bob build",
     "release": "release-it --only-version"

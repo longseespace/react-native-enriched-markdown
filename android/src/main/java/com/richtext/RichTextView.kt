@@ -1,15 +1,15 @@
 package com.richtext
 
 import android.content.Context
+import android.graphics.Canvas
 import android.graphics.Color
+import android.text.Spannable
+import android.text.SpannableString
+import android.text.Spanned
 import android.text.method.LinkMovementMethod
 import android.util.AttributeSet
 import androidx.appcompat.widget.AppCompatTextView
 import com.facebook.react.bridge.ReadableMap
-import android.graphics.Canvas
-import android.text.Spanned
-import android.text.Spannable
-import android.text.SpannableString
 import com.richtext.parser.Parser
 import com.richtext.renderer.Renderer
 import com.richtext.spans.RichTextImageSpan
@@ -17,7 +17,6 @@ import com.richtext.styles.RichTextStyle
 import com.richtext.utils.CodeBackground
 
 class RichTextView : AppCompatTextView {
-
   private val parser = Parser()
   private val renderer = Renderer()
   private var onLinkPressCallback: ((String) -> Unit)? = null
@@ -37,7 +36,7 @@ class RichTextView : AppCompatTextView {
   constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int) : super(
     context,
     attrs,
-    defStyleAttr
+    defStyleAttr,
   ) {
     prepareComponent()
   }
@@ -58,16 +57,17 @@ class RichTextView : AppCompatTextView {
     try {
       val document = parser.parseMarkdown(currentMarkdown)
       if (document != null) {
-        val currentStyle = requireNotNull(richTextStyle) {
-          "richTextStyle should always be provided from JS side with defaults."
-        }
+        val currentStyle =
+          requireNotNull(richTextStyle) {
+            "richTextStyle should always be provided from JS side with defaults."
+          }
         renderer.configure(currentStyle, context)
         val styledText = renderer.renderDocument(document, onLinkPressCallback)
         codeBackground = CodeBackground(currentStyle)
         text = styledText
         registerImageSpans(styledText)
         movementMethod = LinkMovementMethod.getInstance()
-        
+
         // Invalidate after layout is calculated to ensure code backgrounds are drawn
         invalidateCodeBackgrounds()
       } else {
@@ -91,23 +91,25 @@ class RichTextView : AppCompatTextView {
     }
   }
 
-
   fun setOnLinkPressCallback(callback: (String) -> Unit) {
     onLinkPressCallback = callback
   }
 
   fun emitOnLinkPress(url: String) {
     val context = this.context as? com.facebook.react.bridge.ReactContext ?: return
-    val surfaceId = com.facebook.react.uimanager.UIManagerHelper.getSurfaceId(context)
+    val surfaceId =
+      com.facebook.react.uimanager.UIManagerHelper
+        .getSurfaceId(context)
     val dispatcher =
-      com.facebook.react.uimanager.UIManagerHelper.getEventDispatcherForReactTag(context, id)
+      com.facebook.react.uimanager.UIManagerHelper
+        .getEventDispatcherForReactTag(context, id)
 
     dispatcher?.dispatchEvent(
       com.richtext.events.LinkPressEvent(
         surfaceId,
         id,
-        url
-      )
+        url,
+      ),
     )
   }
 
@@ -134,7 +136,7 @@ class RichTextView : AppCompatTextView {
     // Clean up any pending image update callbacks to prevent memory leaks
     cleanupPendingImageUpdates()
   }
-  
+
   /**
    * Cancels and removes any pending image update callbacks for this view.
    * Called when the view is detached to prevent memory leaks.
@@ -146,20 +148,20 @@ class RichTextView : AppCompatTextView {
       RichTextImageSpan.pendingUpdates.remove(this)
     }
   }
-  
+
   override fun onDraw(canvas: Canvas) {
     val currentLayout = layout ?: return super.onDraw(canvas)
     val currentText = text as? Spanned ?: return super.onDraw(canvas)
     val codeBg = codeBackground ?: return super.onDraw(canvas)
-    
+
     canvas.save()
     canvas.translate(totalPaddingLeft.toFloat(), totalPaddingTop.toFloat())
     codeBg.draw(canvas, currentText, currentLayout)
     canvas.restore()
-    
+
     super.onDraw(canvas)
   }
-  
+
   /**
    * Scans the text for ImageSpans and registers this TextView with them
    * so they can trigger redraws when images load.
@@ -170,7 +172,7 @@ class RichTextView : AppCompatTextView {
       span.registerTextView(this)
     }
   }
-  
+
   /**
    * Invalidates the view to redraw code backgrounds after layout is calculated.
    * setText() triggers a layout pass. Using post() defers invalidation until
@@ -184,5 +186,4 @@ class RichTextView : AppCompatTextView {
       }
     }
   }
-  
 }
