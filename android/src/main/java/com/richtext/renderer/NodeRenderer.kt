@@ -129,16 +129,14 @@ class TextRenderer : NodeRenderer {
         builder.append(content)
 
         val contentLength = builder.length - start
-        if (contentLength > 0) {
-            val blockStyle = factory.blockStyleContext.getBlockStyle()
-            if (blockStyle != null) {
-                builder.setSpan(
-                    RichTextTextSpan(blockStyle, factory.context),
-                    start,
-                    start + contentLength,
-                    android.text.SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE
-                )
-            }
+        val blockStyle = factory.blockStyleContext.getBlockStyle()
+        if (contentLength > 0 && blockStyle != null) {
+            builder.setSpan(
+                RichTextTextSpan(blockStyle, factory.context),
+                start,
+                start + contentLength,
+                android.text.SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
         }
     }
 }
@@ -159,16 +157,14 @@ class LinkRenderer(
         factory.renderChildren(link, builder, onLinkPress)
 
         val contentLength = builder.length - start
-        if (contentLength > 0) {
-            val blockStyle = factory.blockStyleContext.getBlockStyle()
-            if (blockStyle != null) {
-                builder.setSpan(
-                    RichTextLinkSpan(url, onLinkPress, config.style, blockStyle, factory.context),
-                    start,
-                    start + contentLength,
-                    android.text.SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE
-                )
-            }
+        val blockStyle = factory.blockStyleContext.getBlockStyle()
+        if (contentLength > 0 && blockStyle != null) {
+            builder.setSpan(
+                RichTextLinkSpan(url, onLinkPress, config.style, blockStyle, factory.context),
+                start,
+                start + contentLength,
+                android.text.SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
         }
     }
 }
@@ -188,16 +184,14 @@ class StrongRenderer(
         factory.renderChildren(strongEmphasis, builder, onLinkPress)
 
         val contentLength = builder.length - start
-        if (contentLength > 0) {
-            val blockStyle = factory.blockStyleContext.getBlockStyle()
-            if (blockStyle != null) {
-                builder.setSpan(
-                    RichTextStrongSpan(config.style, blockStyle),
-                    start,
-                    start + contentLength,
-                    android.text.SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE
-                )
-            }
+        val blockStyle = factory.blockStyleContext.getBlockStyle()
+        if (contentLength > 0 && blockStyle != null) {
+            builder.setSpan(
+                RichTextStrongSpan(config.style, blockStyle),
+                start,
+                start + contentLength,
+                android.text.SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
         }
     }
 }
@@ -217,16 +211,14 @@ class EmphasisRenderer(
         factory.renderChildren(emphasis, builder, onLinkPress)
 
         val contentLength = builder.length - start
-        if (contentLength > 0) {
-            val blockStyle = factory.blockStyleContext.getBlockStyle()
-            if (blockStyle != null) {
-                builder.setSpan(
-                    RichTextEmphasisSpan(config.style, blockStyle),
-                    start,
-                    start + contentLength,
-                    android.text.SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE
-                )
-            }
+        val blockStyle = factory.blockStyleContext.getBlockStyle()
+        if (contentLength > 0 && blockStyle != null) {
+            builder.setSpan(
+                RichTextEmphasisSpan(config.style, blockStyle),
+                start,
+                start + contentLength,
+                android.text.SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
         }
     }
 }
@@ -247,16 +239,14 @@ class CodeRenderer(
         builder.append(codeText)
 
         val contentLength = builder.length - start
-        if (contentLength > 0) {
-            val blockStyle = factory.blockStyleContext.getBlockStyle()
-            if (blockStyle != null) {
-                builder.setSpan(
-                    RichTextCodeStyleSpan(config.style, blockStyle),
-                    start,
-                    start + contentLength,
-                    android.text.SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE
-                )
-            }
+        val blockStyle = factory.blockStyleContext.getBlockStyle()
+        if (contentLength > 0 && blockStyle != null) {
+            builder.setSpan(
+                RichTextCodeStyleSpan(config.style, blockStyle),
+                start,
+                start + contentLength,
+                android.text.SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
         }
     }
 }
