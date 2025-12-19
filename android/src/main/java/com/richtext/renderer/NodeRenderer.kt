@@ -87,9 +87,7 @@ class ParagraphRenderer(
         android.text.SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE,
       )
 
-      // Apply lineHeight span only if paragraph doesn't contain block images
-      // Block images have their own chooseHeight that reserves space, and applying
-      // lineHeight span to the entire paragraph (including image) causes conflicts
+      // Skip lineHeight for paragraphs containing block images to prevent unwanted spacing above image
       if (!paragraph.containsBlockImage()) {
         builder.setSpan(
           createLineHeightSpan(paragraphStyle.lineHeight),
@@ -138,7 +136,6 @@ class HeadingRenderer(
         android.text.SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE,
       )
 
-      // Apply lineHeight span for headings (headings don't contain images, so no conflict check needed)
       builder.setSpan(
         createLineHeightSpan(headingStyle.lineHeight),
         start,
