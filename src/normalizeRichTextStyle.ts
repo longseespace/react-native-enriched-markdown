@@ -107,11 +107,8 @@ const defaultInlineImageStyle: RichTextStyleInternal['inlineImage'] = {
 export const normalizeRichTextStyle = (
   style: RichTextStyle
 ): RichTextStyleInternal => {
-  const paragraphFontSize =
-    style.paragraph?.fontSize ?? paragraphDefaultStyles.fontSize;
-
   const paragraph: RichTextStyleInternal['paragraph'] = {
-    fontSize: paragraphFontSize,
+    fontSize: style.paragraph?.fontSize ?? paragraphDefaultStyles.fontSize,
     fontFamily:
       style.paragraph?.fontFamily ?? paragraphDefaultStyles.fontFamily,
     fontWeight:
@@ -123,9 +120,8 @@ export const normalizeRichTextStyle = (
     lineHeight: paragraphDefaultStyles.lineHeight,
   };
 
-  const h1FontSize = style.h1?.fontSize ?? defaultH1Style.fontSize;
   const h1: RichTextStyleInternal['h1'] = {
-    fontSize: h1FontSize,
+    fontSize: style.h1?.fontSize ?? defaultH1Style.fontSize,
     fontFamily: style.h1?.fontFamily ?? defaultH1Style.fontFamily,
     fontWeight: style.h1?.fontWeight ?? defaultH1Style.fontWeight,
     color: normalizeColor(style.h1?.color) ?? defaultH1Style.color,
@@ -133,9 +129,8 @@ export const normalizeRichTextStyle = (
     lineHeight: style.h1?.lineHeight ?? defaultH1Style.lineHeight,
   };
 
-  const h2FontSize = style.h2?.fontSize ?? defaultH2Style.fontSize;
   const h2: RichTextStyleInternal['h2'] = {
-    fontSize: h2FontSize,
+    fontSize: style.h2?.fontSize ?? defaultH2Style.fontSize,
     fontFamily: style.h2?.fontFamily ?? defaultH2Style.fontFamily,
     fontWeight: style.h2?.fontWeight ?? defaultH2Style.fontWeight,
     color: normalizeColor(style.h2?.color) ?? defaultH2Style.color,
@@ -143,9 +138,8 @@ export const normalizeRichTextStyle = (
     lineHeight: style.h2?.lineHeight ?? defaultH2Style.lineHeight,
   };
 
-  const h3FontSize = style.h3?.fontSize ?? defaultH3Style.fontSize;
   const h3: RichTextStyleInternal['h3'] = {
-    fontSize: h3FontSize,
+    fontSize: style.h3?.fontSize ?? defaultH3Style.fontSize,
     fontFamily: style.h3?.fontFamily ?? defaultH3Style.fontFamily,
     fontWeight: style.h3?.fontWeight ?? defaultH3Style.fontWeight,
     color: normalizeColor(style.h3?.color) ?? defaultH3Style.color,
@@ -153,9 +147,8 @@ export const normalizeRichTextStyle = (
     lineHeight: style.h3?.lineHeight ?? defaultH3Style.lineHeight,
   };
 
-  const h4FontSize = style.h4?.fontSize ?? defaultH4Style.fontSize;
   const h4: RichTextStyleInternal['h4'] = {
-    fontSize: h4FontSize,
+    fontSize: style.h4?.fontSize ?? defaultH4Style.fontSize,
     fontFamily: style.h4?.fontFamily ?? defaultH4Style.fontFamily,
     fontWeight: style.h4?.fontWeight ?? defaultH4Style.fontWeight,
     color: normalizeColor(style.h4?.color) ?? defaultH4Style.color,
@@ -163,9 +156,8 @@ export const normalizeRichTextStyle = (
     lineHeight: style.h4?.lineHeight ?? defaultH4Style.lineHeight,
   };
 
-  const h5FontSize = style.h5?.fontSize ?? defaultH5Style.fontSize;
   const h5: RichTextStyleInternal['h5'] = {
-    fontSize: h5FontSize,
+    fontSize: style.h5?.fontSize ?? defaultH5Style.fontSize,
     fontFamily: style.h5?.fontFamily ?? defaultH5Style.fontFamily,
     fontWeight: style.h5?.fontWeight ?? defaultH5Style.fontWeight,
     color: normalizeColor(style.h5?.color) ?? defaultH5Style.color,
@@ -173,9 +165,8 @@ export const normalizeRichTextStyle = (
     lineHeight: style.h5?.lineHeight ?? defaultH5Style.lineHeight,
   };
 
-  const h6FontSize = style.h6?.fontSize ?? defaultH6Style.fontSize;
   const h6: RichTextStyleInternal['h6'] = {
-    fontSize: h6FontSize,
+    fontSize: style.h6?.fontSize ?? defaultH6Style.fontSize,
     fontFamily: style.h6?.fontFamily ?? defaultH6Style.fontFamily,
     fontWeight: style.h6?.fontWeight ?? defaultH6Style.fontWeight,
     color: normalizeColor(style.h6?.color) ?? defaultH6Style.color,
