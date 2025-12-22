@@ -4,6 +4,11 @@
 NSString *const RichTextBlockquoteDepthAttributeName = @"RichTextBlockquoteDepth";
 NSString *const RichTextBlockquoteBackgroundColorAttributeName = @"RichTextBlockquoteBackgroundColor";
 
+static NSString *const kFragmentRectKey = @"rect";
+static NSString *const kFragmentDepthKey = @"depth";
+static NSString *const kFragmentDepthLocationKey = @"depthLocation";
+static NSString *const kFragmentIsSpacerKey = @"isSpacer";
+
 @implementation BlockquoteBorder {
   RichTextConfig *_config;
 }
@@ -29,8 +34,8 @@ NSString *const RichTextBlockquoteBackgroundColorAttributeName = @"RichTextBlock
   CGFloat borderWidth = [_config blockquoteBorderWidth];
   CGFloat levelSpacing = borderWidth + [_config blockquoteGapWidth];
   CGFloat nestedMarginBottom = [_config blockquoteNestedMarginBottom];
+  CGFloat containerWidth = textContainer.size.width;
 
-  // Collect fragments and track first non-spacer character for each depth
   NSMutableArray<NSDictionary *> *fragments = [NSMutableArray array];
   NSMutableDictionary<NSNumber *, NSNumber *> *firstCharIndexForDepth = [NSMutableDictionary dictionary];
 
@@ -40,41 +45,34 @@ NSString *const RichTextBlockquoteBackgroundColorAttributeName = @"RichTextBlock
                                             NSRange glyphRange, BOOL *stop) {
                                  NSRange charRange = [layoutManager characterRangeForGlyphRange:glyphRange
                                                                                actualGlyphRange:NULL];
-                                 if (charRange.location == NSNotFound || charRange.length == 0)
+                                 if (charRange.location == NSNotFound || charRange.length == 0) {
                                    return;
+                                 }
 
-                                 NSNumber *depth = nil;
-                                 NSUInteger depthLocation = NSNotFound;
-                                 [self findDepth:&depth
-                                        location:&depthLocation
-                                         inRange:charRange
-                                     textStorage:textStorage];
-                                 if (!depth)
+                                 NSNumber *depth = [textStorage attribute:RichTextBlockquoteDepthAttributeName
+                                                                  atIndex:charRange.location
+                                                           effectiveRange:NULL];
+                                 if (!depth) {
                                    return;
+                                 }
 
-                                 // Check if spacer inline to avoid method call overhead
-                                 NSParagraphStyle *paraStyle = [textStorage attribute:NSParagraphStyleAttributeName
-                                                                              atIndex:depthLocation
-                                                                       effectiveRange:NULL];
-                                 BOOL isSpacer =
-                                     (paraStyle && paraStyle.headIndent == 0 && paraStyle.minimumLineHeight > 0 &&
-                                      fabs(paraStyle.minimumLineHeight - paraStyle.maximumLineHeight) < 0.001);
+                                 NSUInteger charLocation = charRange.location;
+                                 BOOL isSpacer = nestedMarginBottom > 0
+                                                     ? [self isSpacerAtLocation:charLocation textStorage:textStorage]
+                                                     : NO;
 
-                                 // Track first non-spacer character for each depth
-                                 if (!firstCharIndexForDepth[depth] && !isSpacer) {
-                                   firstCharIndexForDepth[depth] = @(depthLocation);
+                                 if (nestedMarginBottom > 0 && !firstCharIndexForDepth[depth] && !isSpacer) {
+                                   firstCharIndexForDepth[depth] = @(charLocation);
                                  }
 
                                  [fragments addObject:@{
-                                   @"rect" : [NSValue valueWithCGRect:rect],
-                                   @"depth" : depth,
-                                   @"depthLocation" : @(depthLocation),
-                                   @"isSpacer" : @(isSpacer),
-                                   @"containerWidth" : @(container.size.width)
+                                   kFragmentRectKey : [NSValue valueWithCGRect:rect],
+                                   kFragmentDepthKey : depth,
+                                   kFragmentDepthLocationKey : @(charLocation),
+                                   kFragmentIsSpacerKey : @(isSpacer)
                                  }];
                                }];
 
-  // Draw all fragments
   for (NSDictionary *fragment in fragments) {
     [self drawFragment:fragment
                    textStorage:textStorage
@@ -83,28 +81,23 @@ NSString *const RichTextBlockquoteBackgroundColorAttributeName = @"RichTextBlock
             nestedMarginBottom:nestedMarginBottom
         firstCharIndexForDepth:firstCharIndexForDepth
                    borderColor:borderColor
-                   borderWidth:borderWidth];
+                   borderWidth:borderWidth
+                containerWidth:containerWidth];
   }
 }
 
 #pragma mark - Helper Methods
 
-- (void)findDepth:(NSNumber **)depth
-         location:(NSUInteger *)location
-          inRange:(NSRange)range
-      textStorage:(NSTextStorage *)textStorage
+- (BOOL)isSpacerAtLocation:(NSUInteger)location textStorage:(NSTextStorage *)textStorage
 {
-  *depth = nil;
-  *location = NSNotFound;
-
-  for (NSUInteger i = range.location; i < NSMaxRange(range); i++) {
-    NSNumber *foundDepth = [textStorage attribute:RichTextBlockquoteDepthAttributeName atIndex:i effectiveRange:NULL];
-    if (foundDepth) {
-      *depth = foundDepth;
-      *location = i;
-      return;
-    }
+  NSParagraphStyle *paraStyle = [textStorage attribute:NSParagraphStyleAttributeName
+                                               atIndex:location
+                                        effectiveRange:NULL];
+  if (!paraStyle) {
+    return NO;
   }
+  return (paraStyle.headIndent == 0 && paraStyle.minimumLineHeight > 0 &&
+          fabs(paraStyle.minimumLineHeight - paraStyle.maximumLineHeight) < 0.001);
 }
 
 - (void)drawFragment:(NSDictionary *)fragment
@@ -115,18 +108,16 @@ NSString *const RichTextBlockquoteBackgroundColorAttributeName = @"RichTextBlock
     firstCharIndexForDepth:(NSDictionary<NSNumber *, NSNumber *> *)firstCharIndexForDepth
                borderColor:(UIColor *)borderColor
                borderWidth:(CGFloat)borderWidth
+            containerWidth:(CGFloat)containerWidth
 {
-  // Extract all values once
-  CGRect rect = [fragment[@"rect"] CGRectValue];
-  NSInteger depth = [fragment[@"depth"] integerValue];
-  NSUInteger depthLocation = [fragment[@"depthLocation"] unsignedIntegerValue];
-  BOOL isSpacer = [fragment[@"isSpacer"] boolValue];
-  CGFloat containerWidth = [fragment[@"containerWidth"] doubleValue];
+  CGRect rect = [fragment[kFragmentRectKey] CGRectValue];
+  NSInteger depth = [fragment[kFragmentDepthKey] integerValue];
+  NSUInteger charLocation = [fragment[kFragmentDepthLocationKey] unsignedIntegerValue];
+  BOOL isSpacer = [fragment[kFragmentIsSpacerKey] boolValue];
   CGFloat baseY = origin.y + rect.origin.y;
 
-  // Draw background
   UIColor *backgroundColor = [textStorage attribute:RichTextBlockquoteBackgroundColorAttributeName
-                                            atIndex:depthLocation
+                                            atIndex:charLocation
                                      effectiveRange:NULL]
                                  ?: [_config blockquoteBackgroundColor];
   if (backgroundColor && backgroundColor != [UIColor clearColor]) {
@@ -135,17 +126,14 @@ NSString *const RichTextBlockquoteBackgroundColorAttributeName = @"RichTextBlock
     UIRectFill(bgRect);
   }
 
-  // Draw borders for all levels
   BOOL shouldApplyNestedOffset = (nestedMarginBottom > 0 && !isSpacer);
   for (NSInteger level = 0; level <= depth; level++) {
     CGFloat borderY = baseY;
     CGFloat borderHeight = rect.size.height;
 
-    // Apply nested margin offset for first non-spacer line at each depth
     if (level > 0 && shouldApplyNestedOffset) {
-      NSNumber *levelKey = @(level);
-      NSNumber *firstCharIdx = firstCharIndexForDepth[levelKey];
-      if (firstCharIdx && depthLocation == [firstCharIdx unsignedIntegerValue]) {
+      NSNumber *firstCharIdx = firstCharIndexForDepth[@(level)];
+      if (firstCharIdx && charLocation == [firstCharIdx unsignedIntegerValue]) {
         borderY += nestedMarginBottom;
         borderHeight = MAX(0, borderHeight - nestedMarginBottom);
       }
