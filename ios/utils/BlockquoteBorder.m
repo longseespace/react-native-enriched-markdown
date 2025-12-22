@@ -27,9 +27,6 @@ NSString *const RichTextBlockquoteBackgroundColorAttributeName = @"RichTextBlock
 
   UIColor *borderColor = [_config blockquoteBorderColor];
   CGFloat borderWidth = [_config blockquoteBorderWidth];
-  if (!borderColor || borderWidth <= 0)
-    return;
-
   CGFloat levelSpacing = borderWidth + [_config blockquoteGapWidth];
   CGFloat nestedMarginBottom = [_config blockquoteNestedMarginBottom];
 
