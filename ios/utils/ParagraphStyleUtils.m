@@ -31,7 +31,6 @@ void applyBlockquoteSpacing(NSMutableAttributedString *output, CGFloat marginBot
   NSMutableParagraphStyle *spacerStyle = [[NSMutableParagraphStyle alloc] init];
   spacerStyle.minimumLineHeight = marginBottom;
   spacerStyle.maximumLineHeight = marginBottom;
-  spacerStyle.headIndent = 0;
 
   [output addAttribute:NSParagraphStyleAttributeName value:spacerStyle range:NSMakeRange(spacerLocation, 1)];
 }
