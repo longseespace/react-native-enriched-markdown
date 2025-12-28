@@ -5,10 +5,6 @@
 #import "RendererFactory.h"
 #import "RichTextConfig.h"
 
-@interface AttributedRenderer (Helpers)
-- (NSAttributedString *)createTextString:(NSString *)text withFont:(UIFont *)font color:(UIColor *)color;
-@end
-
 @implementation AttributedRenderer {
   id _config;
   RendererFactory *_rendererFactory;
@@ -66,17 +62,6 @@
 - (id<NodeRenderer>)rendererForNode:(MarkdownASTNode *)node
 {
   return [_rendererFactory rendererForNodeType:node.type];
-}
-
-@end
-
-@implementation AttributedRenderer (Helpers)
-
-- (NSAttributedString *)createTextString:(NSString *)text withFont:(UIFont *)font color:(UIColor *)color
-{
-  return
-      [[NSAttributedString alloc] initWithString:text
-                                      attributes:@{NSFontAttributeName : font, NSForegroundColorAttributeName : color}];
 }
 
 @end
