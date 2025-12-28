@@ -19,6 +19,7 @@ typedef NS_ENUM(NSInteger, BlockType) { BlockTypeNone, BlockTypeParagraph, Block
 @property (nonatomic, assign) NSInteger blockquoteDepth;
 
 - (instancetype)init;
+- (void)reset;
 - (void)registerLinkRange:(NSRange)range url:(NSString *)url;
 - (void)setBlockStyle:(BlockType)type
              fontSize:(CGFloat)fontSize

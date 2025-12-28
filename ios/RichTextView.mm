@@ -38,6 +38,8 @@ static const CGFloat kLabelPadding = 10.0;
 @implementation RichTextView {
   UITextView *_textView;
   MarkdownParser *_parser;
+  AttributedRenderer *_attributedRenderer;
+  RenderContext *_renderContext;
 }
 
 + (ComponentDescriptorProvider)componentDescriptorProvider
@@ -147,16 +149,26 @@ static const CGFloat kLabelPadding = 10.0;
     return;
   }
 
-  AttributedRenderer *renderer = [[AttributedRenderer alloc] initWithConfig:_config];
-  RenderContext *renderContext = [RenderContext new];
+  // Reuse renderer instances instead of creating new ones on every render
+  if (!_attributedRenderer) {
+    _attributedRenderer = [[AttributedRenderer alloc] initWithConfig:_config];
+  }
 
-  NSMutableAttributedString *attributedText = [renderer renderRoot:ast context:renderContext];
+  // Reuse render context but reset it for each render
+  if (!_renderContext) {
+    _renderContext = [RenderContext new];
+  } else {
+    // Reset context state for new render
+    [_renderContext reset];
+  }
+
+  NSMutableAttributedString *attributedText = [_attributedRenderer renderRoot:ast context:_renderContext];
 
   // Add custom attributes for links
-  for (NSUInteger i = 0; i < renderContext.linkRanges.count; i++) {
-    NSValue *rangeValue = renderContext.linkRanges[i];
+  for (NSUInteger i = 0; i < _renderContext.linkRanges.count; i++) {
+    NSValue *rangeValue = _renderContext.linkRanges[i];
     NSRange range = [rangeValue rangeValue];
-    NSString *url = renderContext.linkURLs[i];
+    NSString *url = _renderContext.linkURLs[i];
     // Add custom attribute for link detection
     [attributedText addAttribute:@"linkURL" value:url range:range];
   }

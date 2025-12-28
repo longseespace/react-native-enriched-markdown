@@ -65,6 +65,14 @@
   _currentHeadingLevel = 0;
 }
 
+- (void)reset
+{
+  [_linkRanges removeAllObjects];
+  [_linkURLs removeAllObjects];
+  [self clearBlockStyle];
+  _blockquoteDepth = 0;
+}
+
 + (BOOL)shouldPreserveColors:(NSDictionary *)existingAttributes
 {
   if (existingAttributes[NSLinkAttributeName]) {
