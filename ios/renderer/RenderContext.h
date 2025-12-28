@@ -33,4 +33,17 @@ typedef NS_ENUM(NSInteger, BlockType) { BlockTypeNone, BlockTypeParagraph, Block
          headingLevel:(NSInteger)headingLevel;
 - (BlockStyle *)getBlockStyle;
 - (void)clearBlockStyle;
+
+/**
+ * Checks if colors should be preserved based on existing attributes.
+ * Returns YES if the text is inside a link or inline code, which means
+ * we should preserve their colors instead of applying new colors.
+ */
++ (BOOL)shouldPreserveColors:(NSDictionary *)existingAttributes;
+
+/**
+ * Calculates the color that strong would use based on the configured strong color and block style.
+ * Uses strongColor if explicitly set (different from block color), otherwise uses block color.
+ */
++ (UIColor *)calculateStrongColor:(UIColor *)configStrongColor blockColor:(UIColor *)blockColor;
 @end

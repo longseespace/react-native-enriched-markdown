@@ -1,4 +1,5 @@
 #import "RenderContext.h"
+#import "CodeBackground.h"
 
 // BlockStyle is a simple data class with only properties.
 // Properties are automatically synthesized, so no implementation code is needed.
@@ -62,6 +63,26 @@
   _currentBlockType = BlockTypeNone;
   _currentBlockStyle = nil;
   _currentHeadingLevel = 0;
+}
+
++ (BOOL)shouldPreserveColors:(NSDictionary *)existingAttributes
+{
+  if (existingAttributes[NSLinkAttributeName]) {
+    return YES;
+  }
+
+  if (existingAttributes[RichTextCodeAttributeName]) {
+    return YES;
+  }
+  return NO;
+}
+
++ (UIColor *)calculateStrongColor:(UIColor *)configStrongColor blockColor:(UIColor *)blockColor
+{
+  if (configStrongColor && ![configStrongColor isEqual:blockColor]) {
+    return configStrongColor;
+  }
+  return blockColor;
 }
 
 @end

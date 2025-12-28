@@ -21,11 +21,7 @@
   return self;
 }
 
-- (void)renderNode:(MarkdownASTNode *)node
-              into:(NSMutableAttributedString *)output
-          withFont:(UIFont *)font
-             color:(UIColor *)color
-           context:(RenderContext *)context
+- (void)renderNode:(MarkdownASTNode *)node into:(NSMutableAttributedString *)output context:(RenderContext *)context
 {
 
   BlockStyle *blockStyle = [context getBlockStyle];
@@ -42,7 +38,7 @@
 
   NSUInteger start = output.length;
 
-  [_rendererFactory renderChildrenOfNode:node into:output withFont:monospacedFont color:codeColor context:context];
+  [_rendererFactory renderChildrenOfNode:node into:output context:context];
 
   NSUInteger len = output.length - start;
   if (len > 0) {

@@ -1,4 +1,5 @@
 #import "ParagraphRenderer.h"
+#import "FontUtils.h"
 #import "MarkdownASTNode.h"
 #import "ParagraphStyleUtils.h"
 #import "RendererFactory.h"
@@ -18,11 +19,7 @@
   return self;
 }
 
-- (void)renderNode:(MarkdownASTNode *)node
-              into:(NSMutableAttributedString *)output
-          withFont:(UIFont *)font
-             color:(UIColor *)color
-           context:(RenderContext *)context
+- (void)renderNode:(MarkdownASTNode *)node into:(NSMutableAttributedString *)output context:(RenderContext *)context
 {
 
   RichTextConfig *config = (RichTextConfig *)self.config;
@@ -45,7 +42,7 @@
 
   NSUInteger paragraphStart = output.length;
   @try {
-    [_rendererFactory renderChildrenOfNode:node into:output withFont:font color:color context:context];
+    [_rendererFactory renderChildrenOfNode:node into:output context:context];
   } @finally {
     // Only clear blockStyle if we set it (paragraph is top-level)
     if (shouldSetParagraphStyle) {

@@ -1,4 +1,5 @@
 #import "HeadingRenderer.h"
+#import "FontUtils.h"
 #import "ParagraphStyleUtils.h"
 #import "RenderContext.h"
 #import "RendererFactory.h"
@@ -18,14 +19,8 @@
   return self;
 }
 
-- (void)renderNode:(MarkdownASTNode *)node
-              into:(NSMutableAttributedString *)output
-          withFont:(UIFont *)font
-             color:(UIColor *)color
-           context:(RenderContext *)context
+- (void)renderNode:(MarkdownASTNode *)node into:(NSMutableAttributedString *)output context:(RenderContext *)context
 {
-
-  UIFont *headingFont = font;
 
   NSInteger level = 1; // Default to H1
   NSString *levelString = node.attributes[@"level"];
@@ -46,21 +41,12 @@
                    color:headingColor
             headingLevel:level];
 
-  // Try custom font family first, fallback to base font with size
-  if (fontFamily.length > 0) {
-    UIFont *customFont = [UIFont fontWithName:fontFamily size:fontSize];
-    headingFont = customFont ?: [UIFont fontWithDescriptor:font.fontDescriptor size:fontSize];
-  } else {
-    headingFont = [UIFont fontWithDescriptor:font.fontDescriptor size:fontSize];
-  }
+  BlockStyle *blockStyle = [context getBlockStyle];
+  UIFont *headingFont = fontFromBlockStyle(blockStyle);
 
   NSUInteger headingStart = output.length;
   @try {
-    [_rendererFactory renderChildrenOfNode:node
-                                      into:output
-                                  withFont:headingFont
-                                     color:headingColor ?: color
-                                   context:context];
+    [_rendererFactory renderChildrenOfNode:node into:output context:context];
   } @finally {
     [context clearBlockStyle];
   }

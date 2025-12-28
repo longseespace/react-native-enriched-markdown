@@ -69,14 +69,12 @@
 
 - (void)renderChildrenOfNode:(MarkdownASTNode *)node
                         into:(NSMutableAttributedString *)output
-                    withFont:(UIFont *)font
-                       color:(UIColor *)color
                      context:(RenderContext *)context
 {
   for (MarkdownASTNode *child in node.children) {
     id<NodeRenderer> renderer = [self rendererForNodeType:child.type];
     if (renderer) {
-      [renderer renderNode:child into:output withFont:font color:color context:context];
+      [renderer renderNode:child into:output context:context];
     }
   }
 }

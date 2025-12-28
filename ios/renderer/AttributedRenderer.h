@@ -5,8 +5,5 @@
 
 @interface AttributedRenderer : NSObject
 - (instancetype)initWithConfig:(id)config;
-- (NSMutableAttributedString *)renderRoot:(MarkdownASTNode *)root
-                                     font:(UIFont *)font
-                                    color:(UIColor *)color
-                                  context:(RenderContext *)context;
+- (NSMutableAttributedString *)renderRoot:(MarkdownASTNode *)root context:(RenderContext *)context;
 @end

@@ -22,11 +22,7 @@ static NSString *const kNestedInfoRangeKey = @"range";
   return self;
 }
 
-- (void)renderNode:(MarkdownASTNode *)node
-              into:(NSMutableAttributedString *)output
-          withFont:(UIFont *)font
-             color:(UIColor *)color
-           context:(RenderContext *)context
+- (void)renderNode:(MarkdownASTNode *)node into:(NSMutableAttributedString *)output context:(RenderContext *)context
 {
   RichTextConfig *config = (RichTextConfig *)self.config;
   NSInteger currentDepth = context.blockquoteDepth;
@@ -38,17 +34,9 @@ static NSString *const kNestedInfoRangeKey = @"range";
               fontWeight:[config blockquoteFontWeight]
                    color:[config blockquoteColor]];
 
-  BlockStyle *blockStyle = [context getBlockStyle];
-  UIFont *blockquoteFont = fontFromBlockStyle(blockStyle) ?: font;
-  UIColor *blockquoteColor = blockStyle.color ?: color;
-
   NSUInteger blockquoteStart = output.length;
   @try {
-    [_rendererFactory renderChildrenOfNode:node
-                                      into:output
-                                  withFont:blockquoteFont
-                                     color:blockquoteColor
-                                   context:context];
+    [_rendererFactory renderChildrenOfNode:node into:output context:context];
   } @finally {
     [context clearBlockStyle];
     context.blockquoteDepth = currentDepth;
