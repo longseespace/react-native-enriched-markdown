@@ -9,15 +9,22 @@ import org.commonmark.node.Node
 
 class Renderer {
   private var style: RichTextStyle? = null
+  private var lastConfiguredStyle: RichTextStyle? = null
+  private var lastConfiguredContext: Context? = null
   private lateinit var rendererFactory: RendererFactory
 
   fun configure(
     style: RichTextStyle,
     context: Context,
   ) {
-    this.style = style
-    val config = RendererConfig(style)
-    rendererFactory = RendererFactory(config, context)
+    // Only reconfigure if style or context changed
+    if (lastConfiguredStyle !== style || lastConfiguredContext !== context) {
+      this.style = style
+      lastConfiguredStyle = style
+      lastConfiguredContext = context
+      val config = RendererConfig(style)
+      rendererFactory = RendererFactory(config, context)
+    }
   }
 
   fun renderDocument(
