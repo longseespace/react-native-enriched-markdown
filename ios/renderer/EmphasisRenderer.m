@@ -64,22 +64,15 @@
     // If nested inside strong, preserve strong color; otherwise use emphasis color or block color
     UIColor *emphasisColor = isNestedInStrong ? existingColor : (configEmphasisColor ?: blockStyle.color);
 
-    NSMutableDictionary *emphasisAttributes = [existingAttributes ?: @{} mutableCopy];
-    BOOL fontNeedsUpdate = ![verifiedItalicFont isEqual:currentFont];
-    BOOL colorNeedsUpdate =
-        !isNestedInStrong && configEmphasisColor && ![RenderContext shouldPreserveColors:existingAttributes];
+    BOOL shouldPreserveColors = isNestedInStrong || [RenderContext shouldPreserveColors:existingAttributes];
+    UIColor *colorToApply = configEmphasisColor ? emphasisColor : nil;
 
-    if (fontNeedsUpdate) {
-      emphasisAttributes[NSFontAttributeName] = verifiedItalicFont;
-    }
-
-    if (colorNeedsUpdate) {
-      emphasisAttributes[NSForegroundColorAttributeName] = emphasisColor;
-    }
-
-    if (fontNeedsUpdate || colorNeedsUpdate) {
-      [output setAttributes:emphasisAttributes range:range];
-    }
+    [RenderContext applyFontAndColorAttributes:output
+                                         range:range
+                                          font:verifiedItalicFont
+                                         color:colorToApply
+                            existingAttributes:existingAttributes
+                          shouldPreserveColors:shouldPreserveColors];
   }
 }
 

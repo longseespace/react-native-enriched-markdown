@@ -57,21 +57,15 @@
     UIFont *currentFont = existingAttributes[NSFontAttributeName];
     UIFont *verifiedStrongFont = [self ensureFontIsBold:currentFont ?: strongFont];
 
-    NSMutableDictionary *strongAttributes = [existingAttributes ?: @{} mutableCopy];
-    BOOL fontNeedsUpdate = ![verifiedStrongFont isEqual:currentFont];
-    BOOL colorNeedsUpdate = configStrongColor && ![RenderContext shouldPreserveColors:existingAttributes];
+    BOOL shouldPreserveColors = [RenderContext shouldPreserveColors:existingAttributes];
+    UIColor *colorToApply = configStrongColor ? strongColor : nil;
 
-    if (fontNeedsUpdate) {
-      strongAttributes[NSFontAttributeName] = verifiedStrongFont;
-    }
-
-    if (colorNeedsUpdate) {
-      strongAttributes[NSForegroundColorAttributeName] = strongColor;
-    }
-
-    if (fontNeedsUpdate || colorNeedsUpdate) {
-      [output setAttributes:strongAttributes range:range];
-    }
+    [RenderContext applyFontAndColorAttributes:output
+                                         range:range
+                                          font:verifiedStrongFont
+                                         color:colorToApply
+                            existingAttributes:existingAttributes
+                          shouldPreserveColors:shouldPreserveColors];
   }
 }
 

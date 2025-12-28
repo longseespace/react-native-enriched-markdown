@@ -52,4 +52,15 @@ typedef NS_ENUM(NSInteger, BlockType) { BlockTypeNone, BlockTypeParagraph, Block
  * Returns a range with length 0 if no content was rendered.
  */
 + (NSRange)rangeForRenderedContent:(NSMutableAttributedString *)output start:(NSUInteger)start;
+
+/**
+ * Applies font and color attributes conditionally, only updating if they've changed.
+ * Returns YES if any attributes were updated, NO otherwise.
+ */
++ (BOOL)applyFontAndColorAttributes:(NSMutableAttributedString *)output
+                              range:(NSRange)range
+                               font:(UIFont *)font
+                              color:(UIColor *)color
+                 existingAttributes:(NSDictionary *)existingAttributes
+               shouldPreserveColors:(BOOL)shouldPreserveColors;
 @end

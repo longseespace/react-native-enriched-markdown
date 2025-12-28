@@ -91,4 +91,35 @@
   return NSMakeRange(start, length);
 }
 
++ (BOOL)applyFontAndColorAttributes:(NSMutableAttributedString *)output
+                              range:(NSRange)range
+                               font:(UIFont *)font
+                              color:(UIColor *)color
+                 existingAttributes:(NSDictionary *)existingAttributes
+               shouldPreserveColors:(BOOL)shouldPreserveColors
+{
+  UIFont *currentFont = existingAttributes[NSFontAttributeName];
+  UIColor *currentColor = existingAttributes[NSForegroundColorAttributeName];
+
+  BOOL fontNeedsUpdate = font && ![font isEqual:currentFont];
+  BOOL colorNeedsUpdate = color && !shouldPreserveColors && ![color isEqual:currentColor];
+
+  if (fontNeedsUpdate || colorNeedsUpdate) {
+    NSMutableDictionary *attributes = [existingAttributes ?: @{} mutableCopy];
+
+    if (fontNeedsUpdate) {
+      attributes[NSFontAttributeName] = font;
+    }
+
+    if (colorNeedsUpdate) {
+      attributes[NSForegroundColorAttributeName] = color;
+    }
+
+    [output setAttributes:attributes range:range];
+    return YES;
+  }
+
+  return NO;
+}
+
 @end
