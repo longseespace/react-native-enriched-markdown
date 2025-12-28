@@ -2,6 +2,7 @@ package com.richtext.renderer
 
 import android.content.Context
 import android.text.SpannableStringBuilder
+import android.text.style.LineHeightSpan
 import com.richtext.spans.RichTextBlockquoteSpan
 import com.richtext.spans.RichTextCodeStyleSpan
 import com.richtext.spans.RichTextEmphasisSpan
@@ -375,43 +376,33 @@ class BlockquoteRenderer(
       factory.blockStyleContext.blockquoteDepth = currentDepth
     }
 
-    val contentLength = builder.length - start
+    val end = builder.length
+    val contentLength = end - start
     if (contentLength == 0) return
 
-    val nestedRanges = collectNestedBlockquotes(builder, start, start + contentLength, currentDepth)
+    val nestedRanges = collectNestedBlockquotes(builder, start, end, currentDepth)
 
     // Apply blockquote span to entire range (includes nested blockquotes for border rendering)
     builder.setSpan(
       RichTextBlockquoteSpan(blockquoteStyle, currentDepth, factory.context, config.style),
       start,
-      start + contentLength,
+      end,
       android.text.SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE,
     )
 
     // Apply lineHeight to parent content, excluding nested blockquote ranges
-    applySpansExcludingNested(
-      builder,
-      nestedRanges,
-      start,
-      start + contentLength,
-      listOf(createLineHeightSpan(blockquoteStyle.lineHeight)),
-    )
+    applySpansExcludingNested(builder, nestedRanges, start, end, createLineHeightSpan(blockquoteStyle.lineHeight))
 
-    // Apply nestedMarginBottom spacing (excluding last newline) if there are nested blockquotes
+    // Apply nestedMarginBottom spacing if there are nested blockquotes
     if (blockquoteStyle.nestedMarginBottom > 0 && nestedRanges.isNotEmpty()) {
-      val spanEnd =
-        if (contentLength > 0 && builder[start + contentLength - 1] == '\n') {
-          start + contentLength - 1
-        } else {
-          start + contentLength
-        }
-      if (spanEnd > start) {
+      val contentEnd = getContentEndExcludingLastNewline(builder, start, end)
+      if (contentEnd > start) {
         applySpansExcludingNested(
           builder,
           nestedRanges,
           start,
-          spanEnd,
-          listOf(com.richtext.spans.RichTextMarginBottomSpan(blockquoteStyle.nestedMarginBottom)),
+          contentEnd,
+          com.richtext.spans.RichTextMarginBottomSpan(blockquoteStyle.nestedMarginBottom),
         )
       }
     }
@@ -430,7 +421,7 @@ class BlockquoteRenderer(
   }
 
   /**
-   * Applies spans to ranges within [start, end), excluding nested blockquote ranges.
+   * Applies a span to ranges within [start, end), excluding nested blockquote ranges.
    * This prevents conflicts between parent and nested blockquote spans.
    */
   private fun applySpansExcludingNested(
@@ -438,10 +429,8 @@ class BlockquoteRenderer(
     nestedRanges: List<Pair<Int, Int>>,
     start: Int,
     end: Int,
-    spans: List<Any>,
+    span: LineHeightSpan,
   ) {
-    if (spans.isEmpty()) return
-
     val rangesToApply =
       if (nestedRanges.isEmpty()) {
         listOf(Pair(start, end))
@@ -461,14 +450,7 @@ class BlockquoteRenderer(
       }
 
     for ((rangeStart, rangeEnd) in rangesToApply) {
-      for (span in spans) {
-        builder.setSpan(
-          span,
-          rangeStart,
-          rangeEnd,
-          android.text.SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE,
-        )
-      }
+      builder.setSpan(span, rangeStart, rangeEnd, android.text.SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE)
     }
   }
 
@@ -487,9 +469,13 @@ class BlockquoteRenderer(
           spanStart >= rangeStart &&
           spanEnd <= rangeEnd &&
           spanStart > rangeStart
-      }.map { span ->
-        Pair(builder.getSpanStart(span), builder.getSpanEnd(span))
-      }
+      }.map { span -> Pair(builder.getSpanStart(span), builder.getSpanEnd(span)) }
+
+  private fun getContentEndExcludingLastNewline(
+    builder: SpannableStringBuilder,
+    start: Int,
+    end: Int,
+  ): Int = if (end > start && builder[end - 1] == '\n') end - 1 else end
 }
 
 class RendererFactory(
