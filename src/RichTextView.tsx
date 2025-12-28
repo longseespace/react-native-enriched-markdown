@@ -23,6 +23,24 @@ export interface HeadingStyle {
   lineHeight?: number;
 }
 
+export interface BlockquoteStyle {
+  fontSize?: number;
+  fontFamily?: string;
+  fontWeight?: string;
+  color?: string;
+  marginBottom?: number;
+  nestedMarginBottom?: number;
+  lineHeight?: number;
+  borderColor?: string;
+  borderWidth?: number;
+  gapWidth?: number;
+  /**
+   * Background color for blockquotes. Defaults to transparent.
+   * Note: When a non-transparent backgroundColor is set, text selection within blockquotes will not be visible (iOS only).
+   */
+  backgroundColor?: string;
+}
+
 export interface LinkStyle {
   color?: string;
   underline?: boolean;
@@ -60,6 +78,7 @@ export interface RichTextStyle {
   h4?: HeadingStyle;
   h5?: HeadingStyle;
   h6?: HeadingStyle;
+  blockquote?: BlockquoteStyle;
   link?: LinkStyle;
   strong?: StrongStyle;
   em?: EmphasisStyle;

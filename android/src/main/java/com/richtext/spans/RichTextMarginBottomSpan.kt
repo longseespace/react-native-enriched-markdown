@@ -5,7 +5,9 @@ import android.text.style.LineHeightSpan
 
 /**
  * Adds bottom margin to a block element (paragraphs/headings) using LineHeightSpan.
- * Applied to block content + newline. Adds spacing by adjusting descent and bottom font metrics.
+ *
+ * For spacer lines (single newline), sets the line height to exactly marginBottom.
+ * For regular lines, adds marginBottom only at paragraph boundaries to preserve lineHeight.
  *
  * @param marginBottom The margin in pixels to add below the block (must be > 0)
  */
@@ -20,9 +22,21 @@ class RichTextMarginBottomSpan(
     lineHeight: Int,
     fm: Paint.FontMetricsInt,
   ) {
-    // Only add margin if we're at the line containing the span's newline
-    if (end > start && text[end - 1] == '\n') {
-      val marginPixels = marginBottom.toInt()
+    if (end <= start || text[end - 1] != '\n') return
+
+    val marginPixels = marginBottom.toInt()
+
+    if (end - start == 1 && text[start] == '\n') {
+      fm.top = 0
+      fm.ascent = 0
+      fm.descent = marginPixels
+      fm.bottom = marginPixels
+      return
+    }
+
+    // Only add spacing at paragraph boundaries (newline followed by non-newline content)
+    // to prevent affecting lineHeight on every line
+    if (end < text.length && text[end] != '\n') {
       fm.descent += marginPixels
       fm.bottom += marginPixels
     }

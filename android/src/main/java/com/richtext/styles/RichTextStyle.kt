@@ -52,6 +52,20 @@ data class InlineImageStyle(
   val size: Float,
 )
 
+data class BlockquoteStyle(
+  val fontSize: Float,
+  val fontFamily: String,
+  val fontWeight: String,
+  val color: Int,
+  val marginBottom: Float,
+  val nestedMarginBottom: Float,
+  val lineHeight: Float,
+  val borderColor: Int,
+  val borderWidth: Float,
+  val gapWidth: Float,
+  val backgroundColor: Int?,
+)
+
 class RichTextStyle(
   style: ReadableMap,
   private val context: Context,
@@ -64,6 +78,7 @@ class RichTextStyle(
   private lateinit var codeStyle: CodeStyle
   private lateinit var imageStyle: ImageStyle
   private lateinit var inlineImageStyle: InlineImageStyle
+  private lateinit var blockquoteStyle: BlockquoteStyle
 
   init {
     parseStyles(style)
@@ -94,6 +109,8 @@ class RichTextStyle(
   fun getImageStyle(): ImageStyle = imageStyle
 
   fun getInlineImageStyle(): InlineImageStyle = inlineImageStyle
+
+  fun getBlockquoteStyle(): BlockquoteStyle = blockquoteStyle
 
   private fun parseOptionalColor(
     map: ReadableMap,
@@ -226,5 +243,41 @@ class RichTextStyle(
     val inlineImageSize = PixelUtil.toPixelFromDIP(inlineImageStyleMap.getInt("size").toFloat())
 
     inlineImageStyle = InlineImageStyle(inlineImageSize)
+
+    // Parse blockquote style
+    val blockquoteStyleMap =
+      requireNotNull(style.getMap("blockquote")) {
+        "Blockquote style not found. JS should always provide defaults."
+      }
+    val blockquoteFontSize = PixelUtil.toPixelFromSP(blockquoteStyleMap.getDouble("fontSize").toFloat())
+    val blockquoteFontFamily = blockquoteStyleMap.getString("fontFamily") ?: ""
+    val blockquoteFontWeight = blockquoteStyleMap.getString("fontWeight") ?: "normal"
+    val blockquoteColor = parseColor(blockquoteStyleMap, "color")
+    val blockquoteMarginBottom = PixelUtil.toPixelFromDIP(parseOptionalDouble(blockquoteStyleMap, "marginBottom", 16.0).toFloat())
+    val blockquoteNestedMarginBottom =
+      PixelUtil.toPixelFromDIP(
+        parseOptionalDouble(blockquoteStyleMap, "nestedMarginBottom", 16.0).toFloat(),
+      )
+    val blockquoteLineHeightRaw = parseOptionalDouble(blockquoteStyleMap, "lineHeight", 0.0).toFloat()
+    val blockquoteLineHeight = PixelUtil.toPixelFromSP(blockquoteLineHeightRaw)
+    val blockquoteBorderColor = parseColor(blockquoteStyleMap, "borderColor")
+    val blockquoteBorderWidth = PixelUtil.toPixelFromDIP(parseOptionalDouble(blockquoteStyleMap, "borderWidth", 4.0).toFloat())
+    val blockquoteGapWidth = PixelUtil.toPixelFromDIP(parseOptionalDouble(blockquoteStyleMap, "gapWidth", 16.0).toFloat())
+    val blockquoteBackgroundColor = parseOptionalColor(blockquoteStyleMap, "backgroundColor")
+
+    blockquoteStyle =
+      BlockquoteStyle(
+        blockquoteFontSize,
+        blockquoteFontFamily,
+        blockquoteFontWeight,
+        blockquoteColor,
+        blockquoteMarginBottom,
+        blockquoteNestedMarginBottom,
+        blockquoteLineHeight,
+        blockquoteBorderColor,
+        blockquoteBorderWidth,
+        blockquoteGapWidth,
+        blockquoteBackgroundColor,
+      )
   }
 }

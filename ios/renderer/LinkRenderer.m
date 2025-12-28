@@ -31,7 +31,8 @@
   RichTextConfig *config = (RichTextConfig *)self.config;
   UIColor *linkColor = [config linkColor];
 
-  UIFont *linkFont = fontFromBlockStyle(blockStyle);
+  // Links inherit fontSize, fontFamily, fontWeight from blockStyle (blockquote/paragraph) to maintain context styling
+  UIFont *linkFont = fontFromBlockStyle(blockStyle) ?: font;
 
   [_rendererFactory renderChildrenOfNode:node into:output withFont:linkFont color:linkColor context:context];
 
