@@ -67,11 +67,10 @@
 
 + (BOOL)shouldPreserveColors:(NSDictionary *)existingAttributes
 {
-  // Preserve link color if inside a link
   if (existingAttributes[NSLinkAttributeName]) {
     return YES;
   }
-  // Preserve code color if inside inline code
+
   if (existingAttributes[RichTextCodeAttributeName]) {
     return YES;
   }
@@ -80,8 +79,6 @@
 
 + (UIColor *)calculateStrongColor:(UIColor *)configStrongColor blockColor:(UIColor *)blockColor
 {
-  // Use strongColor if explicitly set (different from block color), otherwise use block color
-  // This matches Android's logic for consistency
   if (configStrongColor && ![configStrongColor isEqual:blockColor]) {
     return configStrongColor;
   }
