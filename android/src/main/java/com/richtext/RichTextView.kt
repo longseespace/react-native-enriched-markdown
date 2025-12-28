@@ -17,7 +17,7 @@ import com.richtext.styles.RichTextStyle
 import com.richtext.utils.CodeBackground
 
 class RichTextView : AppCompatTextView {
-  private val parser = Parser()
+  private val parser = Parser.shared
   private val renderer = Renderer()
   private var onLinkPressCallback: ((String) -> Unit)? = null
 

@@ -2,10 +2,10 @@ package com.richtext.parser
 
 import android.util.Log
 import org.commonmark.node.Document
-import org.commonmark.parser.Parser
+import org.commonmark.parser.Parser as CommonMarkParser
 
 class Parser {
-  private val parser = Parser.builder().build()
+  private val parser = CommonMarkParser.builder().build()
 
   fun parseMarkdown(markdown: String): Document? {
     if (markdown.isBlank()) {
@@ -25,5 +25,13 @@ class Parser {
       Log.e("MarkdownParser", "CommonMark parsing failed: ${e.message}")
       return null
     }
+  }
+
+  companion object {
+    /**
+     * Shared parser instance. Parser is stateless and thread-safe, so it can be reused
+     * across all RichTextView instances to avoid unnecessary allocations.
+     */
+    val shared: Parser = Parser()
   }
 }
