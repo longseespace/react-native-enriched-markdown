@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Typeface
 import android.os.Build
 import android.text.Layout
+import android.text.SpannableString
 import android.text.SpannableStringBuilder
 import android.text.TextPaint
 import android.text.style.LineHeightSpan
@@ -17,6 +18,16 @@ import com.richtext.styles.ParagraphStyle
 import com.richtext.styles.RichTextStyle
 import org.commonmark.node.Image
 import org.commonmark.node.Paragraph
+
+// ============================================================================
+// Constants
+// ============================================================================
+
+/**
+ * Standard span flags for exclusive span boundaries.
+ * Spans with these flags do not expand when text is inserted at their boundaries.
+ */
+const val SPAN_FLAGS_EXCLUSIVE_EXCLUSIVE = SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE
 
 // ============================================================================
 // TextPaint Extensions
@@ -233,7 +244,7 @@ fun applyMarginBottom(
       RichTextMarginBottomSpan(marginBottom),
       start,
       builder.length, // Includes the newline we just appended
-      android.text.SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE,
+      SPAN_FLAGS_EXCLUSIVE_EXCLUSIVE,
     )
   }
 }

@@ -14,6 +14,7 @@ import com.richtext.spans.RichTextStrongSpan
 import com.richtext.spans.RichTextTextSpan
 import com.richtext.styles.BlockquoteStyle
 import com.richtext.styles.RichTextStyle
+import com.richtext.utils.SPAN_FLAGS_EXCLUSIVE_EXCLUSIVE
 import com.richtext.utils.applyMarginBottom
 import com.richtext.utils.containsBlockImage
 import com.richtext.utils.createLineHeightSpan
@@ -98,7 +99,7 @@ class ParagraphRenderer(
           createLineHeightSpan(paragraphStyle.lineHeight),
           start,
           end,
-          android.text.SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE,
+          SPAN_FLAGS_EXCLUSIVE_EXCLUSIVE,
         )
       }
 
@@ -153,14 +154,14 @@ class HeadingRenderer(
         ),
         start,
         end,
-        android.text.SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE,
+        SPAN_FLAGS_EXCLUSIVE_EXCLUSIVE,
       )
 
       builder.setSpan(
         createLineHeightSpan(headingStyle.lineHeight),
         start,
         end,
-        android.text.SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE,
+        SPAN_FLAGS_EXCLUSIVE_EXCLUSIVE,
       )
 
       applyMarginBottom(builder, start, headingStyle.marginBottom)
@@ -183,7 +184,7 @@ class TextRenderer : NodeRenderer {
         RichTextTextSpan(blockStyle, factory.context),
         start,
         end,
-        android.text.SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE,
+        SPAN_FLAGS_EXCLUSIVE_EXCLUSIVE,
       )
     }
   }
@@ -206,7 +207,7 @@ class LinkRenderer(
         RichTextLinkSpan(url, onLinkPress, config.style, blockStyle, factory.context),
         start,
         end,
-        android.text.SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE,
+        SPAN_FLAGS_EXCLUSIVE_EXCLUSIVE,
       )
     }
   }
@@ -228,7 +229,7 @@ class StrongRenderer(
         RichTextStrongSpan(config.style, blockStyle),
         start,
         end,
-        android.text.SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE,
+        SPAN_FLAGS_EXCLUSIVE_EXCLUSIVE,
       )
     }
   }
@@ -250,7 +251,7 @@ class EmphasisRenderer(
         RichTextEmphasisSpan(config.style, blockStyle),
         start,
         end,
-        android.text.SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE,
+        SPAN_FLAGS_EXCLUSIVE_EXCLUSIVE,
       )
     }
   }
@@ -273,7 +274,7 @@ class CodeRenderer(
         RichTextCodeStyleSpan(config.style, blockStyle),
         start,
         end,
-        android.text.SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE,
+        SPAN_FLAGS_EXCLUSIVE_EXCLUSIVE,
       )
     }
   }
@@ -306,7 +307,7 @@ class ImageRenderer(
       RichTextImageSpan(context, imageUrl, config.style, isInline),
       start,
       end,
-      android.text.SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE,
+      SPAN_FLAGS_EXCLUSIVE_EXCLUSIVE,
     )
     // Note: marginBottom for images is handled by ParagraphRenderer when the paragraph contains only an image
     // This ensures consistent spacing behavior and prevents paragraph's marginBottom from affecting images
@@ -359,7 +360,7 @@ class BlockquoteRenderer(
       RichTextBlockquoteSpan(blockquoteStyle, currentDepth, factory.context, config.style),
       start,
       end,
-      android.text.SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE,
+      SPAN_FLAGS_EXCLUSIVE_EXCLUSIVE,
     )
 
     // Apply lineHeight to parent content, excluding nested blockquote ranges
@@ -387,7 +388,7 @@ class BlockquoteRenderer(
         com.richtext.spans.RichTextMarginBottomSpan(blockquoteStyle.marginBottom),
         spacerLocation,
         builder.length,
-        android.text.SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE,
+        SPAN_FLAGS_EXCLUSIVE_EXCLUSIVE,
       )
     }
   }
@@ -422,7 +423,7 @@ class BlockquoteRenderer(
       }
 
     for ((rangeStart, rangeEnd) in rangesToApply) {
-      builder.setSpan(span, rangeStart, rangeEnd, android.text.SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE)
+      builder.setSpan(span, rangeStart, rangeEnd, SPAN_FLAGS_EXCLUSIVE_EXCLUSIVE)
     }
   }
 
