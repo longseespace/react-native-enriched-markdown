@@ -44,22 +44,22 @@
   BlockStyle *blockStyle = [context getBlockStyle];
   UIFont *headingFont = fontFromBlockStyle(blockStyle);
 
-  NSUInteger headingStart = output.length;
+  NSUInteger start = output.length;
   @try {
     [_rendererFactory renderChildrenOfNode:node into:output context:context];
   } @finally {
     [context clearBlockStyle];
   }
 
-  NSUInteger headingEnd = output.length;
+  NSUInteger end = output.length;
 
   // Apply lineHeight to heading content, then add spacing
   CGFloat lineHeight = [self getLineHeightForLevel:level config:_config];
-  NSRange headingContentRange = NSMakeRange(headingStart, headingEnd - headingStart);
+  NSRange headingContentRange = NSMakeRange(start, end - start);
   applyLineHeight(output, headingContentRange, lineHeight);
 
   CGFloat marginBottom = [self getMarginBottomForLevel:level config:_config];
-  applyParagraphSpacing(output, headingStart, marginBottom);
+  applyParagraphSpacing(output, start, marginBottom);
 }
 
 #pragma mark - Heading Style Helpers

@@ -39,7 +39,7 @@
                      color:paragraphColor];
   }
 
-  NSUInteger paragraphStart = output.length;
+  NSUInteger start = output.length;
   @try {
     [_rendererFactory renderChildrenOfNode:node into:output context:context];
   } @finally {
@@ -49,7 +49,7 @@
     }
   }
 
-  NSUInteger paragraphEnd = output.length;
+  NSUInteger end = output.length;
 
   // Skip lineHeight for paragraphs containing block images to prevent unwanted spacing above image
   BOOL containsBlockImage =
@@ -57,7 +57,7 @@
 
   if (!containsBlockImage) {
     CGFloat lineHeight = [_config paragraphLineHeight];
-    NSRange paragraphContentRange = NSMakeRange(paragraphStart, paragraphEnd - paragraphStart);
+    NSRange paragraphContentRange = NSMakeRange(start, end - start);
     applyLineHeight(output, paragraphContentRange, lineHeight);
   }
 
@@ -67,7 +67,7 @@
   if (shouldSetParagraphStyle) {
     marginBottom = [self getMarginBottomForParagraph:node config:_config];
   }
-  applyParagraphSpacing(output, paragraphStart, marginBottom);
+  applyParagraphSpacing(output, start, marginBottom);
 }
 
 - (CGFloat)getMarginBottomForParagraph:(MarkdownASTNode *)node config:(RichTextConfig *)config

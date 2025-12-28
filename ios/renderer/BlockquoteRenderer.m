@@ -34,7 +34,7 @@ static NSString *const kNestedInfoRangeKey = @"range";
               fontWeight:[_config blockquoteFontWeight]
                    color:[_config blockquoteColor]];
 
-  NSUInteger blockquoteStart = output.length;
+  NSUInteger start = output.length;
   @try {
     [_rendererFactory renderChildrenOfNode:node into:output context:context];
   } @finally {
@@ -42,25 +42,22 @@ static NSString *const kNestedInfoRangeKey = @"range";
     context.blockquoteDepth = currentDepth;
   }
 
-  NSUInteger blockquoteEnd = output.length;
-  if (blockquoteEnd <= blockquoteStart) {
+  NSUInteger end = output.length;
+  if (end <= start) {
     return;
   }
 
-  [self applyStylingAndSpacing:output
-               blockquoteStart:blockquoteStart
-                 blockquoteEnd:blockquoteEnd
-                  currentDepth:currentDepth];
+  [self applyStylingAndSpacing:output start:start end:end currentDepth:currentDepth];
 }
 
 #pragma mark - Styling and Spacing
 
 - (void)applyStylingAndSpacing:(NSMutableAttributedString *)output
-               blockquoteStart:(NSUInteger)blockquoteStart
-                 blockquoteEnd:(NSUInteger)blockquoteEnd
+                         start:(NSUInteger)start
+                           end:(NSUInteger)end
                   currentDepth:(NSInteger)currentDepth
 {
-  NSRange blockquoteRange = NSMakeRange(blockquoteStart, blockquoteEnd - blockquoteStart);
+  NSRange blockquoteRange = NSMakeRange(start, end - start);
   CGFloat levelSpacing = [_config blockquoteBorderWidth] + [_config blockquoteGapWidth];
   NSArray<NSDictionary *> *nestedInfo = [self collectNestedBlockquotes:output range:blockquoteRange depth:currentDepth];
 
