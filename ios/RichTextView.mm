@@ -31,8 +31,6 @@ static const CGFloat kLabelPadding = 10.0;
 - (void)renderMarkdownContent:(NSString *)markdownString withProps:(const RichTextViewProps &)props;
 - (void)textTapped:(UITapGestureRecognizer *)recognizer;
 - (void)setupLayoutManager;
-- (UIFont *)defaultFontFromParagraphStyle;
-- (UIColor *)defaultColorFromParagraphStyle;
 @end
 
 @implementation RichTextView {
@@ -781,29 +779,6 @@ Class<RCTComponentViewProtocol> RichTextViewCls(void)
       eventEmitter.onLinkPress({.url = std::string([url UTF8String])});
     }
   }
-}
-
-/**
- * Creates the default font from paragraph style.
- * Uses paragraph style as the base, with fallbacks to system font.
- */
-- (UIFont *)defaultFontFromParagraphStyle
-{
-  CGFloat paragraphFontSize = [_config paragraphFontSize];
-  NSString *paragraphFontFamily = [_config paragraphFontFamily];
-  NSString *paragraphFontWeight = [_config paragraphFontWeight];
-
-  return fontFromProperties(paragraphFontSize, paragraphFontFamily, paragraphFontWeight);
-}
-
-/**
- * Gets the default color from paragraph style.
- * Falls back to textView textColor or black if paragraph color is not set.
- */
-- (UIColor *)defaultColorFromParagraphStyle
-{
-  UIColor *paragraphColor = [_config paragraphColor];
-  return paragraphColor ?: (_textView.textColor ?: [UIColor blackColor]);
 }
 
 @end
