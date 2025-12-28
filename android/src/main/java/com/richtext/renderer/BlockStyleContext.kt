@@ -82,6 +82,21 @@ class BlockStyleContext {
 
   fun getBlockStyle(): BlockStyle? = currentBlockStyle
 
+  /**
+   * Requires that a block style is set. Throws an exception if blockStyle is null.
+   * This should never happen in normal rendering flow, as inline elements (text, links, etc.)
+   * should always be rendered within a block context (paragraph, heading, or blockquote).
+   *
+   * @return The current block style, never null
+   * @throws IllegalStateException if blockStyle is null
+   */
+  fun requireBlockStyle(): BlockStyle =
+    currentBlockStyle
+      ?: throw IllegalStateException(
+        "BlockStyle is null. Inline renderers (Text, Link, Strong, Emphasis, Code) " +
+          "must be rendered within a block context (Paragraph, Heading, or Blockquote).",
+      )
+
   fun clearBlockStyle() {
     currentBlockType = BlockType.NONE
     currentBlockStyle = null

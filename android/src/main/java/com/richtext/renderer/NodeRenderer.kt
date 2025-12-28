@@ -552,8 +552,8 @@ class RendererFactory(
     renderContent()
     val end = builder.length
     val contentLength = end - start
-    val blockStyle = blockStyleContext.getBlockStyle()
-    if (contentLength > 0 && blockStyle != null) {
+    if (contentLength > 0) {
+      val blockStyle = blockStyleContext.requireBlockStyle()
       applySpan(start, end, blockStyle)
     }
   }
