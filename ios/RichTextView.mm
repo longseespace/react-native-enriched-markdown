@@ -21,7 +21,6 @@
 
 using namespace facebook::react;
 
-static const CGFloat kDefaultFontSize = 16.0;
 static const CGFloat kMinimumHeight = 100.0;
 static const CGFloat kLabelPadding = 10.0;
 
