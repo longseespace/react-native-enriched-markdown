@@ -36,11 +36,7 @@
   return [UIFont fontWithDescriptor:boldDescriptor size:font.pointSize] ?: font;
 }
 
-- (void)renderNode:(MarkdownASTNode *)node
-              into:(NSMutableAttributedString *)output
-          withFont:(UIFont *)font
-             color:(UIColor *)color
-           context:(RenderContext *)context
+- (void)renderNode:(MarkdownASTNode *)node into:(NSMutableAttributedString *)output context:(RenderContext *)context
 {
   NSUInteger start = output.length;
 
@@ -49,13 +45,12 @@
   RichTextConfig *config = (RichTextConfig *)_config;
   UIColor *configStrongColor = [config strongColor];
 
-  UIFont *baseFont = fontFromBlockStyle(blockStyle) ?: font;
+  UIFont *baseFont = fontFromBlockStyle(blockStyle);
   UIFont *strongFont = [self ensureFontIsBold:baseFont];
 
-  // Inherit color from blockStyle when available (blockquote, list, etc.) to maintain context styling
-  UIColor *strongColor = configStrongColor ?: (blockStyle.color ?: color);
+  UIColor *strongColor = [RenderContext calculateStrongColor:configStrongColor blockColor:blockStyle.color];
 
-  [_rendererFactory renderChildrenOfNode:node into:output withFont:strongFont color:strongColor context:context];
+  [_rendererFactory renderChildrenOfNode:node into:output context:context];
 
   NSUInteger len = output.length - start;
   if (len > 0) {
@@ -64,9 +59,19 @@
     UIFont *currentFont = existingAttributes[NSFontAttributeName];
     UIFont *verifiedStrongFont = [self ensureFontIsBold:currentFont ?: strongFont];
 
-    if (![verifiedStrongFont isEqual:currentFont]) {
-      NSMutableDictionary *strongAttributes = [existingAttributes ?: @{} mutableCopy];
+    NSMutableDictionary *strongAttributes = [existingAttributes ?: @{} mutableCopy];
+    BOOL fontNeedsUpdate = ![verifiedStrongFont isEqual:currentFont];
+    BOOL colorNeedsUpdate = configStrongColor && ![RenderContext shouldPreserveColors:existingAttributes];
+
+    if (fontNeedsUpdate) {
       strongAttributes[NSFontAttributeName] = verifiedStrongFont;
+    }
+
+    if (colorNeedsUpdate) {
+      strongAttributes[NSForegroundColorAttributeName] = strongColor;
+    }
+
+    if (fontNeedsUpdate || colorNeedsUpdate) {
       [output setAttributes:strongAttributes range:range];
     }
   }

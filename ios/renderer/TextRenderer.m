@@ -1,19 +1,20 @@
 #import "TextRenderer.h"
+#import "FontUtils.h"
 
 @implementation TextRenderer
 
-- (void)renderNode:(MarkdownASTNode *)node
-              into:(NSMutableAttributedString *)output
-          withFont:(UIFont *)font
-             color:(UIColor *)color
-           context:(RenderContext *)context
+- (void)renderNode:(MarkdownASTNode *)node into:(NSMutableAttributedString *)output context:(RenderContext *)context
 {
   if (!node.content)
     return;
 
-  NSAttributedString *text =
-      [[NSAttributedString alloc] initWithString:node.content
-                                      attributes:@{NSFontAttributeName : font, NSForegroundColorAttributeName : color}];
+  BlockStyle *blockStyle = [context getBlockStyle];
+  UIFont *textFont = fontFromBlockStyle(blockStyle);
+  UIColor *textColor = blockStyle.color;
+
+  NSAttributedString *text = [[NSAttributedString alloc]
+      initWithString:node.content
+          attributes:@{NSFontAttributeName : textFont, NSForegroundColorAttributeName : textColor}];
   [output appendAttributedString:text];
 }
 

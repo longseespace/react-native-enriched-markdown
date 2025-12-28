@@ -150,12 +150,7 @@ static const CGFloat kLabelPadding = 10.0;
   AttributedRenderer *renderer = [[AttributedRenderer alloc] initWithConfig:_config];
   RenderContext *renderContext = [RenderContext new];
 
-  // Use paragraph style as the default font/color for rendering
-  // This will be overridden by block styles when rendering specific blocks
-  UIFont *font = [self defaultFontFromParagraphStyle];
-  UIColor *color = [self defaultColorFromParagraphStyle];
-
-  NSMutableAttributedString *attributedText = [renderer renderRoot:ast font:font color:color context:renderContext];
+  NSMutableAttributedString *attributedText = [renderer renderRoot:ast context:renderContext];
 
   // Add custom attributes for links
   for (NSUInteger i = 0; i < renderContext.linkRanges.count; i++) {

@@ -18,23 +18,14 @@
   return self;
 }
 
-- (void)renderNode:(MarkdownASTNode *)node
-              into:(NSMutableAttributedString *)output
-          withFont:(UIFont *)font
-             color:(UIColor *)color
-           context:(RenderContext *)context
+- (void)renderNode:(MarkdownASTNode *)node into:(NSMutableAttributedString *)output context:(RenderContext *)context
 {
   NSUInteger start = output.length;
-
-  BlockStyle *blockStyle = [context getBlockStyle];
 
   RichTextConfig *config = (RichTextConfig *)self.config;
   UIColor *linkColor = [config linkColor];
 
-  // Links inherit fontSize, fontFamily, fontWeight from blockStyle (blockquote/paragraph) to maintain context styling
-  UIFont *linkFont = fontFromBlockStyle(blockStyle) ?: font;
-
-  [_rendererFactory renderChildrenOfNode:node into:output withFont:linkFont color:linkColor context:context];
+  [_rendererFactory renderChildrenOfNode:node into:output context:context];
 
   NSUInteger len = output.length - start;
   if (len > 0) {

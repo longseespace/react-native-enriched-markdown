@@ -3,14 +3,10 @@
 #import "NodeRenderer.h"
 #import "RenderContext.h"
 #import "RendererFactory.h"
+#import "RichTextConfig.h"
 
 @interface AttributedRenderer (Helpers)
 - (NSAttributedString *)createTextString:(NSString *)text withFont:(UIFont *)font color:(UIColor *)color;
-- (void)renderChildrenOfNode:(MarkdownASTNode *)node
-                        into:(NSMutableAttributedString *)output
-                    withFont:(UIFont *)font
-                       color:(UIColor *)color
-                     context:(RenderContext *)context;
 @end
 
 @implementation AttributedRenderer {
@@ -28,13 +24,19 @@
   return self;
 }
 
-- (NSMutableAttributedString *)renderRoot:(MarkdownASTNode *)root
-                                     font:(UIFont *)font
-                                    color:(UIColor *)color
-                                  context:(RenderContext *)context
+- (NSMutableAttributedString *)renderRoot:(MarkdownASTNode *)root context:(RenderContext *)context
 {
+  // Set default paragraph block style as fallback for any content that doesn't have a block style
+  // This ensures TextRenderer and other elements always have a block style available
+  RichTextConfig *config = (RichTextConfig *)_config;
+  [context setBlockStyle:BlockTypeParagraph
+                fontSize:[config paragraphFontSize]
+              fontFamily:[config paragraphFontFamily]
+              fontWeight:[config paragraphFontWeight]
+                   color:[config paragraphColor]];
+
   NSMutableAttributedString *out = [[NSMutableAttributedString alloc] init];
-  [self renderNodeRecursive:root into:out font:font color:color context:context isTopLevel:YES];
+  [self renderNodeRecursive:root into:out context:context];
   return out;
 }
 
@@ -47,20 +49,17 @@
  */
 - (void)renderNodeRecursive:(MarkdownASTNode *)node
                        into:(NSMutableAttributedString *)out
-                       font:(UIFont *)font
-                      color:(UIColor *)color
                     context:(RenderContext *)context
-                 isTopLevel:(BOOL)isTopLevel
 {
   id<NodeRenderer> renderer = [_rendererFactory rendererForNodeType:node.type];
   if (renderer) {
-    [renderer renderNode:node into:out withFont:font color:color context:context];
+    [renderer renderNode:node into:out context:context];
     return;
   }
 
   for (NSUInteger i = 0; i < node.children.count; i++) {
     MarkdownASTNode *child = node.children[i];
-    [self renderNodeRecursive:child into:out font:font color:color context:context isTopLevel:NO];
+    [self renderNodeRecursive:child into:out context:context];
   }
 }
 
@@ -78,20 +77,6 @@
   return
       [[NSAttributedString alloc] initWithString:text
                                       attributes:@{NSFontAttributeName : font, NSForegroundColorAttributeName : color}];
-}
-
-- (void)renderChildrenOfNode:(MarkdownASTNode *)node
-                        into:(NSMutableAttributedString *)output
-                    withFont:(UIFont *)font
-                       color:(UIColor *)color
-                     context:(RenderContext *)context
-{
-  for (MarkdownASTNode *child in node.children) {
-    id<NodeRenderer> renderer = [self rendererForNode:child];
-    if (renderer) {
-      [renderer renderNode:child into:output withFont:font color:color context:context];
-    }
-  }
 }
 
 @end

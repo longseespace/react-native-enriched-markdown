@@ -23,11 +23,7 @@ static const unichar kZeroWidthSpace = 0x200B;
   return self;
 }
 
-- (void)renderNode:(MarkdownASTNode *)node
-              into:(NSMutableAttributedString *)output
-          withFont:(UIFont *)font
-             color:(UIColor *)color
-           context:(RenderContext *)context
+- (void)renderNode:(MarkdownASTNode *)node into:(NSMutableAttributedString *)output context:(RenderContext *)context
 {
   NSString *imageURL = node.attributes[@"url"];
   if (!imageURL.length)

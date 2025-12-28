@@ -36,25 +36,21 @@
   return [UIFont fontWithDescriptor:italicDescriptor size:font.pointSize] ?: font;
 }
 
-- (void)renderNode:(MarkdownASTNode *)node
-              into:(NSMutableAttributedString *)output
-          withFont:(UIFont *)font
-             color:(UIColor *)color
-           context:(RenderContext *)context
+- (void)renderNode:(MarkdownASTNode *)node into:(NSMutableAttributedString *)output context:(RenderContext *)context
 {
   NSUInteger start = output.length;
 
   BlockStyle *blockStyle = [context getBlockStyle];
   RichTextConfig *config = (RichTextConfig *)_config;
   UIColor *configEmphasisColor = [config emphasisColor];
+  UIColor *configStrongColor = [config strongColor];
 
-  UIFont *baseFont = fontFromBlockStyle(blockStyle) ?: font;
+  UIFont *baseFont = fontFromBlockStyle(blockStyle);
   UIFont *emphasisFont = [self ensureFontIsItalic:baseFont];
 
-  // Inherit color from blockStyle when available (blockquote, list, etc.) to maintain context styling
-  UIColor *emphasisColor = configEmphasisColor ?: (blockStyle.color ?: color);
+  UIColor *strongColorToUse = [RenderContext calculateStrongColor:configStrongColor blockColor:blockStyle.color];
 
-  [_rendererFactory renderChildrenOfNode:node into:output withFont:emphasisFont color:emphasisColor context:context];
+  [_rendererFactory renderChildrenOfNode:node into:output context:context];
 
   NSUInteger len = output.length - start;
   if (len > 0) {
@@ -63,9 +59,27 @@
     UIFont *currentFont = existingAttributes[NSFontAttributeName];
     UIFont *verifiedItalicFont = [self ensureFontIsItalic:currentFont ?: emphasisFont];
 
-    if (![verifiedItalicFont isEqual:currentFont]) {
-      NSMutableDictionary *emphasisAttributes = [existingAttributes ?: @{} mutableCopy];
+    BOOL isBold = currentFont && (currentFont.fontDescriptor.symbolicTraits & UIFontDescriptorTraitBold) != 0;
+    UIColor *existingColor = existingAttributes[NSForegroundColorAttributeName];
+    BOOL isNestedInStrong = isBold && existingColor && [existingColor isEqual:strongColorToUse];
+
+    // If nested inside strong, preserve strong color; otherwise use emphasis color or block color
+    UIColor *emphasisColor = isNestedInStrong ? existingColor : (configEmphasisColor ?: blockStyle.color);
+
+    NSMutableDictionary *emphasisAttributes = [existingAttributes ?: @{} mutableCopy];
+    BOOL fontNeedsUpdate = ![verifiedItalicFont isEqual:currentFont];
+    BOOL colorNeedsUpdate =
+        !isNestedInStrong && configEmphasisColor && ![RenderContext shouldPreserveColors:existingAttributes];
+
+    if (fontNeedsUpdate) {
       emphasisAttributes[NSFontAttributeName] = verifiedItalicFont;
+    }
+
+    if (colorNeedsUpdate) {
+      emphasisAttributes[NSForegroundColorAttributeName] = emphasisColor;
+    }
+
+    if (fontNeedsUpdate || colorNeedsUpdate) {
       [output setAttributes:emphasisAttributes range:range];
     }
   }
