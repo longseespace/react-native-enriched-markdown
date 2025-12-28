@@ -20,6 +20,8 @@
   return self;
 }
 
+#pragma mark - Rendering
+
 - (void)renderNode:(MarkdownASTNode *)node into:(NSMutableAttributedString *)output context:(RenderContext *)context
 {
 

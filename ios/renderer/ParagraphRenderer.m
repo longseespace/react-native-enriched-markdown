@@ -20,6 +20,8 @@
   return self;
 }
 
+#pragma mark - Rendering
+
 - (void)renderNode:(MarkdownASTNode *)node into:(NSMutableAttributedString *)output context:(RenderContext *)context
 {
 
@@ -69,6 +71,8 @@
   }
   applyParagraphSpacing(output, start, marginBottom);
 }
+
+#pragma mark - Helper Methods
 
 - (CGFloat)getMarginBottomForParagraph:(MarkdownASTNode *)node config:(RichTextConfig *)config
 {

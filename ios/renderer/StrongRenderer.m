@@ -20,21 +20,7 @@
   return self;
 }
 
-- (UIFont *)ensureFontIsBold:(UIFont *)font
-{
-  if (!font) {
-    return nil;
-  }
-  UIFontDescriptorSymbolicTraits traits = font.fontDescriptor.symbolicTraits;
-  if (traits & UIFontDescriptorTraitBold) {
-    return font;
-  }
-
-  // Combine bold with existing traits (preserve italic if present)
-  UIFontDescriptorSymbolicTraits combinedTraits = traits | UIFontDescriptorTraitBold;
-  UIFontDescriptor *boldDescriptor = [font.fontDescriptor fontDescriptorWithSymbolicTraits:combinedTraits];
-  return [UIFont fontWithDescriptor:boldDescriptor size:font.pointSize] ?: font;
-}
+#pragma mark - Rendering
 
 - (void)renderNode:(MarkdownASTNode *)node into:(NSMutableAttributedString *)output context:(RenderContext *)context
 {
@@ -67,6 +53,24 @@
                             existingAttributes:existingAttributes
                           shouldPreserveColors:shouldPreserveColors];
   }
+}
+
+#pragma mark - Helper Methods
+
+- (UIFont *)ensureFontIsBold:(UIFont *)font
+{
+  if (!font) {
+    return nil;
+  }
+  UIFontDescriptorSymbolicTraits traits = font.fontDescriptor.symbolicTraits;
+  if (traits & UIFontDescriptorTraitBold) {
+    return font;
+  }
+
+  // Combine bold with existing traits (preserve italic if present)
+  UIFontDescriptorSymbolicTraits combinedTraits = traits | UIFontDescriptorTraitBold;
+  UIFontDescriptor *boldDescriptor = [font.fontDescriptor fontDescriptorWithSymbolicTraits:combinedTraits];
+  return [UIFont fontWithDescriptor:boldDescriptor size:font.pointSize] ?: font;
 }
 
 @end

@@ -23,6 +23,8 @@ static const unichar kZeroWidthSpace = 0x200B;
   return self;
 }
 
+#pragma mark - Rendering
+
 - (void)renderNode:(MarkdownASTNode *)node into:(NSMutableAttributedString *)output context:(RenderContext *)context
 {
   NSString *imageURL = node.attributes[@"url"];
