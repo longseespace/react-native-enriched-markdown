@@ -14,7 +14,7 @@ class TextRenderer : NodeRenderer {
     factory: RendererFactory,
   ) {
     val text = node as Text
-    val content = text.literal ?: ""
+    val content = text.literal ?: return
 
     factory.renderWithSpan(builder, { builder.append(content) }) { start, end, blockStyle ->
       builder.setSpan(

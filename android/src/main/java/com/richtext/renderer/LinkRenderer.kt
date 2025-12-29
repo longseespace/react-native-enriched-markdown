@@ -16,7 +16,7 @@ class LinkRenderer(
     factory: RendererFactory,
   ) {
     val link = node as Link
-    val url = link.destination ?: ""
+    val url = link.destination ?: return
 
     factory.renderWithSpan(builder, { factory.renderChildren(link, builder, onLinkPress) }) { start, end, blockStyle ->
       builder.setSpan(

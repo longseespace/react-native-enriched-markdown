@@ -17,7 +17,7 @@ class CodeRenderer(
     factory: RendererFactory,
   ) {
     val code = node as Code
-    val codeText = code.literal ?: ""
+    val codeText = code.literal ?: return
 
     factory.renderWithSpan(builder, { builder.append(codeText) }) { start, end, blockStyle ->
       builder.setSpan(
