@@ -7,8 +7,6 @@ import android.graphics.Path
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.text.Spannable
-import android.text.style.ImageSpan
-import android.text.style.LineHeightSpan
 import androidx.core.graphics.withSave
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
@@ -19,6 +17,8 @@ import com.richtext.RichTextView
 import com.richtext.styles.RichTextStyle
 import java.lang.ref.WeakReference
 import java.util.WeakHashMap
+import android.text.style.ImageSpan as AndroidImageSpan
+import android.text.style.LineHeightSpan as AndroidLineHeightSpan
 
 /**
  * Custom ImageSpan for rendering markdown images.
@@ -27,16 +27,16 @@ import java.util.WeakHashMap
  * The TextView is automatically registered by RichTextView when text is set,
  * allowing immediate redraws when images finish loading.
  */
-class RichTextImageSpan(
+class ImageSpan(
   private val context: Context,
   private val imageUrl: String,
   private val style: RichTextStyle,
   private val isInline: Boolean = false,
-) : ImageSpan(createPlaceholderDrawable(context, style, isInline), imageUrl, ALIGN_CENTER),
-  LineHeightSpan {
+) : AndroidImageSpan(createPlaceholderDrawable(context, style, isInline), imageUrl, ALIGN_CENTER),
+  AndroidLineHeightSpan {
   private val reactContext: ReactContext =
     requireNotNull(context as? ReactContext) {
-      "RichTextImageSpan requires ReactContext, but received: ${context::class.java.name}"
+      "ImageSpan requires ReactContext, but received: ${context::class.java.name}"
     }
   private var loadedDrawable: Drawable? = null
   private val imageStyle = style.getImageStyle()
@@ -191,20 +191,20 @@ class RichTextImageSpan(
    */
   private fun loadImageWithGlide() {
     if (imageUrl.isBlank()) {
-      RNLog.w(reactContext, "[RichTextImageSpan] Cannot load image: empty URL")
+      RNLog.w(reactContext, "[ImageSpan] Cannot load image: empty URL")
       return
     }
 
     val uri = Uri.parse(imageUrl).takeIf { it.scheme != null }
     if (uri == null) {
-      RNLog.w(reactContext, "[RichTextImageSpan] Cannot load image: invalid URL '$imageUrl'")
+      RNLog.w(reactContext, "[ImageSpan] Cannot load image: invalid URL '$imageUrl'")
       return
     }
 
     val targetWidth = getWidth()
 
     if (targetWidth <= MINIMUM_VALID_DIMENSION && !isInline) {
-      RNLog.w(reactContext, "[RichTextImageSpan] Cannot load block image: invalid width ($targetWidth) for '$imageUrl'")
+      RNLog.w(reactContext, "[ImageSpan] Cannot load block image: invalid width ($targetWidth) for '$imageUrl'")
       return
     }
 
@@ -229,7 +229,7 @@ class RichTextImageSpan(
           override fun onLoadFailed(errorDrawable: Drawable?) {
             RNLog.e(
               reactContext,
-              "[RichTextImageSpan] Failed to load image from '$imageUrl'. Target size: ${targetWidth}x$height, isInline: $isInline",
+              "[ImageSpan] Failed to load image from '$imageUrl'. Target size: ${targetWidth}x$height, isInline: $isInline",
             )
             // TODO: Pass onImageLoadFailed callback from TS side to notify JS when image loading fails
             loadedDrawable = null

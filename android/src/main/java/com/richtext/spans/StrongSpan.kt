@@ -8,7 +8,7 @@ import com.richtext.renderer.BlockStyle
 import com.richtext.styles.RichTextStyle
 import com.richtext.utils.applyColorPreserving
 
-class RichTextStrongSpan(
+class StrongSpan(
   private val style: RichTextStyle,
   private val blockStyle: BlockStyle,
 ) : MetricAffectingSpan() {

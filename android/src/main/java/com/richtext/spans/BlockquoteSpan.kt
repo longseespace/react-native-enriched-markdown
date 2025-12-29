@@ -20,7 +20,7 @@ import com.richtext.utils.applyColorPreserving
  * Span for rendering blockquotes with left border and indentation.
  * Each span draws borders for all nesting levels from 0 to depth (inclusive).
  */
-class RichTextBlockquoteSpan(
+class BlockquoteSpan(
   private val style: BlockquoteStyle,
   val depth: Int,
   private val context: Context? = null,
@@ -121,7 +121,7 @@ class RichTextBlockquoteSpan(
     if (text !is Spanned) return false
     val maxDepth =
       text
-        .getSpans(start, start + 1, RichTextBlockquoteSpan::class.java)
+        .getSpans(start, start + 1, BlockquoteSpan::class.java)
         .maxOfOrNull { it.depth } ?: -1
     return maxDepth > depth
   }
@@ -197,7 +197,7 @@ class RichTextBlockquoteSpan(
     val nextLineStart = layout.getLineStart(lineNumber + 1)
     val nextLineEnd = layout.getLineEnd(lineNumber + 1)
     return text
-      .getSpans(nextLineStart, nextLineEnd, RichTextBlockquoteSpan::class.java)
+      .getSpans(nextLineStart, nextLineEnd, BlockquoteSpan::class.java)
       .any { it == this }
   }
 }

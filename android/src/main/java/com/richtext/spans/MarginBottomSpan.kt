@@ -11,7 +11,7 @@ import android.text.style.LineHeightSpan
  *
  * @param marginBottom The margin in pixels to add below the block (must be > 0)
  */
-class RichTextMarginBottomSpan(
+class MarginBottomSpan(
   val marginBottom: Float,
 ) : LineHeightSpan {
   override fun chooseHeight(

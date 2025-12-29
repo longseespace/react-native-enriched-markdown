@@ -2,7 +2,7 @@ package com.richtext.renderer
 
 import android.content.Context
 import android.text.SpannableStringBuilder
-import com.richtext.spans.RichTextImageSpan
+import com.richtext.spans.ImageSpan
 import com.richtext.utils.SPAN_FLAGS_EXCLUSIVE_EXCLUSIVE
 import com.richtext.utils.isInlineImage
 import org.commonmark.node.Image
@@ -32,7 +32,7 @@ class ImageRenderer(
     val contentLength = end - start
 
     builder.setSpan(
-      RichTextImageSpan(context, imageUrl, config.style, isInline),
+      ImageSpan(context, imageUrl, config.style, isInline),
       start,
       end,
       SPAN_FLAGS_EXCLUSIVE_EXCLUSIVE,

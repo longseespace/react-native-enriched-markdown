@@ -7,17 +7,17 @@ import android.text.Layout
 import android.text.SpannableString
 import android.text.SpannableStringBuilder
 import android.text.TextPaint
-import android.text.style.LineHeightSpan
 import com.facebook.react.common.ReactConstants
 import com.facebook.react.views.text.ReactTypefaceUtils.applyStyles
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontWeight
 import com.richtext.renderer.BlockStyle
-import com.richtext.spans.RichTextLineHeightSpan
-import com.richtext.spans.RichTextMarginBottomSpan
+import com.richtext.spans.LineHeightSpan
+import com.richtext.spans.MarginBottomSpan
 import com.richtext.styles.ParagraphStyle
 import com.richtext.styles.RichTextStyle
 import org.commonmark.node.Image
 import org.commonmark.node.Paragraph
+import android.text.style.LineHeightSpan as AndroidLineHeightSpan
 
 // ============================================================================
 // Constants
@@ -46,7 +46,7 @@ fun TextPaint.applyColorPreserving(
 }
 
 /**
- * Applies a typeface while preserving existing style traits (e.g., BOLD from RichTextStrongSpan).
+ * Applies a typeface while preserving existing style traits (e.g., BOLD from StrongSpan).
  * Useful when applying a base typeface (e.g., heading font) that should preserve styles.
  */
 fun TextPaint.applyTypefacePreserving(
@@ -218,16 +218,16 @@ fun SpannableStringBuilder.isInlineImage(): Boolean {
  *
  * @param lineHeight The desired line height in pixels
  */
-fun createLineHeightSpan(lineHeight: Float): LineHeightSpan =
+fun createLineHeightSpan(lineHeight: Float): AndroidLineHeightSpan =
   if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-    LineHeightSpan.Standard(lineHeight.toInt())
+    AndroidLineHeightSpan.Standard(lineHeight.toInt())
   } else {
-    RichTextLineHeightSpan(lineHeight)
+    LineHeightSpan(lineHeight)
   }
 
 /**
  * Applies marginBottom spacing to a block element.
- * Appends a newline and applies RichTextMarginBottomSpan if marginBottom > 0.
+ * Appends a newline and applies MarginBottomSpan if marginBottom > 0.
  *
  * @param builder The SpannableStringBuilder to modify
  * @param start The start position of the block content (before appending newline)
@@ -241,7 +241,7 @@ fun applyMarginBottom(
   builder.append("\n")
   if (marginBottom > 0) {
     builder.setSpan(
-      RichTextMarginBottomSpan(marginBottom),
+      MarginBottomSpan(marginBottom),
       start,
       builder.length, // Includes the newline we just appended
       SPAN_FLAGS_EXCLUSIVE_EXCLUSIVE,

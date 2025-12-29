@@ -6,7 +6,7 @@ import android.text.style.AbsoluteSizeSpan
 import com.richtext.styles.RichTextStyle
 import com.richtext.utils.applyTypefacePreserving
 
-class RichTextHeadingSpan(
+class HeadingSpan(
   private val level: Int,
   private val style: RichTextStyle,
 ) : AbsoluteSizeSpan(style.getHeadingFontSize(level).toInt()) {

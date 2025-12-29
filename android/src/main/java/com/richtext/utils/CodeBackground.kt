@@ -6,8 +6,8 @@ import android.graphics.Path
 import android.graphics.RectF
 import android.text.Layout
 import android.text.Spanned
-import com.richtext.spans.RichTextCodeStyleSpan
-import com.richtext.spans.RichTextMarginBottomSpan
+import com.richtext.spans.CodeStyleSpan
+import com.richtext.spans.MarginBottomSpan
 import com.richtext.styles.RichTextStyle
 import kotlin.math.max
 import kotlin.math.min
@@ -29,7 +29,7 @@ class CodeBackground(
 
   /**
    * Draws code backgrounds for all code spans in the text.
-   * Finds all RichTextCodeStyleSpan instances and draws backgrounds for each.
+   * Finds all CodeStyleSpan instances and draws backgrounds for each.
    */
   fun draw(
     canvas: Canvas,
@@ -40,7 +40,7 @@ class CodeBackground(
     val backgroundColor = codeStyle.backgroundColor
     val borderColor = codeStyle.borderColor
 
-    text.getSpans(0, text.length, RichTextCodeStyleSpan::class.java).forEach { span ->
+    text.getSpans(0, text.length, CodeStyleSpan::class.java).forEach { span ->
       val spanStart = text.getSpanStart(span)
       val spanEnd = text.getSpanEnd(span)
       if (spanStart < 0 || spanEnd <= spanStart) return@forEach
@@ -67,13 +67,13 @@ class CodeBackground(
     val top = layout.getLineTopWithoutPadding(line)
     var bottom = layout.getLineBottomWithoutPadding(line)
 
-    // If this line has a RichTextMarginBottomSpan ending at the newline,
+    // If this line has a MarginBottomSpan ending at the newline,
     // exclude the margin from the bottom to prevent code background from extending into margin space
     if (text != null && line < layout.lineCount - 1) {
       val lineEnd = layout.getLineEnd(line)
       // Check if there's a margin span at the end of this line (newline position)
       text
-        .getSpans(lineEnd - 1, lineEnd, RichTextMarginBottomSpan::class.java)
+        .getSpans(lineEnd - 1, lineEnd, MarginBottomSpan::class.java)
         .forEach { span ->
           // If the span ends at the newline character, subtract the margin
           if (text.getSpanEnd(span) == lineEnd && text[lineEnd - 1] == '\n') {

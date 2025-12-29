@@ -1,7 +1,7 @@
 package com.richtext.renderer
 
 import android.text.SpannableStringBuilder
-import com.richtext.spans.RichTextHeadingSpan
+import com.richtext.spans.HeadingSpan
 import com.richtext.utils.SPAN_FLAGS_EXCLUSIVE_EXCLUSIVE
 import com.richtext.utils.applyMarginBottom
 import com.richtext.utils.createLineHeightSpan
@@ -33,7 +33,7 @@ class HeadingRenderer(
     val contentLength = end - start
     if (contentLength > 0) {
       builder.setSpan(
-        RichTextHeadingSpan(
+        HeadingSpan(
           heading.level,
           config.style,
         ),

@@ -1,7 +1,7 @@
 package com.richtext.renderer
 
 import android.text.SpannableStringBuilder
-import com.richtext.spans.RichTextTextSpan
+import com.richtext.spans.TextSpan
 import com.richtext.utils.SPAN_FLAGS_EXCLUSIVE_EXCLUSIVE
 import org.commonmark.node.Node
 import org.commonmark.node.Text
@@ -18,7 +18,7 @@ class TextRenderer : NodeRenderer {
 
     factory.renderWithSpan(builder, { builder.append(content) }) { start, end, blockStyle ->
       builder.setSpan(
-        RichTextTextSpan(blockStyle, factory.context),
+        TextSpan(blockStyle, factory.context),
         start,
         end,
         SPAN_FLAGS_EXCLUSIVE_EXCLUSIVE,

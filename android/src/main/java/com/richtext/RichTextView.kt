@@ -12,7 +12,7 @@ import androidx.appcompat.widget.AppCompatTextView
 import com.facebook.react.bridge.ReadableMap
 import com.richtext.parser.Parser
 import com.richtext.renderer.Renderer
-import com.richtext.spans.RichTextImageSpan
+import com.richtext.spans.ImageSpan
 import com.richtext.styles.RichTextStyle
 import com.richtext.utils.CodeBackground
 
@@ -142,10 +142,10 @@ class RichTextView : AppCompatTextView {
    * Called when the view is detached to prevent memory leaks.
    */
   private fun cleanupPendingImageUpdates() {
-    val pendingRunnable = RichTextImageSpan.pendingUpdates[this]
+    val pendingRunnable = ImageSpan.pendingUpdates[this]
     pendingRunnable?.let {
       removeCallbacks(it)
-      RichTextImageSpan.pendingUpdates.remove(this)
+      ImageSpan.pendingUpdates.remove(this)
     }
   }
 
@@ -167,7 +167,7 @@ class RichTextView : AppCompatTextView {
    * so they can trigger redraws when images load.
    */
   private fun registerImageSpans(text: SpannableString) {
-    val imageSpans = text.getSpans(0, text.length, RichTextImageSpan::class.java)
+    val imageSpans = text.getSpans(0, text.length, ImageSpan::class.java)
     for (span in imageSpans) {
       span.registerTextView(this)
     }

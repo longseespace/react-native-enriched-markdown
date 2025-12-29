@@ -1,15 +1,15 @@
 package com.richtext.spans
 
 import android.graphics.Paint
-import android.text.style.LineHeightSpan
+import android.text.style.LineHeightSpan as AndroidLineHeightSpan
 
 /**
  * Custom LineHeightSpan for Android API levels below 29.
  * Matches LineHeightSpan.Standard behavior for consistent rendering across all API levels.
  */
-class RichTextLineHeightSpan(
+class LineHeightSpan(
   private val lineHeight: Float,
-) : LineHeightSpan {
+) : AndroidLineHeightSpan {
   override fun chooseHeight(
     text: CharSequence?,
     start: Int,

@@ -1,7 +1,7 @@
 package com.richtext.renderer
 
 import android.text.SpannableStringBuilder
-import com.richtext.spans.RichTextEmphasisSpan
+import com.richtext.spans.EmphasisSpan
 import com.richtext.utils.SPAN_FLAGS_EXCLUSIVE_EXCLUSIVE
 import org.commonmark.node.Emphasis
 import org.commonmark.node.Node
@@ -19,7 +19,7 @@ class EmphasisRenderer(
 
     factory.renderWithSpan(builder, { factory.renderChildren(emphasis, builder, onLinkPress) }) { start, end, blockStyle ->
       builder.setSpan(
-        RichTextEmphasisSpan(config.style, blockStyle),
+        EmphasisSpan(config.style, blockStyle),
         start,
         end,
         SPAN_FLAGS_EXCLUSIVE_EXCLUSIVE,

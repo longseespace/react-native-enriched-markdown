@@ -2,8 +2,8 @@ package com.richtext.renderer
 
 import android.text.SpannableStringBuilder
 import android.text.style.LineHeightSpan
-import com.richtext.spans.RichTextBlockquoteSpan
-import com.richtext.spans.RichTextMarginBottomSpan
+import com.richtext.spans.BlockquoteSpan
+import com.richtext.spans.MarginBottomSpan
 import com.richtext.utils.SPAN_FLAGS_EXCLUSIVE_EXCLUSIVE
 import com.richtext.utils.createLineHeightSpan
 import org.commonmark.node.BlockQuote
@@ -41,7 +41,7 @@ class BlockquoteRenderer(
 
     // Apply blockquote span to entire range (includes nested blockquotes for border rendering)
     builder.setSpan(
-      RichTextBlockquoteSpan(blockquoteStyle, currentDepth, factory.context, config.style),
+      BlockquoteSpan(blockquoteStyle, currentDepth, factory.context, config.style),
       start,
       end,
       SPAN_FLAGS_EXCLUSIVE_EXCLUSIVE,
@@ -59,7 +59,7 @@ class BlockquoteRenderer(
           nestedRanges,
           start,
           contentEnd,
-          RichTextMarginBottomSpan(blockquoteStyle.nestedMarginBottom),
+          MarginBottomSpan(blockquoteStyle.nestedMarginBottom),
         )
       }
     }
@@ -69,7 +69,7 @@ class BlockquoteRenderer(
       val spacerLocation = builder.length
       builder.append("\n")
       builder.setSpan(
-        RichTextMarginBottomSpan(blockquoteStyle.marginBottom),
+        MarginBottomSpan(blockquoteStyle.marginBottom),
         spacerLocation,
         builder.length,
         SPAN_FLAGS_EXCLUSIVE_EXCLUSIVE,
@@ -118,7 +118,7 @@ class BlockquoteRenderer(
     currentDepth: Int,
   ): List<Pair<Int, Int>> =
     builder
-      .getSpans(rangeStart, rangeEnd, RichTextBlockquoteSpan::class.java)
+      .getSpans(rangeStart, rangeEnd, BlockquoteSpan::class.java)
       .filter { span ->
         val spanStart = builder.getSpanStart(span)
         val spanEnd = builder.getSpanEnd(span)

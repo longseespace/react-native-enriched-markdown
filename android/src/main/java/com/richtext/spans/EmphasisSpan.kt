@@ -7,7 +7,7 @@ import com.richtext.renderer.BlockStyle
 import com.richtext.styles.RichTextStyle
 import com.richtext.utils.applyColorPreserving
 
-class RichTextEmphasisSpan(
+class EmphasisSpan(
   private val style: RichTextStyle,
   private val blockStyle: BlockStyle,
 ) : MetricAffectingSpan() {
@@ -40,7 +40,7 @@ class RichTextEmphasisSpan(
     val configEmphasisColor = style.getEmphasisColor()
     val configStrongColor = style.getStrongColor()
 
-    // Calculate what color strong would use (same logic as RichTextStrongSpan)
+    // Calculate what color strong would use (same logic as StrongSpan)
     val strongColorToUse = configStrongColor?.takeIf { it != blockStyle.color } ?: blockStyle.color
 
     // Check if nested inside strong: text is bold and color matches strong color
