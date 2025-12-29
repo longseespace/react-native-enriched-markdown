@@ -1,44 +1,38 @@
 package com.richtext.spans
 
 import android.content.Context
+import android.content.res.Resources
+import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Path
+import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
-import android.net.Uri
+import android.text.Editable
 import android.text.Spannable
+import android.util.Log
+import androidx.core.graphics.drawable.toDrawable
 import androidx.core.graphics.withSave
-import com.bumptech.glide.Glide
-import com.bumptech.glide.request.target.CustomTarget
-import com.bumptech.glide.request.transition.Transition
-import com.facebook.react.bridge.ReactContext
-import com.facebook.react.util.RNLog
 import com.richtext.RichTextView
 import com.richtext.styles.StyleConfig
+import com.richtext.utils.AsyncDrawable
 import java.lang.ref.WeakReference
-import java.util.WeakHashMap
 import android.text.style.ImageSpan as AndroidImageSpan
 import android.text.style.LineHeightSpan as AndroidLineHeightSpan
 
 /**
  * Custom ImageSpan for rendering markdown images.
- * Images are loaded asynchronously using Glide and appear on their own line.
- *
- * The TextView is automatically registered by RichTextView when text is set,
- * allowing immediate redraws when images finish loading.
+ * Handles both inline and block images with async loading support.
  */
 class ImageSpan(
   private val context: Context,
-  private val imageUrl: String,
+  val imageUrl: String,
   private val style: StyleConfig,
-  private val isInline: Boolean = false,
-) : AndroidImageSpan(createPlaceholderDrawable(context, style, isInline), imageUrl, ALIGN_CENTER),
+  val isInline: Boolean = false,
+) : AndroidImageSpan(createInitialDrawable(context, style, imageUrl, isInline), imageUrl, ALIGN_CENTER),
   AndroidLineHeightSpan {
-  private val reactContext: ReactContext =
-    requireNotNull(context as? ReactContext) {
-      "ImageSpan requires ReactContext, but received: ${context::class.java.name}"
-    }
   private var loadedDrawable: Drawable? = null
+  private var underlyingLoadedDrawable: Drawable? = null
   private val imageStyle = style.getImageStyle()
   private val height: Int =
     if (isInline) {
@@ -47,83 +41,86 @@ class ImageSpan(
       imageStyle.height.toInt()
     }
   private val borderRadiusPx: Int = (imageStyle.borderRadius * context.resources.displayMetrics.density).toInt()
+  private var cachedWidth: Int = Companion.MINIMUM_VALID_DIMENSION
+  private val initialDrawable: Drawable = super.getDrawable()
   private var viewRef: WeakReference<RichTextView>? = null
-  private var cachedWidth: Int = MINIMUM_VALID_DIMENSION // Cached TextView width for block images
-  private val placeholderDrawable: Drawable = super.getDrawable()
 
   init {
-    // Start loading immediately for both inline and block images
-    // Inline images: load with fixed size immediately
-    // Block images: wait for TextView width in loadImageWithGlide, but start downloading early
-    loadImageWithGlide()
+    // For inline local files, wrap immediately if available
+    if (isInline && initialDrawable !is AsyncDrawable) {
+      val isPlaceholder = initialDrawable.intrinsicWidth <= 0 && initialDrawable.intrinsicHeight <= 0
+      if (!isPlaceholder) {
+        loadedDrawable = ScaledImageDrawable(initialDrawable, height, height, borderRadiusPx)
+      }
+    }
   }
 
   private fun getWidth(): Int = if (isInline) height else cachedWidth
 
-  /**
-   * Registers a RichTextView with this span so it can be notified when images load.
-   * Called automatically by RichTextView when text is set.
-   *
-   * Block images: Image loading started in init, but waits for TextView width.
-   * When width becomes available, we trigger loading if not already loaded.
-   */
   fun registerTextView(view: RichTextView) {
     viewRef = WeakReference(view)
-    // For block images: cache width and trigger loading if width is now available and image not yet loaded
-    // Inline images already started loading in init
-    if (!isInline && loadedDrawable == null) {
+
+    if (!isInline) {
+      cachedWidth = Companion.MINIMUM_VALID_DIMENSION
+
+      val immediateWidth = view.width
+      if (immediateWidth > Companion.MINIMUM_VALID_DIMENSION) {
+        updateCachedWidth(immediateWidth, view)
+      }
+
       view.post {
         val textViewWidth = view.width
-        if (textViewWidth > MINIMUM_VALID_DIMENSION) {
-          cachedWidth = textViewWidth
-          loadImageWithGlide()
+        if (textViewWidth > Companion.MINIMUM_VALID_DIMENSION) {
+          updateCachedWidth(textViewWidth, view)
         }
       }
-    } else if (!isInline) {
-      // Update cached width even if image is already loaded (for potential re-scaling)
-      view.post {
-        cachedWidth = view.width
+    }
+  }
+
+  private fun updateCachedWidth(
+    newWidth: Int,
+    view: RichTextView,
+  ) {
+    if (newWidth <= Companion.MINIMUM_VALID_DIMENSION) return
+
+    val widthChanged = cachedWidth != newWidth
+    cachedWidth = newWidth
+
+    // Recreate drawable if width changed or we have underlying but no loaded drawable yet
+    val needsRecreation = widthChanged || (underlyingLoadedDrawable != null && loadedDrawable == null)
+
+    if (needsRecreation && underlyingLoadedDrawable != null) {
+      loadedDrawable = ScaledImageDrawable(underlyingLoadedDrawable!!, cachedWidth, height, borderRadiusPx)
+      forceRedraw(view)
+    } else if (underlyingLoadedDrawable == null) {
+      // Try to wrap local file drawable
+      if (initialDrawable !is AsyncDrawable) {
+        val isPlaceholder = initialDrawable.intrinsicWidth <= 0 && initialDrawable.intrinsicHeight <= 0
+        if (!isPlaceholder) {
+          underlyingLoadedDrawable = initialDrawable
+          loadedDrawable = ScaledImageDrawable(initialDrawable, cachedWidth, height, borderRadiusPx)
+          forceRedraw(view)
+        }
       }
     }
   }
 
-  /**
-   * Returns the drawable to be displayed, falling back to placeholder if image hasn't loaded yet.
-   * Sets bounds on the drawable if they're empty to ensure proper layout.
-   */
   override fun getDrawable(): Drawable {
-    val drawable = loadedDrawable ?: placeholderDrawable
-    if (drawable.bounds.isEmpty) {
-      val drawableWidth = calculateDrawableWidth(drawable)
-      val drawableHeight = calculateDrawableHeight(drawable)
-      drawable.setBounds(MINIMUM_VALID_DIMENSION, MINIMUM_VALID_DIMENSION, drawableWidth, drawableHeight)
+    val drawable = loadedDrawable ?: initialDrawable
+
+    if (drawable !is ScaledImageDrawable) {
+      val drawableWidth = if (isInline) height else getWidth().takeIf { it > Companion.MINIMUM_VALID_DIMENSION } ?: drawable.intrinsicWidth
+      val drawableHeight =
+        if (isInline) {
+          drawable.intrinsicHeight.takeIf { it > Companion.MINIMUM_VALID_DIMENSION } ?: height
+        } else {
+          height
+        }
+      drawable.setBounds(0, 0, drawableWidth, drawableHeight)
     }
+
     return drawable
   }
-
-  /**
-   * Calculates the width for the drawable based on image type.
-   * Inline images use fixed height-based size, block images use TextView width.
-   */
-  private fun calculateDrawableWidth(drawable: Drawable): Int =
-    if (isInline) {
-      height
-    } else {
-      val targetWidth = getWidth()
-      if (targetWidth > MINIMUM_VALID_DIMENSION) targetWidth else drawable.intrinsicWidth
-    }
-
-  /**
-   * Calculates the height for the drawable based on image type.
-   * Inline images preserve aspect ratio if available, block images use fixed height.
-   */
-  private fun calculateDrawableHeight(drawable: Drawable): Int =
-    if (isInline) {
-      val intrinsicHeight = drawable.intrinsicHeight
-      if (intrinsicHeight > MINIMUM_VALID_DIMENSION) intrinsicHeight else height
-    } else {
-      height
-    }
 
   override fun getSize(
     paint: Paint,
@@ -133,27 +130,23 @@ class ImageSpan(
     fm: Paint.FontMetricsInt?,
   ): Int = getDrawable().bounds.right
 
-  /**
-   * Ensures the line height matches the image height for non-inline images.
-   * Expands the line downward to create space at the bottom.
-   */
   override fun chooseHeight(
-    text: CharSequence,
+    text: CharSequence?,
     start: Int,
     end: Int,
     spanstartv: Int,
     lineHeight: Int,
-    fm: Paint.FontMetricsInt,
+    fm: Paint.FontMetricsInt?,
   ) {
-    if (!isInline) {
-      val targetImageHeight = height
-      val currentLineHeight = fm.descent - fm.ascent
+    if (fm == null || isInline) return
 
-      if (targetImageHeight > currentLineHeight) {
-        val extraHeight = targetImageHeight - currentLineHeight
-        fm.descent += extraHeight
-        fm.bottom += extraHeight
-      }
+    val targetImageHeight = height
+    val currentLineHeight = fm.descent - fm.ascent
+
+    if (targetImageHeight > currentLineHeight) {
+      val extraHeight = targetImageHeight - currentLineHeight
+      fm.descent += extraHeight
+      fm.bottom += extraHeight
     }
   }
 
@@ -171,12 +164,11 @@ class ImageSpan(
     val drawable = getDrawable()
     canvas.withSave {
       if (isInline) {
-        // For inline images, center vertically with the text baseline
-        val lineCenter = (top + bottom) / CENTERING_DIVISOR.toFloat()
-        val drawableCenter = drawable.bounds.exactCenterY()
-        translate(x, lineCenter - drawableCenter)
+        val imageHeight = drawable.bounds.height()
+        val raiseAmount = imageHeight * 0.1f
+        val transY = y - imageHeight + raiseAmount
+        translate(x, transY)
       } else {
-        // For block images, align image top to line top, leaving empty space at the bottom
         val transY = top.toFloat() - drawable.bounds.top
         translate(x, transY)
       }
@@ -184,66 +176,74 @@ class ImageSpan(
     }
   }
 
-  /**
-   * Loads the image asynchronously using Glide.
-   * Validates URL and dimensions before loading, and handles success/failure callbacks.
-   * For block images, waits for TextView width to be available before loading.
-   */
-  private fun loadImageWithGlide() {
-    if (imageUrl.isBlank()) {
-      RNLog.w(reactContext, "[ImageSpan] Cannot load image: empty URL")
-      return
+  fun observeAsyncDrawableLoaded(text: Editable?) {
+    val d = initialDrawable
+    if (d !is AsyncDrawable) return
+
+    registerDrawableLoadCallback(d)
+
+    if (d.isLoaded) {
+      d.onLoaded?.invoke()
     }
-
-    val uri = Uri.parse(imageUrl).takeIf { it.scheme != null }
-    if (uri == null) {
-      RNLog.w(reactContext, "[ImageSpan] Cannot load image: invalid URL '$imageUrl'")
-      return
-    }
-
-    val targetWidth = getWidth()
-
-    if (targetWidth <= MINIMUM_VALID_DIMENSION && !isInline) {
-      RNLog.w(reactContext, "[ImageSpan] Cannot load block image: invalid width ($targetWidth) for '$imageUrl'")
-      return
-    }
-
-    Glide
-      .with(context)
-      .load(uri)
-      .override(targetWidth, height)
-      .into(
-        object : CustomTarget<Drawable>() {
-          override fun onResourceReady(
-            resource: Drawable,
-            transition: Transition<in Drawable>?,
-          ) {
-            loadedDrawable = ScaledImageDrawable(resource, targetWidth, height, borderRadiusPx)
-            viewRef?.get()?.let { scheduleViewUpdate(it) }
-          }
-
-          override fun onLoadCleared(placeholder: Drawable?) {
-            loadedDrawable = null
-          }
-
-          override fun onLoadFailed(errorDrawable: Drawable?) {
-            RNLog.e(
-              reactContext,
-              "[ImageSpan] Failed to load image from '$imageUrl'. Target size: ${targetWidth}x$height, isInline: $isInline",
-            )
-            // TODO: Pass onImageLoadFailed callback from TS side to notify JS when image loading fails
-            loadedDrawable = null
-          }
-        },
-      )
   }
 
-  /**
-   * Wrapper drawable that uses target dimensions for layout but draws the Glide-resized image.
-   * Similar to React Native Image with width/height style props and resizeMode="contain".
-   * Glide has already resized the image to fit within target dimensions while preserving aspect ratio.
-   * We center it within the target bounds and apply rounded corners if borderRadius is specified.
-   */
+  private fun registerDrawableLoadCallback(d: AsyncDrawable) {
+    d.onLoaded = onLoaded@{
+      val view = viewRef?.get() ?: return@onLoaded
+      val spannable = view.text as? Spannable ?: return@onLoaded
+
+      val start = spannable.getSpanStart(this@ImageSpan)
+      val end = spannable.getSpanEnd(this@ImageSpan)
+      if (start == -1 || end == -1) return@onLoaded
+
+      val loadedBitmapDrawable = d.internalDrawable ?: return@onLoaded
+      underlyingLoadedDrawable = loadedBitmapDrawable
+
+      if (!isInline) {
+        val viewWidth = view.width
+        if (viewWidth > Companion.MINIMUM_VALID_DIMENSION) {
+          updateCachedWidth(viewWidth, view)
+        } else {
+          val finalWidth =
+            getWidth().takeIf { it > Companion.MINIMUM_VALID_DIMENSION }
+              ?: loadedBitmapDrawable.intrinsicWidth.takeIf { it > Companion.MINIMUM_VALID_DIMENSION }
+              ?: Companion.MINIMUM_VALID_DIMENSION
+          loadedDrawable = ScaledImageDrawable(loadedBitmapDrawable, finalWidth, height, borderRadiusPx)
+          forceRedraw(view)
+        }
+      } else {
+        loadedDrawable = ScaledImageDrawable(loadedBitmapDrawable, height, height, borderRadiusPx)
+        forceRedraw(view)
+      }
+    }
+  }
+
+  private fun forceRedraw(view: RichTextView) {
+    val spannable =
+      view.text as? Spannable ?: run {
+        view.invalidate()
+        view.requestLayout()
+        return
+      }
+
+    val start = spannable.getSpanStart(this@ImageSpan)
+    val end = spannable.getSpanEnd(this@ImageSpan)
+    if (start == -1 || end == -1) {
+      view.invalidate()
+      view.requestLayout()
+      return
+    }
+
+    try {
+      val redrawSpan = ForceRedrawSpan()
+      spannable.setSpan(redrawSpan, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+      spannable.removeSpan(redrawSpan)
+    } catch (e: UnsupportedOperationException) {
+      view.invalidate()
+      view.requestLayout()
+    }
+  }
+
   private class ScaledImageDrawable(
     private val imageDrawable: Drawable,
     private val targetWidth: Int,
@@ -251,7 +251,7 @@ class ImageSpan(
     private val borderRadius: Int = 0,
   ) : Drawable() {
     private val roundedRectPath: Path? =
-      if (borderRadius > MINIMUM_VALID_DIMENSION) {
+      if (borderRadius > ImageSpan.MINIMUM_VALID_DIMENSION) {
         Path().apply {
           addRoundRect(
             0f,
@@ -268,13 +268,38 @@ class ImageSpan(
       }
 
     init {
-      val scaledImageWidth = imageDrawable.intrinsicWidth.takeIf { it > MINIMUM_VALID_DIMENSION } ?: targetWidth
-      val scaledImageHeight = imageDrawable.intrinsicHeight.takeIf { it > MINIMUM_VALID_DIMENSION } ?: targetHeight
+      setBounds(0, 0, targetWidth, targetHeight)
 
-      val centeredLeft = (targetWidth - scaledImageWidth) / CENTERING_DIVISOR
-      val centeredTop = (targetHeight - scaledImageHeight) / CENTERING_DIVISOR
+      val intrinsicWidth = imageDrawable.intrinsicWidth
+      val intrinsicHeight = imageDrawable.intrinsicHeight
 
-      imageDrawable.setBounds(centeredLeft, centeredTop, centeredLeft + scaledImageWidth, centeredTop + scaledImageHeight)
+      val (scaledWidth, scaledHeight) =
+        if (
+          intrinsicWidth > ImageSpan.MINIMUM_VALID_DIMENSION &&
+          intrinsicHeight > ImageSpan.MINIMUM_VALID_DIMENSION
+        ) {
+          val scale =
+            minOf(
+              targetWidth.toFloat() / intrinsicWidth,
+              targetHeight.toFloat() / intrinsicHeight,
+            )
+          Pair(
+            (intrinsicWidth * scale).toInt(),
+            (intrinsicHeight * scale).toInt(),
+          )
+        } else {
+          Pair(targetWidth, targetHeight)
+        }
+
+      val centeredLeft = (targetWidth - scaledWidth) / ImageSpan.CENTERING_DIVISOR
+      val centeredTop = (targetHeight - scaledHeight) / ImageSpan.CENTERING_DIVISOR
+
+      imageDrawable.setBounds(
+        centeredLeft,
+        centeredTop,
+        centeredLeft + scaledWidth,
+        centeredTop + scaledHeight,
+      )
     }
 
     override fun draw(canvas: Canvas) {
@@ -296,85 +321,21 @@ class ImageSpan(
 
     override fun getOpacity(): Int = imageDrawable.opacity
 
-    // Return target dimensions for layout (ensures correct space reservation)
     override fun getIntrinsicWidth(): Int = targetWidth
 
     override fun getIntrinsicHeight(): Int = targetHeight
   }
 
-  /**
-   * Schedules a batched update for the view to redraw loaded images.
-   *
-   * Batching mechanism purpose:
-   * - Multiple images may load simultaneously (e.g., page with many images)
-   * - Without batching, each image load would trigger a separate redraw
-   * - This causes flickering and performance issues
-   * - Batching collects multiple loads within 50ms and triggers a single redraw
-   * - Cancels any pending update if a new image loads, ensuring we always use the latest state
-   */
-  private fun scheduleViewUpdate(view: RichTextView) {
-    // Cancel any pending update for this view
-    Companion.pendingUpdates[view]?.let { view.removeCallbacks(it) }
-
-    val runnable =
-      Runnable {
-        // Check if view is still valid (may have been garbage collected)
-        // WeakHashMap automatically removes entries when keys are GC'd
-        if (Companion.pendingUpdates.containsKey(view)) {
-          updateViewForLoadedImages(view)
-          Companion.pendingUpdates.remove(view)
-        }
-      }
-    Companion.pendingUpdates[view] = runnable
-
-    view.postDelayed(runnable, Companion.IMAGE_UPDATE_DELAY_MS)
-  }
-
-  /**
-   * Updates the view's text to reflect loaded images.
-   * TextView caches drawables from getDrawable(), so we need to set text again
-   * to force TextView to re-query getDrawable().
-   * This is already called from a posted callback (via scheduleViewUpdate),
-   * so we can directly invalidate after setting text.
-   */
-  private fun updateViewForLoadedImages(view: RichTextView) {
-    val currentText = view.text
-    if (currentText is Spannable) {
-      view.text = currentText
-      // postInvalidateOnAnimation() syncs with VSync and will happen after layout completes
-      view.postInvalidateOnAnimation()
-    }
-  }
-
   companion object {
-    private const val IMAGE_UPDATE_DELAY_MS = 50L
-    private const val MINIMUM_VALID_DIMENSION = 0
-    private const val CENTERING_DIVISOR = 2
+    internal const val MINIMUM_VALID_DIMENSION = 0
+    internal const val CENTERING_DIVISOR = 2
 
-    // Batching mechanism per view to reduce flickering when multiple images load
-    // Uses WeakHashMap to automatically remove entries when views are garbage collected,
-    // preventing memory leaks if views are destroyed before Runnable executes
-    // Additional cleanup is performed in RichTextView.onDetachedFromWindow() for immediate cleanup
-    internal val pendingUpdates = WeakHashMap<RichTextView, Runnable>()
+    private fun calculateInlineImageSize(style: StyleConfig): Int = style.getInlineImageStyle().size.toInt()
 
-    /**
-     * Calculates inline image size in pixels.
-     * Extracted to companion object to be shared between instance method and createPlaceholderDrawable.
-     * Returns the base size from inlineImageStyle without scaling.
-     */
-    private fun calculateInlineImageSize(style: StyleConfig): Int {
-      val inlineImageStyle = style.getInlineImageStyle()
-      return inlineImageStyle.size.toInt()
-    }
-
-    /**
-     * Creates a placeholder drawable for the image span.
-     * Must be in companion object because it's called during constructor initialization
-     * (before instance is fully available) via ImageSpan constructor.
-     */
-    private fun createPlaceholderDrawable(
+    private fun createInitialDrawable(
       context: Context,
       style: StyleConfig,
+      imageUrl: String,
       isInline: Boolean,
     ): Drawable {
       val imageStyle = style.getImageStyle()
@@ -382,18 +343,44 @@ class ImageSpan(
         if (isInline) {
           calculateInlineImageSize(style)
         } else {
-          // For block images, placeholder width doesn't matter - actual width will be set from TextView in getDrawable()
-          // Use height as placeholder width to avoid layout issues
           imageStyle.height.toInt()
         }
       val placeholderHeight = if (isInline) placeholderWidth else imageStyle.height.toInt()
 
-      return PlaceholderDrawable(placeholderWidth, placeholderHeight)
+      val drawable = prepareDrawableForImage(context, imageUrl, placeholderWidth, placeholderHeight)
+      return drawable ?: PlaceholderDrawable(placeholderWidth, placeholderHeight)
     }
 
-    /**
-     * Simple placeholder drawable for image spans before the actual image loads.
-     */
+    private fun prepareDrawableForImage(
+      context: Context,
+      src: String,
+      targetWidth: Int,
+      targetHeight: Int,
+    ): Drawable? {
+      // Handle HTTP/HTTPS URLs
+      if (src.startsWith("http://") || src.startsWith("https://")) {
+        return AsyncDrawable(src).apply {
+          setBounds(0, 0, targetWidth, targetHeight)
+        }
+      }
+
+      // Handle local files
+      var cleanPath = src
+      if (cleanPath.startsWith("file://")) {
+        cleanPath = cleanPath.substring(7)
+      }
+
+      return try {
+        val bitmap = BitmapFactory.decodeFile(cleanPath)
+        bitmap?.toDrawable(Resources.getSystem())?.apply {
+          setBounds(0, 0, bitmap.width, bitmap.height)
+        }
+      } catch (e: Exception) {
+        Log.e("ImageSpan", "Failed to load image from path: $cleanPath", e)
+        null
+      }
+    }
+
     private class PlaceholderDrawable(
       private val width: Int,
       private val height: Int,
