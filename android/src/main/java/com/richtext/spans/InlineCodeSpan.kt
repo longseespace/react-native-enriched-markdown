@@ -6,7 +6,7 @@ import android.text.style.MetricAffectingSpan
 import com.richtext.renderer.BlockStyle
 import com.richtext.styles.RichTextStyle
 
-class CodeStyleSpan(
+class InlineCodeSpan(
   private val style: RichTextStyle,
   private val blockStyle: BlockStyle,
 ) : MetricAffectingSpan() {

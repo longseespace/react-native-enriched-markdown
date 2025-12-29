@@ -6,7 +6,7 @@ import android.graphics.Path
 import android.graphics.RectF
 import android.text.Layout
 import android.text.Spanned
-import com.richtext.spans.CodeStyleSpan
+import com.richtext.spans.InlineCodeSpan
 import com.richtext.spans.MarginBottomSpan
 import com.richtext.styles.RichTextStyle
 import kotlin.math.max
@@ -29,7 +29,7 @@ class CodeBackground(
 
   /**
    * Draws code backgrounds for all code spans in the text.
-   * Finds all CodeStyleSpan instances and draws backgrounds for each.
+   * Finds all InlineCodeSpan instances and draws backgrounds for each.
    */
   fun draw(
     canvas: Canvas,
@@ -40,7 +40,7 @@ class CodeBackground(
     val backgroundColor = codeStyle.backgroundColor
     val borderColor = codeStyle.borderColor
 
-    text.getSpans(0, text.length, CodeStyleSpan::class.java).forEach { span ->
+    text.getSpans(0, text.length, InlineCodeSpan::class.java).forEach { span ->
       val spanStart = text.getSpanStart(span)
       val spanEnd = text.getSpanEnd(span)
       if (spanStart < 0 || spanEnd <= spanStart) return@forEach
