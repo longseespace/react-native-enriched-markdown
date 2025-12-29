@@ -1,6 +1,7 @@
 package com.richtext.styles
 
 import android.content.Context
+import android.graphics.Typeface
 import com.facebook.react.bridge.ColorPropConverter
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.uimanager.PixelUtil
@@ -72,6 +73,9 @@ class StyleConfig(
 ) {
   private lateinit var paragraphStyle: ParagraphStyle
   private val headingStyles = arrayOfNulls<HeadingStyle>(7)
+
+  // Cache typefaces for heading levels (1-6) to avoid recreating them for each span
+  private val headingTypefaces = arrayOfNulls<Typeface?>(7)
   private lateinit var linkStyle: LinkStyle
   private lateinit var strongStyle: StrongStyle
   private lateinit var emphasisStyle: EmphasisStyle
@@ -82,6 +86,7 @@ class StyleConfig(
 
   init {
     parseStyles(style)
+    initializeHeadingTypefaces()
   }
 
   fun getParagraphStyle(): ParagraphStyle = paragraphStyle
@@ -111,6 +116,27 @@ class StyleConfig(
   fun getInlineImageStyle(): InlineImageStyle = inlineImageStyle
 
   fun getBlockquoteStyle(): BlockquoteStyle = blockquoteStyle
+
+  /**
+   * Gets the cached typeface for a heading level.
+   * Returns null if no custom font family is configured for this level.
+   * The typeface is cached at StyleConfig initialization to avoid recreating it for each span.
+   */
+  fun getHeadingTypeface(level: Int): Typeface? = headingTypefaces[level]
+
+  /**
+   * Initializes cached typefaces for all heading levels (1-6).
+   * This avoids recreating typefaces for each HeadingSpan instance.
+   */
+  private fun initializeHeadingTypefaces() {
+    (1..6).forEach { level ->
+      val fontFamily = getHeadingFontFamily(level)
+      headingTypefaces[level] =
+        fontFamily.takeIf { it.isNotEmpty() }?.let {
+          Typeface.create(it, Typeface.NORMAL)
+        }
+    }
+  }
 
   private fun parseOptionalColor(
     map: ReadableMap,

@@ -10,12 +10,9 @@ class HeadingSpan(
   private val level: Int,
   private val style: StyleConfig,
 ) : AbsoluteSizeSpan(style.getHeadingFontSize(level).toInt()) {
-  private val cachedTypeface: Typeface? by lazy {
-    val fontFamily = style.getHeadingFontFamily(level)
-    fontFamily.takeIf { it.isNotEmpty() }?.let {
-      Typeface.create(it, Typeface.NORMAL)
-    }
-  }
+  // Use cached typeface from StyleConfig instead of computing it lazily
+  // This avoids recreating the same typeface for each span instance
+  private val cachedTypeface: Typeface? = style.getHeadingTypeface(level)
 
   override fun updateDrawState(tp: TextPaint) {
     super.updateDrawState(tp)
