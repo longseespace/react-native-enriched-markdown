@@ -3,18 +3,18 @@ package com.richtext.renderer
 import android.content.Context
 import android.text.SpannableString
 import android.text.SpannableStringBuilder
-import com.richtext.styles.RichTextStyle
+import com.richtext.styles.StyleConfig
 import org.commonmark.node.Document
 import org.commonmark.node.Node
 
 class Renderer {
-  private var style: RichTextStyle? = null
-  private var lastConfiguredStyle: RichTextStyle? = null
+  private var style: StyleConfig? = null
+  private var lastConfiguredStyle: StyleConfig? = null
   private var lastConfiguredContext: Context? = null
   private lateinit var rendererFactory: RendererFactory
 
   fun configure(
-    style: RichTextStyle,
+    style: StyleConfig,
     context: Context,
   ) {
     // Only reconfigure if style or context changed

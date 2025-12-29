@@ -2,7 +2,7 @@ package com.richtext.renderer
 
 import android.content.Context
 import android.text.SpannableStringBuilder
-import com.richtext.styles.RichTextStyle
+import com.richtext.styles.StyleConfig
 import org.commonmark.node.BlockQuote
 import org.commonmark.node.Code
 import org.commonmark.node.Document
@@ -27,7 +27,7 @@ interface NodeRenderer {
 }
 
 data class RendererConfig(
-  val style: RichTextStyle,
+  val style: StyleConfig,
 )
 
 class RendererFactory(

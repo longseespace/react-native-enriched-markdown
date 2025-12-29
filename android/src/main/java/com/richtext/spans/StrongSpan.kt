@@ -5,13 +5,13 @@ import android.text.TextPaint
 import android.text.style.MetricAffectingSpan
 import com.facebook.react.views.text.ReactTypefaceUtils
 import com.richtext.renderer.BlockStyle
-import com.richtext.styles.RichTextStyle
+import com.richtext.styles.StyleConfig
 import com.richtext.utils.applyColorPreserving
 import com.richtext.utils.calculateStrongColor
 import com.richtext.utils.getColorsToPreserveForInlineStyle
 
 class StrongSpan(
-  private val style: RichTextStyle,
+  private val style: StyleConfig,
   private val blockStyle: BlockStyle,
 ) : MetricAffectingSpan() {
   override fun updateDrawState(tp: TextPaint) {

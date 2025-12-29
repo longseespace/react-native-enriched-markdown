@@ -12,14 +12,14 @@ import com.facebook.react.bridge.ReadableMap
 import com.richtext.parser.Parser
 import com.richtext.renderer.Renderer
 import com.richtext.spans.ImageSpan
-import com.richtext.styles.RichTextStyle
+import com.richtext.styles.StyleConfig
 
 class RichTextView : AppCompatTextView {
   private val parser = Parser.shared
   private val renderer = Renderer()
   private var onLinkPressCallback: ((String) -> Unit)? = null
 
-  var richTextStyle: RichTextStyle? = null
+  var richTextStyle: StyleConfig? = null
   private var currentMarkdown: String = ""
 
   constructor(context: Context) : super(context) {
@@ -74,7 +74,7 @@ class RichTextView : AppCompatTextView {
   }
 
   fun setRichTextStyle(style: ReadableMap?) {
-    val newStyle = style?.let { RichTextStyle(it, context) }
+    val newStyle = style?.let { StyleConfig(it, context) }
     val styleChanged = richTextStyle != newStyle
     richTextStyle = newStyle
     if (styleChanged) {

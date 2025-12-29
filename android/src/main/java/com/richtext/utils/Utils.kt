@@ -14,7 +14,7 @@ import com.richtext.renderer.BlockStyle
 import com.richtext.spans.LineHeightSpan
 import com.richtext.spans.MarginBottomSpan
 import com.richtext.styles.ParagraphStyle
-import com.richtext.styles.RichTextStyle
+import com.richtext.styles.StyleConfig
 import org.commonmark.node.Image
 import org.commonmark.node.Paragraph
 import android.text.style.LineHeightSpan as AndroidLineHeightSpan
@@ -50,7 +50,7 @@ fun TextPaint.applyColorPreserving(
  * Uses strongColor if explicitly set (different from block color), otherwise uses block color.
  */
 fun calculateStrongColor(
-  style: RichTextStyle,
+  style: StyleConfig,
   blockStyle: BlockStyle,
 ): Int {
   val strongColor = style.getStrongColor()
@@ -65,7 +65,7 @@ fun calculateStrongColor(
  * Gets the list of colors that should be preserved when applying strong or emphasis colors.
  * These are colors from inline elements (code, links) that take priority over strong/emphasis colors.
  */
-fun getColorsToPreserveForInlineStyle(style: RichTextStyle): IntArray =
+fun getColorsToPreserveForInlineStyle(style: StyleConfig): IntArray =
   intArrayOf(
     style.getCodeStyle().color,
     style.getLinkColor(),
@@ -197,7 +197,7 @@ fun Paragraph.containsBlockImage(): Boolean {
 fun getMarginBottomForParagraph(
   paragraph: Paragraph,
   paragraphStyle: ParagraphStyle,
-  style: RichTextStyle,
+  style: StyleConfig,
 ): Float {
   // If paragraph contains only a single block-level element, use that element's marginBottom
   // Otherwise, use paragraph's marginBottom

@@ -66,7 +66,7 @@ data class BlockquoteStyle(
   val backgroundColor: Int?,
 )
 
-class RichTextStyle(
+class StyleConfig(
   style: ReadableMap,
   private val context: Context,
 ) {
@@ -279,5 +279,33 @@ class RichTextStyle(
         blockquoteGapWidth,
         blockquoteBackgroundColor,
       )
+  }
+
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (other !is StyleConfig) return false
+
+    return paragraphStyle == other.paragraphStyle &&
+      headingStyles.contentEquals(other.headingStyles) &&
+      linkStyle == other.linkStyle &&
+      strongStyle == other.strongStyle &&
+      emphasisStyle == other.emphasisStyle &&
+      codeStyle == other.codeStyle &&
+      imageStyle == other.imageStyle &&
+      inlineImageStyle == other.inlineImageStyle &&
+      blockquoteStyle == other.blockquoteStyle
+  }
+
+  override fun hashCode(): Int {
+    var result = paragraphStyle.hashCode()
+    result = 31 * result + headingStyles.contentHashCode()
+    result = 31 * result + linkStyle.hashCode()
+    result = 31 * result + strongStyle.hashCode()
+    result = 31 * result + emphasisStyle.hashCode()
+    result = 31 * result + codeStyle.hashCode()
+    result = 31 * result + imageStyle.hashCode()
+    result = 31 * result + inlineImageStyle.hashCode()
+    result = 31 * result + blockquoteStyle.hashCode()
+    return result
   }
 }

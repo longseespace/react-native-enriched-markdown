@@ -9,7 +9,7 @@ import android.text.StaticLayout
 import android.text.TextPaint
 import android.text.style.LineBackgroundSpan
 import com.richtext.styles.CodeStyle
-import com.richtext.styles.RichTextStyle
+import com.richtext.styles.StyleConfig
 import kotlin.math.max
 import kotlin.math.min
 
@@ -19,7 +19,7 @@ import kotlin.math.min
  * Implements LineBackgroundSpan to draw backgrounds automatically for each line.
  */
 class InlineCodeBackgroundSpan(
-  private val style: RichTextStyle,
+  private val style: StyleConfig,
 ) : LineBackgroundSpan {
   companion object {
     private const val CORNER_RADIUS = 6.0f

@@ -14,7 +14,7 @@ import com.bumptech.glide.request.transition.Transition
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.util.RNLog
 import com.richtext.RichTextView
-import com.richtext.styles.RichTextStyle
+import com.richtext.styles.StyleConfig
 import java.lang.ref.WeakReference
 import java.util.WeakHashMap
 import android.text.style.ImageSpan as AndroidImageSpan
@@ -30,7 +30,7 @@ import android.text.style.LineHeightSpan as AndroidLineHeightSpan
 class ImageSpan(
   private val context: Context,
   private val imageUrl: String,
-  private val style: RichTextStyle,
+  private val style: StyleConfig,
   private val isInline: Boolean = false,
 ) : AndroidImageSpan(createPlaceholderDrawable(context, style, isInline), imageUrl, ALIGN_CENTER),
   AndroidLineHeightSpan {
@@ -362,7 +362,7 @@ class ImageSpan(
      * Extracted to companion object to be shared between instance method and createPlaceholderDrawable.
      * Returns the base size from inlineImageStyle without scaling.
      */
-    private fun calculateInlineImageSize(style: RichTextStyle): Int {
+    private fun calculateInlineImageSize(style: StyleConfig): Int {
       val inlineImageStyle = style.getInlineImageStyle()
       return inlineImageStyle.size.toInt()
     }
@@ -374,7 +374,7 @@ class ImageSpan(
      */
     private fun createPlaceholderDrawable(
       context: Context,
-      style: RichTextStyle,
+      style: StyleConfig,
       isInline: Boolean,
     ): Drawable {
       val imageStyle = style.getImageStyle()

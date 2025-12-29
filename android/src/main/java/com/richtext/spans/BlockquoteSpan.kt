@@ -12,7 +12,7 @@ import android.text.style.LeadingMarginSpan
 import android.text.style.MetricAffectingSpan
 import com.richtext.renderer.BlockStyle
 import com.richtext.styles.BlockquoteStyle
-import com.richtext.styles.RichTextStyle
+import com.richtext.styles.StyleConfig
 import com.richtext.utils.applyBlockStyleFont
 import com.richtext.utils.applyColorPreserving
 
@@ -24,7 +24,7 @@ class BlockquoteSpan(
   private val style: BlockquoteStyle,
   val depth: Int,
   private val context: Context? = null,
-  private val richTextStyle: RichTextStyle? = null,
+  private val richTextStyle: StyleConfig? = null,
 ) : MetricAffectingSpan(),
   LeadingMarginSpan {
   // ============================================================================
