@@ -12,6 +12,10 @@ import org.commonmark.node.Node
 class BlockquoteRenderer(
   private val config: RendererConfig,
 ) : NodeRenderer {
+  // ============================================================================
+  // Rendering
+  // ============================================================================
+
   override fun render(
     node: Node,
     builder: SpannableStringBuilder,
@@ -23,6 +27,7 @@ class BlockquoteRenderer(
     val blockquoteStyle = config.style.getBlockquoteStyle()
     val currentDepth = factory.blockStyleContext.blockquoteDepth
 
+    // Update context for nested rendering
     factory.blockStyleContext.blockquoteDepth = currentDepth + 1
     factory.blockStyleContext.setBlockquoteStyle(blockquoteStyle)
 
@@ -37,6 +42,28 @@ class BlockquoteRenderer(
     val contentLength = end - start
     if (contentLength == 0) return
 
+    applyStylingAndSpacing(builder, start, end, currentDepth, blockquoteStyle, factory)
+  }
+
+  // ============================================================================
+  // Styling and Spacing
+  // ============================================================================
+
+  /**
+   * Applies all styling and spacing for the blockquote:
+   * - Blockquote span (for borders and text styling)
+   * - Line height (excluding nested blockquotes)
+   * - Nested margin bottom (if applicable)
+   * - Top-level margin bottom (if applicable)
+   */
+  private fun applyStylingAndSpacing(
+    builder: SpannableStringBuilder,
+    start: Int,
+    end: Int,
+    currentDepth: Int,
+    blockquoteStyle: com.richtext.styles.BlockquoteStyle,
+    factory: RendererFactory,
+  ) {
     val nestedRanges = collectNestedBlockquotes(builder, start, end, currentDepth)
 
     // Apply blockquote span to entire range (includes nested blockquotes for border rendering)
@@ -48,7 +75,13 @@ class BlockquoteRenderer(
     )
 
     // Apply lineHeight to parent content, excluding nested blockquote ranges
-    applySpansExcludingNested(builder, nestedRanges, start, end, createLineHeightSpan(blockquoteStyle.lineHeight))
+    applySpansExcludingNested(
+      builder,
+      nestedRanges,
+      start,
+      end,
+      createLineHeightSpan(blockquoteStyle.lineHeight),
+    )
 
     // Apply nestedMarginBottom spacing if there are nested blockquotes
     if (blockquoteStyle.nestedMarginBottom > 0 && nestedRanges.isNotEmpty()) {
@@ -77,9 +110,40 @@ class BlockquoteRenderer(
     }
   }
 
+  // ============================================================================
+  // Nested Blockquote Handling
+  // ============================================================================
+
+  /**
+   * Collects ranges of nested blockquotes within the current blockquote.
+   * Nested blockquotes are identified by having depth = currentDepth + 1
+   * and being fully contained within the current range.
+   */
+  private fun collectNestedBlockquotes(
+    builder: SpannableStringBuilder,
+    rangeStart: Int,
+    rangeEnd: Int,
+    currentDepth: Int,
+  ): List<Pair<Int, Int>> =
+    builder
+      .getSpans(rangeStart, rangeEnd, BlockquoteSpan::class.java)
+      .filter { span ->
+        val spanStart = builder.getSpanStart(span)
+        val spanEnd = builder.getSpanEnd(span)
+        span.depth == currentDepth + 1 &&
+          spanStart >= rangeStart &&
+          spanEnd <= rangeEnd &&
+          spanStart > rangeStart
+      }.map { span -> Pair(builder.getSpanStart(span), builder.getSpanEnd(span)) }
+
   /**
    * Applies a span to ranges within [start, end), excluding nested blockquote ranges.
    * This prevents conflicts between parent and nested blockquote spans.
+   *
+   * For example, if we have:
+   *   [Parent start] ... [Nested start] ... [Nested end] ... [Parent end]
+   * The span will be applied to:
+   *   [Parent start] ... [Nested start] and [Nested end] ... [Parent end]
    */
   private fun applySpansExcludingNested(
     builder: SpannableStringBuilder,
@@ -111,23 +175,14 @@ class BlockquoteRenderer(
     }
   }
 
-  private fun collectNestedBlockquotes(
-    builder: SpannableStringBuilder,
-    rangeStart: Int,
-    rangeEnd: Int,
-    currentDepth: Int,
-  ): List<Pair<Int, Int>> =
-    builder
-      .getSpans(rangeStart, rangeEnd, BlockquoteSpan::class.java)
-      .filter { span ->
-        val spanStart = builder.getSpanStart(span)
-        val spanEnd = builder.getSpanEnd(span)
-        span.depth == currentDepth + 1 &&
-          spanStart >= rangeStart &&
-          spanEnd <= rangeEnd &&
-          spanStart > rangeStart
-      }.map { span -> Pair(builder.getSpanStart(span), builder.getSpanEnd(span)) }
+  // ============================================================================
+  // Helper Methods
+  // ============================================================================
 
+  /**
+   * Returns the end position excluding the last newline character if present.
+   * Used to prevent applying spacing to trailing newlines.
+   */
   private fun getContentEndExcludingLastNewline(
     builder: SpannableStringBuilder,
     start: Int,
