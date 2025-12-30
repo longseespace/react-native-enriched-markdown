@@ -10,18 +10,18 @@ NS_ASSUME_NONNULL_BEGIN
 
 // Key for storing UITextView on NSTextContainer
 // Used by attachments to retrieve the text view when needed
-extern void *kRichTextTextViewKey;
+extern void *kTextViewKey;
 
-// Key for storing RichTextConfig on NSLayoutManager
-// Used by RichTextLayoutManager to access configuration
-extern void *kRichTextConfigKey;
+// Key for storing StyleConfig on NSLayoutManager
+// Used by TextViewLayoutManager to access configuration
+extern void *kStyleConfigKey;
 
 // Key for storing CodeBackground instance on NSLayoutManager
-// Used by RichTextLayoutManager for code background drawing
-extern void *kRichTextCodeBackgroundKey;
+// Used by TextViewLayoutManager for code background drawing
+extern void *kCodeBackgroundKey;
 
 // Key for storing BlockquoteBorder instance on NSLayoutManager
-// Used by RichTextLayoutManager for blockquote border drawing
-extern void *kRichTextBlockquoteBorderKey;
+// Used by TextViewLayoutManager for blockquote border drawing
+extern void *kBlockquoteBorderKey;
 
 NS_ASSUME_NONNULL_END

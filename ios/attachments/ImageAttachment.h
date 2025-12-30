@@ -1,7 +1,7 @@
 #pragma once
 #import <UIKit/UIKit.h>
 
-@class RichTextConfig;
+@class StyleConfig;
 @class UITextView;
 
 NS_ASSUME_NONNULL_BEGIN
@@ -11,9 +11,9 @@ NS_ASSUME_NONNULL_BEGIN
  * Images are loaded asynchronously and scaled dynamically based on text container width.
  * Supports inline and block images with custom height and border radius from config.
  */
-@interface RichTextImageAttachment : NSTextAttachment
+@interface ImageAttachment : NSTextAttachment
 
-- (instancetype)initWithImageURL:(NSString *)imageURL config:(RichTextConfig *)config isInline:(BOOL)isInline;
+- (instancetype)initWithImageURL:(NSString *)imageURL config:(StyleConfig *)config isInline:(BOOL)isInline;
 
 @end
 

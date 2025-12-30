@@ -1,14 +1,14 @@
-#import "RichTextImageAttachment.h"
-#import "RichTextConfig.h"
-#import "RichTextRuntimeKeys.h"
+#import "ImageAttachment.h"
+#import "RuntimeKeys.h"
+#import "StyleConfig.h"
 #import <React/RCTLog.h>
 #import <UIKit/UIKit.h>
 #import <objc/runtime.h>
 
-@interface RichTextImageAttachment ()
+@interface ImageAttachment ()
 
 @property (nonatomic, strong) NSString *imageURL;
-@property (nonatomic, weak) RichTextConfig *config;
+@property (nonatomic, weak) StyleConfig *config;
 @property (nonatomic, assign) BOOL isInline;
 @property (nonatomic, assign) CGFloat cachedHeight;
 @property (nonatomic, assign) CGFloat cachedBorderRadius;
@@ -20,9 +20,9 @@
 
 @end
 
-@implementation RichTextImageAttachment
+@implementation ImageAttachment
 
-- (instancetype)initWithImageURL:(NSString *)imageURL config:(RichTextConfig *)config isInline:(BOOL)isInline
+- (instancetype)initWithImageURL:(NSString *)imageURL config:(StyleConfig *)config isInline:(BOOL)isInline
 {
   self = [super init];
   if (self) {
@@ -54,7 +54,7 @@
 
 - (UITextView *)textViewFromTextContainer:(NSTextContainer *)textContainer
 {
-  return objc_getAssociatedObject(textContainer, kRichTextTextViewKey);
+  return objc_getAssociatedObject(textContainer, kTextViewKey);
 }
 
 - (UITextView *)getTextView
@@ -140,7 +140,7 @@
 
   NSURL *url = [NSURL URLWithString:self.imageURL];
   if (!url || !url.scheme) {
-    RCTLogWarn(@"[RichTextImageAttachment] Invalid URL: '%@'", self.imageURL);
+    RCTLogWarn(@"[ImageAttachment] Invalid URL: '%@'", self.imageURL);
     return;
   }
 
@@ -161,7 +161,7 @@
           return;
 
         if (!image) {
-          RCTLogWarn(@"[RichTextImageAttachment] Failed to load local file '%@'", imageURLForLogging);
+          RCTLogWarn(@"[ImageAttachment] Failed to load local file '%@'", imageURLForLogging);
           return;
         }
 
@@ -176,19 +176,18 @@
         dataTaskWithURL:url
       completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
         if (error) {
-          RCTLogError(@"[RichTextImageAttachment] Failed to load '%@': %@", imageURLForLogging,
-                      error.localizedDescription);
+          RCTLogError(@"[ImageAttachment] Failed to load '%@': %@", imageURLForLogging, error.localizedDescription);
           return;
         }
 
         if (!data) {
-          RCTLogWarn(@"[RichTextImageAttachment] No data for '%@'", imageURLForLogging);
+          RCTLogWarn(@"[ImageAttachment] No data for '%@'", imageURLForLogging);
           return;
         }
 
         UIImage *image = [UIImage imageWithData:data];
         if (!image) {
-          RCTLogWarn(@"[RichTextImageAttachment] Invalid image data for '%@'", imageURLForLogging);
+          RCTLogWarn(@"[ImageAttachment] Invalid image data for '%@'", imageURLForLogging);
           return;
         }
 
@@ -308,7 +307,7 @@
                                    height:size
                              borderRadius:self.cachedBorderRadius];
   if (!scaledImage) {
-    RCTLogWarn(@"[RichTextImageAttachment] Failed to scale inline image for '%@'", self.imageURL);
+    RCTLogWarn(@"[ImageAttachment] Failed to scale inline image for '%@'", self.imageURL);
     return;
   }
 

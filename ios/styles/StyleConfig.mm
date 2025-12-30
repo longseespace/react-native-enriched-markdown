@@ -1,7 +1,7 @@
-#import "RichTextConfig.h"
+#import "StyleConfig.h"
 #import <React/RCTFont.h>
 
-@implementation RichTextConfig {
+@implementation StyleConfig {
   // Primary font properties
   UIColor *_primaryColor;
   NSNumber *_primaryFontSize;
@@ -99,7 +99,7 @@
 
 - (id)copyWithZone:(NSZone *)zone
 {
-  RichTextConfig *copy = [[[self class] allocWithZone:zone] init];
+  StyleConfig *copy = [[[self class] allocWithZone:zone] init];
   copy->_primaryColor = [_primaryColor copy];
   copy->_primaryFontSize = [_primaryFontSize copy];
   copy->_primaryFontWeight = [_primaryFontWeight copy];
@@ -234,7 +234,7 @@
 // Paragraph properties
 - (CGFloat)paragraphFontSize
 {
-  return _paragraphFontSize > 0 ? _paragraphFontSize : 16;
+  return _paragraphFontSize;
 }
 
 - (void)setParagraphFontSize:(CGFloat)newValue
@@ -244,7 +244,7 @@
 
 - (NSString *)paragraphFontFamily
 {
-  return _paragraphFontFamily ?: @"";
+  return _paragraphFontFamily;
 }
 
 - (void)setParagraphFontFamily:(NSString *)newValue
@@ -254,7 +254,7 @@
 
 - (NSString *)paragraphFontWeight
 {
-  return _paragraphFontWeight ?: @"normal";
+  return _paragraphFontWeight;
 }
 
 - (void)setParagraphFontWeight:(NSString *)newValue
@@ -264,7 +264,7 @@
 
 - (UIColor *)paragraphColor
 {
-  return _paragraphColor ?: [UIColor blackColor];
+  return _paragraphColor;
 }
 
 - (void)setParagraphColor:(UIColor *)newValue
@@ -314,7 +314,7 @@
 
 - (NSString *)h1FontWeight
 {
-  return _h1FontWeight ?: @"normal";
+  return _h1FontWeight;
 }
 
 - (void)setH1FontWeight:(NSString *)newValue
@@ -324,7 +324,7 @@
 
 - (UIColor *)h1Color
 {
-  return _h1Color ?: [UIColor blackColor];
+  return _h1Color;
 }
 
 - (void)setH1Color:(UIColor *)newValue
@@ -374,7 +374,7 @@
 
 - (NSString *)h2FontWeight
 {
-  return _h2FontWeight ?: @"normal";
+  return _h2FontWeight;
 }
 
 - (void)setH2FontWeight:(NSString *)newValue
@@ -384,7 +384,7 @@
 
 - (UIColor *)h2Color
 {
-  return _h2Color ?: [UIColor blackColor];
+  return _h2Color;
 }
 
 - (void)setH2Color:(UIColor *)newValue
@@ -434,7 +434,7 @@
 
 - (NSString *)h3FontWeight
 {
-  return _h3FontWeight ?: @"normal";
+  return _h3FontWeight;
 }
 
 - (void)setH3FontWeight:(NSString *)newValue
@@ -444,7 +444,7 @@
 
 - (UIColor *)h3Color
 {
-  return _h3Color ?: [UIColor blackColor];
+  return _h3Color;
 }
 
 - (void)setH3Color:(UIColor *)newValue
@@ -494,7 +494,7 @@
 
 - (NSString *)h4FontWeight
 {
-  return _h4FontWeight ?: @"normal";
+  return _h4FontWeight;
 }
 
 - (void)setH4FontWeight:(NSString *)newValue
@@ -504,7 +504,7 @@
 
 - (UIColor *)h4Color
 {
-  return _h4Color ?: [UIColor blackColor];
+  return _h4Color;
 }
 
 - (void)setH4Color:(UIColor *)newValue
@@ -554,7 +554,7 @@
 
 - (NSString *)h5FontWeight
 {
-  return _h5FontWeight ?: @"normal";
+  return _h5FontWeight;
 }
 
 - (void)setH5FontWeight:(NSString *)newValue
@@ -564,7 +564,7 @@
 
 - (UIColor *)h5Color
 {
-  return _h5Color ?: [UIColor blackColor];
+  return _h5Color;
 }
 
 - (void)setH5Color:(UIColor *)newValue
@@ -614,7 +614,7 @@
 
 - (NSString *)h6FontWeight
 {
-  return _h6FontWeight ?: @"normal";
+  return _h6FontWeight;
 }
 
 - (void)setH6FontWeight:(NSString *)newValue
@@ -624,7 +624,7 @@
 
 - (UIColor *)h6Color
 {
-  return _h6Color ?: [UIColor blackColor];
+  return _h6Color;
 }
 
 - (void)setH6Color:(UIColor *)newValue
@@ -765,7 +765,7 @@
 // Blockquote properties
 - (CGFloat)blockquoteFontSize
 {
-  return _blockquoteFontSize > 0 ? _blockquoteFontSize : 16;
+  return _blockquoteFontSize;
 }
 
 - (void)setBlockquoteFontSize:(CGFloat)newValue
@@ -775,7 +775,7 @@
 
 - (NSString *)blockquoteFontFamily
 {
-  return _blockquoteFontFamily ?: @"";
+  return _blockquoteFontFamily;
 }
 
 - (void)setBlockquoteFontFamily:(NSString *)newValue
@@ -785,7 +785,7 @@
 
 - (NSString *)blockquoteFontWeight
 {
-  return _blockquoteFontWeight ?: @"normal";
+  return _blockquoteFontWeight;
 }
 
 - (void)setBlockquoteFontWeight:(NSString *)newValue
@@ -795,7 +795,7 @@
 
 - (UIColor *)blockquoteColor
 {
-  return _blockquoteColor ?: [UIColor blackColor];
+  return _blockquoteColor;
 }
 
 - (void)setBlockquoteColor:(UIColor *)newValue

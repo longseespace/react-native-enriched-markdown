@@ -1,14 +1,14 @@
-#import "CodeRenderer.h"
+#import "InlineCodeRenderer.h"
 #import "CodeBackground.h"
 #import "FontUtils.h"
 #import "MarkdownASTNode.h"
 #import "RenderContext.h"
 #import "RendererFactory.h"
-#import "RichTextConfig.h"
+#import "StyleConfig.h"
 
-@implementation CodeRenderer {
+@implementation InlineCodeRenderer {
   RendererFactory *_rendererFactory;
-  RichTextConfig *_config;
+  StyleConfig *_config;
 }
 
 - (instancetype)initWithRendererFactory:(id)rendererFactory config:(id)config
@@ -16,7 +16,7 @@
   self = [super init];
   if (self) {
     _rendererFactory = rendererFactory;
-    _config = (RichTextConfig *)config;
+    _config = (StyleConfig *)config;
   }
   return self;
 }

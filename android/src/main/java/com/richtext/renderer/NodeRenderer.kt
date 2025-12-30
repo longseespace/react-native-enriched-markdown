@@ -31,7 +31,7 @@ class RendererFactory(
   private val sharedDocumentRenderer = DocumentRenderer(config)
   private val sharedStrongRenderer = StrongRenderer(config)
   private val sharedEmphasisRenderer = EmphasisRenderer(config)
-  private val sharedCodeRenderer = CodeRenderer(config)
+  private val sharedInlineCodeRenderer = InlineCodeRenderer(config)
   private val sharedImageRenderer = ImageRenderer(config, context)
   private val sharedLineBreakRenderer = LineBreakRenderer()
   private val sharedBlockquoteRenderer = BlockquoteRenderer(config)
@@ -71,7 +71,7 @@ class RendererFactory(
       }
 
       MarkdownASTNode.NodeType.Code -> {
-        sharedCodeRenderer
+        sharedInlineCodeRenderer
       }
 
       MarkdownASTNode.NodeType.Image -> {

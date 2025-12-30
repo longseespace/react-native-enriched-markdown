@@ -1,9 +1,9 @@
 #import "RendererFactory.h"
 #import "BlockquoteRenderer.h"
-#import "CodeRenderer.h"
 #import "EmphasisRenderer.h"
 #import "HeadingRenderer.h"
 #import "ImageRenderer.h"
+#import "InlineCodeRenderer.h"
 #import "LinkRenderer.h"
 #import "ParagraphRenderer.h"
 #import "RenderContext.h"
@@ -17,7 +17,7 @@
   HeadingRenderer *_sharedHeadingRenderer;
   StrongRenderer *_sharedStrongRenderer;
   EmphasisRenderer *_sharedEmphasisRenderer;
-  CodeRenderer *_sharedCodeRenderer;
+  InlineCodeRenderer *_sharedInlineCodeRenderer;
   ImageRenderer *_sharedImageRenderer;
   ParagraphRenderer *_sharedParagraphRenderer;
   BlockquoteRenderer *_sharedBlockquoteRenderer;
@@ -31,7 +31,7 @@
     _sharedTextRenderer = [TextRenderer new];
     _sharedStrongRenderer = [[StrongRenderer alloc] initWithRendererFactory:self config:config];
     _sharedEmphasisRenderer = [[EmphasisRenderer alloc] initWithRendererFactory:self config:config];
-    _sharedCodeRenderer = [[CodeRenderer alloc] initWithRendererFactory:self config:config];
+    _sharedInlineCodeRenderer = [[InlineCodeRenderer alloc] initWithRendererFactory:self config:config];
     _sharedImageRenderer = [[ImageRenderer alloc] initWithRendererFactory:self config:config];
     _sharedLinkRenderer = [[LinkRenderer alloc] initWithRendererFactory:self config:config];
     _sharedHeadingRenderer = [[HeadingRenderer alloc] initWithRendererFactory:self config:config];
@@ -57,7 +57,7 @@
     case MarkdownNodeTypeEmphasis:
       return _sharedEmphasisRenderer;
     case MarkdownNodeTypeCode:
-      return _sharedCodeRenderer;
+      return _sharedInlineCodeRenderer;
     case MarkdownNodeTypeImage:
       return _sharedImageRenderer;
     case MarkdownNodeTypeBlockquote:

@@ -6,7 +6,7 @@ import com.richtext.spans.InlineCodeBackgroundSpan
 import com.richtext.spans.InlineCodeSpan
 import com.richtext.utils.SPAN_FLAGS_EXCLUSIVE_EXCLUSIVE
 
-class CodeRenderer(
+class InlineCodeRenderer(
   private val config: RendererConfig,
 ) : NodeRenderer {
   override fun render(
