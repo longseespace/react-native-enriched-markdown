@@ -3,7 +3,7 @@
 #include <cstring>
 #include <vector>
 
-namespace RichText {
+namespace Markdown {
 
 class MD4CParser::Impl {
 public:
@@ -268,4 +268,4 @@ const std::string MD4CParser::Impl::ATTR_LEVEL = "level";
 const std::string MD4CParser::Impl::ATTR_URL = "url";
 const std::string MD4CParser::Impl::ATTR_TITLE = "title";
 
-} // namespace RichText
+} // namespace Markdown

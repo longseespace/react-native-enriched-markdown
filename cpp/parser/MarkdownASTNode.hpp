@@ -5,7 +5,7 @@
 #include <vector>
 #include <unordered_map>
 
-namespace RichText {
+namespace Markdown {
 
 enum class NodeType {
     Document,
@@ -40,5 +40,5 @@ struct MarkdownASTNode {
     }
 };
 
-} // namespace RichText
+} // namespace Markdown
 

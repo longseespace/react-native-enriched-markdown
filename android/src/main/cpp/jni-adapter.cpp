@@ -3,7 +3,7 @@
 #include <jni.h>
 #include <string>
 
-using namespace RichText;
+using namespace Markdown;
 
 #define LOG_TAG "RichTextJNI"
 #define LOGI(...) __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__)

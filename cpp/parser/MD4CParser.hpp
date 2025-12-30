@@ -4,7 +4,7 @@
 #include <string>
 #include <memory>
 
-namespace RichText {
+namespace Markdown {
 
 class MD4CParser {
 public:
@@ -19,5 +19,5 @@ private:
     std::unique_ptr<Impl> impl_;
 };
 
-} // namespace RichText
+} // namespace Markdown
 
