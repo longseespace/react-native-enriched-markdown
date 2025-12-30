@@ -137,6 +137,36 @@ static const CGFloat kMinimumValidDimension = 0.0;
 
   __weak typeof(self) weakSelf = self;
   NSString *imageURLForLogging = [self.imageURL copy];
+
+  // Handle local files (file:// URLs)
+  if ([url.scheme isEqualToString:@"file"]) {
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+      // Convert file:// URL to file path
+      NSString *filePath = url.path;
+      UIImage *image = filePath ? [UIImage imageWithContentsOfFile:filePath] : nil;
+
+      dispatch_async(dispatch_get_main_queue(), ^{
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf)
+          return;
+
+        if (!image) {
+          RCTLogWarn(@"[RichTextImageAttachment] Failed to load local file '%@'", imageURLForLogging);
+          return;
+        }
+
+        strongSelf.originalImage = image;
+        if (strongSelf.isInline) {
+          [strongSelf scaleAndUpdateInlineImage];
+        } else {
+          [strongSelf triggerLayoutUpdateForBlockImage];
+        }
+      });
+    });
+    return;
+  }
+
+  // Handle remote URLs (http/https) with NSURLSession
   self.loadingTask = [[NSURLSession sharedSession]
         dataTaskWithURL:url
       completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
