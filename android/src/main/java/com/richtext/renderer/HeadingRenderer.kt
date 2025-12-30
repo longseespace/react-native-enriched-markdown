@@ -7,14 +7,14 @@ import com.richtext.utils.SPAN_FLAGS_EXCLUSIVE_EXCLUSIVE
 import com.richtext.utils.applyMarginBottom
 import com.richtext.utils.createLineHeightSpan
 
-class ASTHeadingRenderer(
-  private val config: ASTRendererConfig,
-) : ASTNodeRenderer {
+class HeadingRenderer(
+  private val config: RendererConfig,
+) : NodeRenderer {
   override fun render(
     node: MarkdownASTNode,
     builder: SpannableStringBuilder,
     onLinkPress: ((String) -> Unit)?,
-    factory: ASTRendererFactory,
+    factory: RendererFactory,
   ) {
     val level = node.getAttribute("level")?.toIntOrNull() ?: 1
     val start = builder.length

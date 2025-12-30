@@ -3,12 +3,12 @@ package com.richtext.renderer
 import android.text.SpannableStringBuilder
 import com.richtext.parser.MarkdownASTNode
 
-class ASTLineBreakRenderer : ASTNodeRenderer {
+class LineBreakRenderer : NodeRenderer {
   override fun render(
     node: MarkdownASTNode,
     builder: SpannableStringBuilder,
     onLinkPress: ((String) -> Unit)?,
-    factory: ASTRendererFactory,
+    factory: RendererFactory,
   ) {
     builder.append("\n")
   }

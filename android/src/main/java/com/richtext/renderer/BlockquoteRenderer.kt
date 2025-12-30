@@ -8,14 +8,14 @@ import com.richtext.spans.MarginBottomSpan
 import com.richtext.utils.SPAN_FLAGS_EXCLUSIVE_EXCLUSIVE
 import com.richtext.utils.createLineHeightSpan
 
-class ASTBlockquoteRenderer(
-  private val config: ASTRendererConfig,
-) : ASTNodeRenderer {
+class BlockquoteRenderer(
+  private val config: RendererConfig,
+) : NodeRenderer {
   override fun render(
     node: MarkdownASTNode,
     builder: SpannableStringBuilder,
     onLinkPress: ((String) -> Unit)?,
-    factory: ASTRendererFactory,
+    factory: RendererFactory,
   ) {
     val start = builder.length
     val blockquoteStyle = config.style.getBlockquoteStyle()
@@ -56,7 +56,7 @@ class ASTBlockquoteRenderer(
     end: Int,
     currentDepth: Int,
     blockquoteStyle: com.richtext.styles.BlockquoteStyle,
-    factory: ASTRendererFactory,
+    factory: RendererFactory,
   ) {
     val nestedRanges = collectNestedBlockquotes(builder, start, end, currentDepth)
 

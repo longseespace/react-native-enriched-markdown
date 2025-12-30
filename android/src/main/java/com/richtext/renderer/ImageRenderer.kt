@@ -7,15 +7,15 @@ import com.richtext.spans.ImageSpan
 import com.richtext.utils.SPAN_FLAGS_EXCLUSIVE_EXCLUSIVE
 import com.richtext.utils.isInlineImage
 
-class ASTImageRenderer(
-  private val config: ASTRendererConfig,
+class ImageRenderer(
+  private val config: RendererConfig,
   private val context: Context,
-) : ASTNodeRenderer {
+) : NodeRenderer {
   override fun render(
     node: MarkdownASTNode,
     builder: SpannableStringBuilder,
     onLinkPress: ((String) -> Unit)?,
-    factory: ASTRendererFactory,
+    factory: RendererFactory,
   ) {
     val imageUrl = node.getAttribute("url") ?: return
 

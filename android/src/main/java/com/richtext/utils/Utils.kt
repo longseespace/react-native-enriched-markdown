@@ -181,7 +181,7 @@ fun Layout.getLineBottomWithoutPadding(line: Int): Int {
 // ============================================================================
 
 /**
- * Determines if an AST paragraph contains only a single block image.
+ * Determines if a paragraph contains only a single block image.
  */
 fun MarkdownASTNode.containsBlockImage(): Boolean {
   if (type != MarkdownASTNode.NodeType.Paragraph) return false
@@ -190,11 +190,11 @@ fun MarkdownASTNode.containsBlockImage(): Boolean {
 }
 
 /**
- * Determines the appropriate marginBottom for an AST paragraph.
+ * Determines the appropriate marginBottom for a paragraph.
  * If paragraph contains only a single block-level element (e.g., image), uses that element's marginBottom.
  * Otherwise, uses paragraph's marginBottom.
  */
-fun getMarginBottomForASTParagraph(
+fun getMarginBottomForParagraph(
   paragraph: MarkdownASTNode,
   paragraphStyle: ParagraphStyle,
   style: StyleConfig,

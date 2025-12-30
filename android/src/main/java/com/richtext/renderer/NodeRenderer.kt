@@ -5,38 +5,38 @@ import android.text.SpannableStringBuilder
 import com.richtext.parser.MarkdownASTNode
 import com.richtext.styles.StyleConfig
 
-interface ASTNodeRenderer {
+interface NodeRenderer {
   fun render(
     node: MarkdownASTNode,
     builder: SpannableStringBuilder,
     onLinkPress: ((String) -> Unit)?,
-    factory: ASTRendererFactory,
+    factory: RendererFactory,
   )
 }
 
-data class ASTRendererConfig(
+data class RendererConfig(
   val style: StyleConfig,
 )
 
-class ASTRendererFactory(
-  private val config: ASTRendererConfig,
+class RendererFactory(
+  private val config: RendererConfig,
   val context: Context,
 ) {
   val blockStyleContext = BlockStyleContext()
 
-  private val sharedTextRenderer = ASTTextRenderer()
-  private val sharedLinkRenderer = ASTLinkRenderer(config)
-  private val sharedHeadingRenderer = ASTHeadingRenderer(config)
-  private val sharedParagraphRenderer = ASTParagraphRenderer(config)
-  private val sharedDocumentRenderer = ASTDocumentRenderer(config)
-  private val sharedStrongRenderer = ASTStrongRenderer(config)
-  private val sharedEmphasisRenderer = ASTEmphasisRenderer(config)
-  private val sharedCodeRenderer = ASTCodeRenderer(config)
-  private val sharedImageRenderer = ASTImageRenderer(config, context)
-  private val sharedLineBreakRenderer = ASTLineBreakRenderer()
-  private val sharedBlockquoteRenderer = ASTBlockquoteRenderer(config)
+  private val sharedTextRenderer = TextRenderer()
+  private val sharedLinkRenderer = LinkRenderer(config)
+  private val sharedHeadingRenderer = HeadingRenderer(config)
+  private val sharedParagraphRenderer = ParagraphRenderer(config)
+  private val sharedDocumentRenderer = DocumentRenderer(config)
+  private val sharedStrongRenderer = StrongRenderer(config)
+  private val sharedEmphasisRenderer = EmphasisRenderer(config)
+  private val sharedCodeRenderer = CodeRenderer(config)
+  private val sharedImageRenderer = ImageRenderer(config, context)
+  private val sharedLineBreakRenderer = LineBreakRenderer()
+  private val sharedBlockquoteRenderer = BlockquoteRenderer(config)
 
-  fun getRenderer(node: MarkdownASTNode): ASTNodeRenderer =
+  fun getRenderer(node: MarkdownASTNode): NodeRenderer =
     when (node.type) {
       MarkdownASTNode.NodeType.Document -> {
         sharedDocumentRenderer
@@ -84,7 +84,7 @@ class ASTRendererFactory(
 
       else -> {
         android.util.Log.w(
-          "ASTRendererFactory",
+          "RendererFactory",
           "No renderer found for node type: ${node.type}",
         )
         sharedTextRenderer

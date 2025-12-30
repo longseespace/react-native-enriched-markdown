@@ -6,14 +6,14 @@ import com.richtext.spans.InlineCodeBackgroundSpan
 import com.richtext.spans.InlineCodeSpan
 import com.richtext.utils.SPAN_FLAGS_EXCLUSIVE_EXCLUSIVE
 
-class ASTCodeRenderer(
-  private val config: ASTRendererConfig,
-) : ASTNodeRenderer {
+class CodeRenderer(
+  private val config: RendererConfig,
+) : NodeRenderer {
   override fun render(
     node: MarkdownASTNode,
     builder: SpannableStringBuilder,
     onLinkPress: ((String) -> Unit)?,
-    factory: ASTRendererFactory,
+    factory: RendererFactory,
   ) {
     // For code nodes, content might be in node.content or in children (Text nodes)
     val codeText =

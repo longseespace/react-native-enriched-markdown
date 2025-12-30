@@ -10,7 +10,7 @@ class Renderer {
   private var style: StyleConfig? = null
   private var lastConfiguredStyle: StyleConfig? = null
   private var lastConfiguredContext: Context? = null
-  private lateinit var rendererFactory: ASTRendererFactory
+  private lateinit var rendererFactory: RendererFactory
 
   fun configure(
     style: StyleConfig,
@@ -21,8 +21,8 @@ class Renderer {
       this.style = style
       lastConfiguredStyle = style
       lastConfiguredContext = context
-      val config = ASTRendererConfig(style)
-      rendererFactory = ASTRendererFactory(config, context)
+      val config = RendererConfig(style)
+      rendererFactory = RendererFactory(config, context)
     }
   }
 
@@ -44,7 +44,7 @@ class Renderer {
     node: MarkdownASTNode,
     builder: SpannableStringBuilder,
     onLinkPress: ((String) -> Unit)? = null,
-    factory: ASTRendererFactory,
+    factory: RendererFactory,
   ) {
     val renderer = factory.getRenderer(node)
     renderer.render(node, builder, onLinkPress, factory)

@@ -7,16 +7,16 @@ import com.richtext.utils.SPAN_FLAGS_EXCLUSIVE_EXCLUSIVE
 import com.richtext.utils.applyMarginBottom
 import com.richtext.utils.containsBlockImage
 import com.richtext.utils.createLineHeightSpan
-import com.richtext.utils.getMarginBottomForASTParagraph
+import com.richtext.utils.getMarginBottomForParagraph
 
-class ASTParagraphRenderer(
-  private val config: ASTRendererConfig,
-) : ASTNodeRenderer {
+class ParagraphRenderer(
+  private val config: RendererConfig,
+) : NodeRenderer {
   override fun render(
     node: MarkdownASTNode,
     builder: SpannableStringBuilder,
     onLinkPress: ((String) -> Unit)?,
-    factory: ASTRendererFactory,
+    factory: RendererFactory,
   ) {
     // When inside a block element, render content without paragraph-specific spans
     // The parent block element (blockquote, list, etc.) handles spacing and styling
@@ -41,7 +41,7 @@ class ASTParagraphRenderer(
     paragraph: MarkdownASTNode,
     builder: SpannableStringBuilder,
     onLinkPress: ((String) -> Unit)?,
-    factory: ASTRendererFactory,
+    factory: RendererFactory,
   ) {
     val start = builder.length
     val paragraphStyle = config.style.getParagraphStyle()
@@ -93,7 +93,7 @@ class ASTParagraphRenderer(
     paragraphStyle: ParagraphStyle,
     start: Int,
   ) {
-    val marginBottom = getMarginBottomForASTParagraph(paragraph, paragraphStyle, config.style)
+    val marginBottom = getMarginBottomForParagraph(paragraph, paragraphStyle, config.style)
     applyMarginBottom(builder, start, marginBottom)
   }
 
@@ -109,7 +109,7 @@ class ASTParagraphRenderer(
     paragraph: MarkdownASTNode,
     builder: SpannableStringBuilder,
     onLinkPress: ((String) -> Unit)?,
-    factory: ASTRendererFactory,
+    factory: RendererFactory,
   ) {
     factory.renderChildren(paragraph, builder, onLinkPress)
     builder.append("\n")

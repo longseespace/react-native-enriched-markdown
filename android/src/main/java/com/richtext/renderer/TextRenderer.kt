@@ -5,12 +5,12 @@ import com.richtext.parser.MarkdownASTNode
 import com.richtext.spans.TextSpan
 import com.richtext.utils.SPAN_FLAGS_EXCLUSIVE_EXCLUSIVE
 
-class ASTTextRenderer : ASTNodeRenderer {
+class TextRenderer : NodeRenderer {
   override fun render(
     node: MarkdownASTNode,
     builder: SpannableStringBuilder,
     onLinkPress: ((String) -> Unit)?,
-    factory: ASTRendererFactory,
+    factory: RendererFactory,
   ) {
     val content = node.content
     if (content.isEmpty()) return
