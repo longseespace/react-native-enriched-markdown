@@ -1,7 +1,7 @@
 #import "RichTextLayoutManager.h"
 #import "BlockquoteBorder.h"
 #import "CodeBackground.h"
-#import "RichTextRuntimeKeys.h"
+#import "RuntimeKeys.h"
 #import "StyleConfig.h"
 #import <objc/runtime.h>
 
@@ -25,7 +25,7 @@
   StyleConfig *config = self.config;
 
   CodeBackground *codeBackground =
-      [self getOrCreateAssociatedObject:kRichTextCodeBackgroundKey
+      [self getOrCreateAssociatedObject:kCodeBackgroundKey
                                 factory:^id { return [[CodeBackground alloc] initWithConfig:config]; }];
   [codeBackground drawBackgroundsForGlyphRange:glyphsToShow
                                  layoutManager:self
@@ -33,7 +33,7 @@
                                        atPoint:origin];
 
   BlockquoteBorder *blockquoteBorder =
-      [self getOrCreateAssociatedObject:kRichTextBlockquoteBorderKey
+      [self getOrCreateAssociatedObject:kBlockquoteBorderKey
                                 factory:^id { return [[BlockquoteBorder alloc] initWithConfig:config]; }];
   [blockquoteBorder drawBordersForGlyphRange:glyphsToShow
                                layoutManager:self
@@ -56,8 +56,8 @@
 {
   objc_setAssociatedObject(self, kStyleConfigKey, config, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
   // Reset all drawing objects when config changes (they'll be recreated on next draw)
-  objc_setAssociatedObject(self, kRichTextCodeBackgroundKey, nil, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-  objc_setAssociatedObject(self, kRichTextBlockquoteBorderKey, nil, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+  objc_setAssociatedObject(self, kCodeBackgroundKey, nil, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+  objc_setAssociatedObject(self, kBlockquoteBorderKey, nil, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
   // Add more resets here for other element types
 }
 

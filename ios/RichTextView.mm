@@ -6,7 +6,7 @@
 #import "RenderContext.h"
 #import "RichTextImageAttachment.h"
 #import "RichTextLayoutManager.h"
-#import "RichTextRuntimeKeys.h"
+#import "RuntimeKeys.h"
 #import "StyleConfig.h"
 #import <objc/runtime.h>
 
@@ -198,7 +198,7 @@ static const CGFloat kLabelPadding = 10.0;
   }
 
   // Store text view on text container so attachments can access it
-  objc_setAssociatedObject(_textView.textContainer, kRichTextTextViewKey, _textView, OBJC_ASSOCIATION_ASSIGN);
+  objc_setAssociatedObject(_textView.textContainer, kTextViewKey, _textView, OBJC_ASSOCIATION_ASSIGN);
 
   _textView.attributedText = attributedText;
 

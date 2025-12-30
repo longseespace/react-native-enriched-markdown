@@ -1,5 +1,5 @@
 #import "RichTextImageAttachment.h"
-#import "RichTextRuntimeKeys.h"
+#import "RuntimeKeys.h"
 #import "StyleConfig.h"
 #import <React/RCTLog.h>
 #import <UIKit/UIKit.h>
@@ -54,7 +54,7 @@
 
 - (UITextView *)textViewFromTextContainer:(NSTextContainer *)textContainer
 {
-  return objc_getAssociatedObject(textContainer, kRichTextTextViewKey);
+  return objc_getAssociatedObject(textContainer, kTextViewKey);
 }
 
 - (UITextView *)getTextView
