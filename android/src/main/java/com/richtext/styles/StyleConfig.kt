@@ -6,7 +6,6 @@ import com.facebook.react.bridge.ReadableMap
 
 /**
  * Main style configuration class that parses and caches all markdown element styles.
- * Each style type is defined in its own file and has its own parsing logic.
  */
 class StyleConfig(
   style: ReadableMap,
@@ -82,14 +81,12 @@ class StyleConfig(
   }
 
   private fun parseStyles(style: ReadableMap) {
-    // Parse paragraph style
     val paragraphStyleMap =
       requireNotNull(style.getMap("paragraph")) {
         "Paragraph style not found. JS should always provide defaults."
       }
     paragraphStyle = ParagraphStyle.fromReadableMap(paragraphStyleMap, styleParser)
 
-    // Parse heading styles
     (1..6).forEach { level ->
       val levelKey = "h$level"
       val levelStyle =
@@ -99,49 +96,42 @@ class StyleConfig(
       headingStyles[level] = HeadingStyle.fromReadableMap(levelStyle, styleParser, level)
     }
 
-    // Parse link style
     val linkStyleMap =
       requireNotNull(style.getMap("link")) {
         "Link style not found. JS should always provide defaults."
       }
     linkStyle = LinkStyle.fromReadableMap(linkStyleMap, styleParser)
 
-    // Parse strong style
     val strongStyleMap =
       requireNotNull(style.getMap("strong")) {
         "Strong style not found. JS should always provide defaults."
       }
     strongStyle = StrongStyle.fromReadableMap(strongStyleMap, styleParser)
 
-    // Parse emphasis style
     val emphasisStyleMap =
       requireNotNull(style.getMap("em")) {
         "Emphasis style not found. JS should always provide defaults."
       }
     emphasisStyle = EmphasisStyle.fromReadableMap(emphasisStyleMap, styleParser)
 
-    // Parse code style
     val codeStyleMap =
       requireNotNull(style.getMap("code")) {
         "Code style not found. JS should always provide defaults."
       }
     codeStyle = CodeStyle.fromReadableMap(codeStyleMap, styleParser)
 
-    // Parse image style
     val imageStyleMap =
       requireNotNull(style.getMap("image")) {
         "Image style not found. JS should always provide defaults."
       }
     imageStyle = ImageStyle.fromReadableMap(imageStyleMap, styleParser)
 
-    // Parse inline image style
     val inlineImageStyleMap =
       requireNotNull(style.getMap("inlineImage")) {
         "InlineImage style not found. JS should always provide defaults."
       }
     inlineImageStyle = InlineImageStyle.fromReadableMap(inlineImageStyleMap, styleParser)
 
-    // Parse blockquote style
     val blockquoteStyleMap =
       requireNotNull(style.getMap("blockquote")) {
         "Blockquote style not found. JS should always provide defaults."
