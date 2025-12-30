@@ -3,8 +3,6 @@ package com.richtext
 import android.content.Context
 import android.graphics.Color
 import android.text.Spannable
-import android.text.SpannableString
-import android.text.Spanned
 import android.text.method.LinkMovementMethod
 import android.util.AttributeSet
 import androidx.appcompat.widget.AppCompatTextView
@@ -61,7 +59,15 @@ class RichTextView : AppCompatTextView {
         renderer.configure(currentStyle, context)
         val styledText = renderer.renderDocument(document, onLinkPressCallback)
         text = styledText
-        registerImageSpans(styledText)
+
+        // Register image spans for async loading
+        (text as? Spannable)?.let { spannable ->
+          spannable.getSpans(0, spannable.length, ImageSpan::class.java).forEach { span ->
+            span.registerTextView(this)
+            span.observeAsyncDrawableLoaded(null)
+          }
+        }
+
         movementMethod = LinkMovementMethod.getInstance()
       } else {
         android.util.Log.e("RichTextView", "Failed to parse markdown - Document is null")
@@ -124,30 +130,5 @@ class RichTextView : AppCompatTextView {
 
   override fun onDetachedFromWindow() {
     super.onDetachedFromWindow()
-    // Clean up any pending image update callbacks to prevent memory leaks
-    cleanupPendingImageUpdates()
-  }
-
-  /**
-   * Cancels and removes any pending image update callbacks for this view.
-   * Called when the view is detached to prevent memory leaks.
-   */
-  private fun cleanupPendingImageUpdates() {
-    val pendingRunnable = ImageSpan.pendingUpdates[this]
-    pendingRunnable?.let {
-      removeCallbacks(it)
-      ImageSpan.pendingUpdates.remove(this)
-    }
-  }
-
-  /**
-   * Scans the text for ImageSpans and registers this TextView with them
-   * so they can trigger redraws when images load.
-   */
-  private fun registerImageSpans(text: SpannableString) {
-    val imageSpans = text.getSpans(0, text.length, ImageSpan::class.java)
-    for (span in imageSpans) {
-      span.registerTextView(this)
-    }
   }
 }
