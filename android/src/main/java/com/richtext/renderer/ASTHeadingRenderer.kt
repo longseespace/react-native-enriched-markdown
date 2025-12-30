@@ -1,30 +1,29 @@
 package com.richtext.renderer
 
 import android.text.SpannableStringBuilder
+import com.richtext.parser.MarkdownASTNode
 import com.richtext.spans.HeadingSpan
 import com.richtext.utils.SPAN_FLAGS_EXCLUSIVE_EXCLUSIVE
 import com.richtext.utils.applyMarginBottom
 import com.richtext.utils.createLineHeightSpan
-import org.commonmark.node.Heading
-import org.commonmark.node.Node
 
-class HeadingRenderer(
-  private val config: RendererConfig,
-) : NodeRenderer {
+class ASTHeadingRenderer(
+  private val config: ASTRendererConfig,
+) : ASTNodeRenderer {
   override fun render(
-    node: Node,
+    node: MarkdownASTNode,
     builder: SpannableStringBuilder,
     onLinkPress: ((String) -> Unit)?,
-    factory: RendererFactory,
+    factory: ASTRendererFactory,
   ) {
-    val heading = node as Heading
+    val level = node.getAttribute("level")?.toIntOrNull() ?: 1
     val start = builder.length
 
-    val headingStyle = config.style.getHeadingStyle(heading.level)
-    factory.blockStyleContext.setHeadingStyle(headingStyle, heading.level)
+    val headingStyle = config.style.getHeadingStyle(level)
+    factory.blockStyleContext.setHeadingStyle(headingStyle, level)
 
     try {
-      factory.renderChildren(heading, builder, onLinkPress)
+      factory.renderChildren(node, builder, onLinkPress)
     } finally {
       factory.blockStyleContext.clearBlockStyle()
     }
@@ -34,7 +33,7 @@ class HeadingRenderer(
     if (contentLength > 0) {
       builder.setSpan(
         HeadingSpan(
-          heading.level,
+          level,
           config.style,
         ),
         start,

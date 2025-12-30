@@ -1,23 +1,20 @@
 package com.richtext.renderer
 
 import android.text.SpannableStringBuilder
+import com.richtext.parser.MarkdownASTNode
 import com.richtext.spans.StrongSpan
 import com.richtext.utils.SPAN_FLAGS_EXCLUSIVE_EXCLUSIVE
-import org.commonmark.node.Node
-import org.commonmark.node.StrongEmphasis
 
-class StrongRenderer(
-  private val config: RendererConfig,
-) : NodeRenderer {
+class ASTStrongRenderer(
+  private val config: ASTRendererConfig,
+) : ASTNodeRenderer {
   override fun render(
-    node: Node,
+    node: MarkdownASTNode,
     builder: SpannableStringBuilder,
     onLinkPress: ((String) -> Unit)?,
-    factory: RendererFactory,
+    factory: ASTRendererFactory,
   ) {
-    val strongEmphasis = node as StrongEmphasis
-
-    factory.renderWithSpan(builder, { factory.renderChildren(strongEmphasis, builder, onLinkPress) }) { start, end, blockStyle ->
+    factory.renderWithSpan(builder, { factory.renderChildren(node, builder, onLinkPress) }) { start, end, blockStyle ->
       builder.setSpan(
         StrongSpan(config.style, blockStyle),
         start,

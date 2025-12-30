@@ -10,13 +10,12 @@ import android.text.TextPaint
 import com.facebook.react.common.ReactConstants
 import com.facebook.react.views.text.ReactTypefaceUtils.applyStyles
 import com.facebook.react.views.text.ReactTypefaceUtils.parseFontWeight
+import com.richtext.parser.MarkdownASTNode
 import com.richtext.renderer.BlockStyle
 import com.richtext.spans.LineHeightSpan
 import com.richtext.spans.MarginBottomSpan
 import com.richtext.styles.ParagraphStyle
 import com.richtext.styles.StyleConfig
-import org.commonmark.node.Image
-import org.commonmark.node.Paragraph
 import android.text.style.LineHeightSpan as AndroidLineHeightSpan
 
 // ============================================================================
@@ -182,38 +181,38 @@ fun Layout.getLineBottomWithoutPadding(line: Int): Int {
 // ============================================================================
 
 /**
- * Determines if a paragraph contains only a single block image.
+ * Determines if an AST paragraph contains only a single block image.
  */
-fun Paragraph.containsBlockImage(): Boolean {
-  val firstChild = firstChild
-  return firstChild != null && firstChild.next == null && firstChild is Image
+fun MarkdownASTNode.containsBlockImage(): Boolean {
+  if (type != MarkdownASTNode.NodeType.Paragraph) return false
+  val firstChild = children.firstOrNull()
+  return firstChild != null && children.size == 1 && firstChild.type == MarkdownASTNode.NodeType.Image
 }
 
 /**
- * Determines the appropriate marginBottom for a paragraph.
+ * Determines the appropriate marginBottom for an AST paragraph.
  * If paragraph contains only a single block-level element (e.g., image), uses that element's marginBottom.
  * Otherwise, uses paragraph's marginBottom.
  */
-fun getMarginBottomForParagraph(
-  paragraph: Paragraph,
+fun getMarginBottomForASTParagraph(
+  paragraph: MarkdownASTNode,
   paragraphStyle: ParagraphStyle,
   style: StyleConfig,
 ): Float {
   // If paragraph contains only a single block-level element, use that element's marginBottom
   // Otherwise, use paragraph's marginBottom
-  val firstChild = paragraph.firstChild
-  if (firstChild != null && firstChild.next == null) {
+  if (paragraph.children.size == 1) {
     // Paragraph has exactly one child
-    when (firstChild) {
-      is Image -> {
+    when (paragraph.children.first().type) {
+      MarkdownASTNode.NodeType.Image -> {
         // Image: use image's marginBottom
         return style.getImageStyle().marginBottom
       }
+
       // Future: Add other block elements here as they're implemented
-      // Example:
-      // is Blockquote -> {
-      //   return style.getBlockquoteStyle().marginBottom
-      // }
+      else -> {
+        // Not a block element we handle specially
+      }
     }
   }
 

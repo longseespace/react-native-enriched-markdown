@@ -1,23 +1,30 @@
 package com.richtext.renderer
 
 import android.text.SpannableStringBuilder
+import com.richtext.parser.MarkdownASTNode
 import com.richtext.spans.InlineCodeBackgroundSpan
 import com.richtext.spans.InlineCodeSpan
 import com.richtext.utils.SPAN_FLAGS_EXCLUSIVE_EXCLUSIVE
-import org.commonmark.node.Code
-import org.commonmark.node.Node
 
-class CodeRenderer(
-  private val config: RendererConfig,
-) : NodeRenderer {
+class ASTCodeRenderer(
+  private val config: ASTRendererConfig,
+) : ASTNodeRenderer {
   override fun render(
-    node: Node,
+    node: MarkdownASTNode,
     builder: SpannableStringBuilder,
     onLinkPress: ((String) -> Unit)?,
-    factory: RendererFactory,
+    factory: ASTRendererFactory,
   ) {
-    val code = node as Code
-    val codeText = code.literal ?: return
+    // For code nodes, content might be in node.content or in children (Text nodes)
+    val codeText =
+      if (node.content.isNotEmpty()) {
+        node.content
+      } else {
+        // Collect text from children
+        node.children.joinToString("") { it.content }
+      }
+
+    if (codeText.isEmpty()) return
 
     factory.renderWithSpan(builder, { builder.append(codeText) }) { start, end, blockStyle ->
       builder.setSpan(

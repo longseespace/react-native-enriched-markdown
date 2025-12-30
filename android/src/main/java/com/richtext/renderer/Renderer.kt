@@ -3,15 +3,14 @@ package com.richtext.renderer
 import android.content.Context
 import android.text.SpannableString
 import android.text.SpannableStringBuilder
+import com.richtext.parser.MarkdownASTNode
 import com.richtext.styles.StyleConfig
-import org.commonmark.node.Document
-import org.commonmark.node.Node
 
 class Renderer {
   private var style: StyleConfig? = null
   private var lastConfiguredStyle: StyleConfig? = null
   private var lastConfiguredContext: Context? = null
-  private lateinit var rendererFactory: RendererFactory
+  private lateinit var rendererFactory: ASTRendererFactory
 
   fun configure(
     style: StyleConfig,
@@ -22,13 +21,13 @@ class Renderer {
       this.style = style
       lastConfiguredStyle = style
       lastConfiguredContext = context
-      val config = RendererConfig(style)
-      rendererFactory = RendererFactory(config, context)
+      val config = ASTRendererConfig(style)
+      rendererFactory = ASTRendererFactory(config, context)
     }
   }
 
   fun renderDocument(
-    document: Document,
+    document: MarkdownASTNode,
     onLinkPress: ((String) -> Unit)? = null,
   ): SpannableString {
     val builder = SpannableStringBuilder()
@@ -42,10 +41,10 @@ class Renderer {
   }
 
   private fun renderNode(
-    node: Node,
+    node: MarkdownASTNode,
     builder: SpannableStringBuilder,
     onLinkPress: ((String) -> Unit)? = null,
-    factory: RendererFactory,
+    factory: ASTRendererFactory,
   ) {
     val renderer = factory.getRenderer(node)
     renderer.render(node, builder, onLinkPress, factory)

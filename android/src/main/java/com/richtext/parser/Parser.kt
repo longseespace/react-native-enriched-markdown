@@ -1,37 +1,44 @@
 package com.richtext.parser
 
 import android.util.Log
-import org.commonmark.node.Document
-import org.commonmark.parser.Parser as CommonMarkParser
 
 class Parser {
-  private val parser = CommonMarkParser.builder().build()
-
-  fun parseMarkdown(markdown: String): Document? {
-    if (markdown.isBlank()) {
-      return null
-    }
-
-    try {
-      val document = parser.parse(markdown) as? Document
-
-      if (document != null) {
-        return document
-      } else {
-        Log.w("MarkdownParser", "Failed to cast parsed result to Document")
-        return null
-      }
-    } catch (e: Exception) {
-      Log.e("MarkdownParser", "CommonMark parsing failed: ${e.message}")
-      return null
-    }
-  }
-
   companion object {
+    init {
+      try {
+        System.loadLibrary("RichText")
+      } catch (e: UnsatisfiedLinkError) {
+        Log.e("MarkdownParser", "Failed to load RichText native library", e)
+      }
+    }
+
+    @JvmStatic
+    private external fun nativeParseMarkdown(markdown: String): MarkdownASTNode?
+
     /**
      * Shared parser instance. Parser is stateless and thread-safe, so it can be reused
      * across all RichTextView instances to avoid unnecessary allocations.
      */
     val shared: Parser = Parser()
+  }
+
+  fun parseMarkdown(markdown: String): MarkdownASTNode? {
+    if (markdown.isBlank()) {
+      return null
+    }
+
+    try {
+      val ast = nativeParseMarkdown(markdown)
+
+      if (ast != null) {
+        return ast
+      } else {
+        Log.w("MarkdownParser", "Native parser returned null")
+        return null
+      }
+    } catch (e: Exception) {
+      Log.e("MarkdownParser", "MD4C parsing failed: ${e.message}", e)
+      return null
+    }
   }
 }

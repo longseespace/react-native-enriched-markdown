@@ -50,15 +50,17 @@ class RichTextView : AppCompatTextView {
 
   fun renderMarkdown() {
     try {
-      val document = parser.parseMarkdown(currentMarkdown)
-      if (document != null) {
+      val ast = parser.parseMarkdown(currentMarkdown)
+      if (ast != null) {
         val currentStyle =
           requireNotNull(richTextStyle) {
             "richTextStyle should always be provided from JS side with defaults."
           }
         renderer.configure(currentStyle, context)
-        val styledText = renderer.renderDocument(document, onLinkPressCallback)
+        val styledText = renderer.renderDocument(ast, onLinkPressCallback)
         text = styledText
+
+        movementMethod = LinkMovementMethod.getInstance()
 
         // Register image spans for async loading
         (text as? Spannable)?.let { spannable ->
@@ -67,10 +69,8 @@ class RichTextView : AppCompatTextView {
             span.observeAsyncDrawableLoaded(null)
           }
         }
-
-        movementMethod = LinkMovementMethod.getInstance()
       } else {
-        android.util.Log.e("RichTextView", "Failed to parse markdown - Document is null")
+        android.util.Log.e("RichTextView", "Failed to parse markdown - AST is null")
         text = ""
       }
     } catch (e: Exception) {

@@ -2,116 +2,102 @@ package com.richtext.renderer
 
 import android.content.Context
 import android.text.SpannableStringBuilder
+import com.richtext.parser.MarkdownASTNode
 import com.richtext.styles.StyleConfig
-import org.commonmark.node.BlockQuote
-import org.commonmark.node.Code
-import org.commonmark.node.Document
-import org.commonmark.node.Emphasis
-import org.commonmark.node.HardLineBreak
-import org.commonmark.node.Heading
-import org.commonmark.node.Image
-import org.commonmark.node.Link
-import org.commonmark.node.Node
-import org.commonmark.node.Paragraph
-import org.commonmark.node.SoftLineBreak
-import org.commonmark.node.StrongEmphasis
-import org.commonmark.node.Text
 
-interface NodeRenderer {
+interface ASTNodeRenderer {
   fun render(
-    node: Node,
+    node: MarkdownASTNode,
     builder: SpannableStringBuilder,
     onLinkPress: ((String) -> Unit)?,
-    factory: RendererFactory,
+    factory: ASTRendererFactory,
   )
 }
 
-data class RendererConfig(
+data class ASTRendererConfig(
   val style: StyleConfig,
 )
 
-class RendererFactory(
-  private val config: RendererConfig,
+class ASTRendererFactory(
+  private val config: ASTRendererConfig,
   val context: Context,
 ) {
   val blockStyleContext = BlockStyleContext()
 
-  private val sharedTextRenderer = TextRenderer()
-  private val sharedLinkRenderer = LinkRenderer(config)
-  private val sharedHeadingRenderer = HeadingRenderer(config)
-  private val sharedParagraphRenderer = ParagraphRenderer(config)
-  private val sharedDocumentRenderer = DocumentRenderer(config)
-  private val sharedStrongRenderer = StrongRenderer(config)
-  private val sharedEmphasisRenderer = EmphasisRenderer(config)
-  private val sharedCodeRenderer = CodeRenderer(config)
-  private val sharedImageRenderer = ImageRenderer(config, context)
-  private val sharedLineBreakRenderer = LineBreakRenderer()
-  private val sharedBlockquoteRenderer = BlockquoteRenderer(config)
+  private val sharedTextRenderer = ASTTextRenderer()
+  private val sharedLinkRenderer = ASTLinkRenderer(config)
+  private val sharedHeadingRenderer = ASTHeadingRenderer(config)
+  private val sharedParagraphRenderer = ASTParagraphRenderer(config)
+  private val sharedDocumentRenderer = ASTDocumentRenderer(config)
+  private val sharedStrongRenderer = ASTStrongRenderer(config)
+  private val sharedEmphasisRenderer = ASTEmphasisRenderer(config)
+  private val sharedCodeRenderer = ASTCodeRenderer(config)
+  private val sharedImageRenderer = ASTImageRenderer(config, context)
+  private val sharedLineBreakRenderer = ASTLineBreakRenderer()
+  private val sharedBlockquoteRenderer = ASTBlockquoteRenderer(config)
 
-  fun getRenderer(node: Node): NodeRenderer =
-    when (node) {
-      is Document -> {
+  fun getRenderer(node: MarkdownASTNode): ASTNodeRenderer =
+    when (node.type) {
+      MarkdownASTNode.NodeType.Document -> {
         sharedDocumentRenderer
       }
 
-      is Paragraph -> {
+      MarkdownASTNode.NodeType.Paragraph -> {
         sharedParagraphRenderer
       }
 
-      is Heading -> {
+      MarkdownASTNode.NodeType.Heading -> {
         sharedHeadingRenderer
       }
 
-      is BlockQuote -> {
+      MarkdownASTNode.NodeType.Blockquote -> {
         sharedBlockquoteRenderer
       }
 
-      is Text -> {
+      MarkdownASTNode.NodeType.Text -> {
         sharedTextRenderer
       }
 
-      is Link -> {
+      MarkdownASTNode.NodeType.Link -> {
         sharedLinkRenderer
       }
 
-      is StrongEmphasis -> {
+      MarkdownASTNode.NodeType.Strong -> {
         sharedStrongRenderer
       }
 
-      is Emphasis -> {
+      MarkdownASTNode.NodeType.Emphasis -> {
         sharedEmphasisRenderer
       }
 
-      is Code -> {
+      MarkdownASTNode.NodeType.Code -> {
         sharedCodeRenderer
       }
 
-      is Image -> {
+      MarkdownASTNode.NodeType.Image -> {
         sharedImageRenderer
       }
 
-      is HardLineBreak, is SoftLineBreak -> {
+      MarkdownASTNode.NodeType.LineBreak -> {
         sharedLineBreakRenderer
       }
 
       else -> {
         android.util.Log.w(
-          "RendererFactory",
-          "No renderer found for node type: ${node.javaClass.simpleName}",
+          "ASTRendererFactory",
+          "No renderer found for node type: ${node.type}",
         )
         sharedTextRenderer
       }
     }
 
   fun renderChildren(
-    node: Node,
+    node: MarkdownASTNode,
     builder: SpannableStringBuilder,
     onLinkPress: ((String) -> Unit)?,
   ) {
-    var child = node.firstChild
-    while (child != null) {
+    for (child in node.children) {
       getRenderer(child).render(child, builder, onLinkPress, this)
-      child = child.next
     }
   }
 
