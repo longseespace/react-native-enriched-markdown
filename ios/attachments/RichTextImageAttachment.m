@@ -45,12 +45,13 @@ static const CGFloat kMinimumValidDimension = 0.0;
                              glyphPosition:(CGPoint)position
                             characterIndex:(NSUInteger)charIndex
 {
+  CGFloat height = self.cachedHeight;
   if (self.isInline) {
-    return CGRectMake(0, 0, self.cachedHeight, self.cachedHeight);
+    return CGRectMake(0, 0, height, height);
   }
 
-  CGFloat width = lineFrag.size.width > kMinimumValidDimension ? lineFrag.size.width : self.cachedHeight;
-  return CGRectMake(0, 0, width, self.cachedHeight);
+  CGFloat width = lineFrag.size.width > kMinimumValidDimension ? lineFrag.size.width : height;
+  return CGRectMake(0, 0, width, height);
 }
 
 - (UITextView *)textViewFromTextContainer:(NSTextContainer *)textContainer
@@ -69,9 +70,7 @@ static const CGFloat kMinimumValidDimension = 0.0;
   }
 
   UITextView *textView = [self textViewFromTextContainer:self.textContainer];
-  if (textView) {
-    self.textView = textView;
-  }
+  self.textView = textView;
   return textView;
 }
 
@@ -121,6 +120,20 @@ static const CGFloat kMinimumValidDimension = 0.0;
   return scaledImage;
 }
 
+- (void)handleLoadedImage:(UIImage *)image
+{
+  if (!image) {
+    return;
+  }
+
+  self.originalImage = image;
+  if (self.isInline) {
+    [self scaleAndUpdateInlineImage];
+  } else {
+    [self triggerLayoutUpdateForBlockImage];
+  }
+}
+
 - (void)loadImage
 {
   if (self.imageURL.length == 0) {
@@ -141,7 +154,6 @@ static const CGFloat kMinimumValidDimension = 0.0;
   // Handle local files (file:// URLs)
   if ([url.scheme isEqualToString:@"file"]) {
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-      // Convert file:// URL to file path
       NSString *filePath = url.path;
       UIImage *image = filePath ? [UIImage imageWithContentsOfFile:filePath] : nil;
 
@@ -155,12 +167,7 @@ static const CGFloat kMinimumValidDimension = 0.0;
           return;
         }
 
-        strongSelf.originalImage = image;
-        if (strongSelf.isInline) {
-          [strongSelf scaleAndUpdateInlineImage];
-        } else {
-          [strongSelf triggerLayoutUpdateForBlockImage];
-        }
+        [strongSelf handleLoadedImage:image];
       });
     });
     return;
@@ -192,12 +199,7 @@ static const CGFloat kMinimumValidDimension = 0.0;
           if (!strongSelf)
             return;
 
-          strongSelf.originalImage = image;
-          if (strongSelf.isInline) {
-            [strongSelf scaleAndUpdateInlineImage];
-          } else {
-            [strongSelf triggerLayoutUpdateForBlockImage];
-          }
+          [strongSelf handleLoadedImage:image];
         });
       }];
 
@@ -217,11 +219,12 @@ static const CGFloat kMinimumValidDimension = 0.0;
     return nil;
   }
 
+  // Calculate scale factor: for inline, scale to fit height; for block, scale to fill (aspect fill)
   CGFloat scaleFactor = self.isInline ? targetHeight / originalSize.height
                                       : MAX(targetWidth / originalSize.width, targetHeight / originalSize.height);
 
   CGSize scaledSize = CGSizeMake(originalSize.width * scaleFactor, originalSize.height * scaleFactor);
-  CGSize targetSize = self.isInline ? CGSizeMake(targetHeight, targetHeight) : CGSizeMake(targetWidth, targetHeight);
+  CGSize targetSize = CGSizeMake(targetWidth, targetHeight);
 
   UIGraphicsImageRenderer *renderer = [[UIGraphicsImageRenderer alloc] initWithSize:targetSize];
   return [renderer imageWithActions:^(UIGraphicsImageRendererContext *_Nonnull rendererContext) {
@@ -246,6 +249,7 @@ static const CGFloat kMinimumValidDimension = 0.0;
     return CGRectMake(0, 0, scaledSize.width, scaledSize.height);
   }
 
+  // Center the image in the target bounds
   CGFloat x = (targetSize.width - scaledSize.width) / 2.0;
   CGFloat y = (targetSize.height - scaledSize.height) / 2.0;
   return CGRectMake(x, y, scaledSize.width, scaledSize.height);
@@ -279,6 +283,7 @@ static const CGFloat kMinimumValidDimension = 0.0;
   if (attachmentRange.location == NSNotFound)
     return;
 
+  // Invalidate layout and re-apply attachment to force UITextView to re-query the image
   [textView.layoutManager invalidateLayoutForCharacterRange:attachmentRange actualCharacterRange:NULL];
   [textView.layoutManager ensureLayoutForTextContainer:textView.textContainer];
 
@@ -299,9 +304,10 @@ static const CGFloat kMinimumValidDimension = 0.0;
 
 - (void)scaleAndUpdateInlineImage
 {
+  CGFloat size = self.cachedHeight;
   UIImage *scaledImage = [self scaleImage:self.originalImage
-                                  toWidth:self.cachedHeight
-                                   height:self.cachedHeight
+                                  toWidth:size
+                                   height:size
                              borderRadius:self.cachedBorderRadius];
   if (!scaledImage) {
     RCTLogWarn(@"[RichTextImageAttachment] Failed to scale inline image for '%@'", self.imageURL);
@@ -309,7 +315,7 @@ static const CGFloat kMinimumValidDimension = 0.0;
   }
 
   self.loadedImage = scaledImage;
-  self.bounds = CGRectMake(0, 0, self.cachedHeight, self.cachedHeight);
+  self.bounds = CGRectMake(0, 0, size, size);
 
   UITextView *textView = [self getTextView];
   if (textView) {
@@ -324,8 +330,8 @@ static const CGFloat kMinimumValidDimension = 0.0;
     return;
 
   // Force a layout pass which will call imageForBounds: and scale the image
-  [textView.layoutManager invalidateLayoutForCharacterRange:NSMakeRange(0, textView.attributedText.length)
-                                       actualCharacterRange:NULL];
+  NSUInteger textLength = textView.attributedText.length;
+  [textView.layoutManager invalidateLayoutForCharacterRange:NSMakeRange(0, textLength) actualCharacterRange:NULL];
   [textView.layoutManager ensureLayoutForTextContainer:textView.textContainer];
   [textView setNeedsLayout];
   [textView setNeedsDisplay];
@@ -333,9 +339,9 @@ static const CGFloat kMinimumValidDimension = 0.0;
 
 - (void)setupPlaceholder
 {
-  self.bounds = CGRectMake(0, 0, self.cachedHeight, self.cachedHeight);
-  UIGraphicsImageRenderer *renderer =
-      [[UIGraphicsImageRenderer alloc] initWithSize:CGSizeMake(self.cachedHeight, self.cachedHeight)];
+  CGFloat size = self.cachedHeight;
+  self.bounds = CGRectMake(0, 0, size, size);
+  UIGraphicsImageRenderer *renderer = [[UIGraphicsImageRenderer alloc] initWithSize:CGSizeMake(size, size)];
   self.image = [renderer imageWithActions:^(UIGraphicsImageRendererContext *_Nonnull rendererContext){}];
 }
 
