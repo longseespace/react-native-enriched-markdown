@@ -9,7 +9,7 @@ using namespace Markdown;
 #define LOGI(...) __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__)
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
 
-// Helper function to convert C++ NodeType to Java enum ordinal
+// Helper function to convert C++ NodeType to Kotlin enum ordinal
 static jint nodeTypeToJavaOrdinal(NodeType type) {
   switch (type) {
     case NodeType::Document:
@@ -39,7 +39,7 @@ static jint nodeTypeToJavaOrdinal(NodeType type) {
   }
 }
 
-// Helper function to create a Java MarkdownASTNode object
+// Helper function to create a Kotlin MarkdownASTNode object from C++ AST node
 static jobject createJavaNode(JNIEnv *env, std::shared_ptr<MarkdownASTNode> node) {
   if (!node) {
     return nullptr;
@@ -88,7 +88,7 @@ static jobject createJavaNode(JNIEnv *env, std::shared_ptr<MarkdownASTNode> node
     return nullptr;
   }
 
-  // Create attributes map
+  // Create attributes HashMap
   jclass mapClass = env->FindClass("java/util/HashMap");
   jmethodID mapInit = env->GetMethodID(mapClass, "<init>", "(I)V");
   jmethodID mapPut = env->GetMethodID(mapClass, "put", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
@@ -103,7 +103,7 @@ static jobject createJavaNode(JNIEnv *env, std::shared_ptr<MarkdownASTNode> node
     env->DeleteLocalRef(value);
   }
 
-  // Create children list
+  // Create children ArrayList
   jclass listClass = env->FindClass("java/util/ArrayList");
   jmethodID listInit = env->GetMethodID(listClass, "<init>", "(I)V");
   jmethodID listAdd = env->GetMethodID(listClass, "add", "(Ljava/lang/Object;)Z");
@@ -128,7 +128,7 @@ static jobject createJavaNode(JNIEnv *env, std::shared_ptr<MarkdownASTNode> node
     return nullptr;
   }
 
-  // Create the Java object
+  // Create the Kotlin MarkdownASTNode object
   jobject javaNode = env->NewObject(nodeClass, constructor, nodeTypeEnum, contentStr, attributesMap, childrenList);
 
   // Clean up local references
@@ -159,7 +159,7 @@ JNIEXPORT jobject JNICALL Java_com_richtext_parser_Parser_nativeParseMarkdown(JN
   }
 
   try {
-    // Parse markdown using MD4C
+    // Parse markdown using C++ MD4CParser
     MD4CParser parser;
     auto ast = parser.parse(std::string(markdownStr));
 
@@ -170,7 +170,7 @@ JNIEXPORT jobject JNICALL Java_com_richtext_parser_Parser_nativeParseMarkdown(JN
       return nullptr;
     }
 
-    // Convert C++ AST to Java object
+    // Convert C++ AST to Kotlin MarkdownASTNode object
     jobject javaNode = createJavaNode(env, ast);
 
     if (!javaNode) {
