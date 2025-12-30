@@ -11,7 +11,7 @@ NS_ASSUME_NONNULL_BEGIN
  * Images are loaded asynchronously and scaled dynamically based on text container width.
  * Supports inline and block images with custom height and border radius from config.
  */
-@interface RichTextImageAttachment : NSTextAttachment
+@interface ImageAttachment : NSTextAttachment
 
 - (instancetype)initWithImageURL:(NSString *)imageURL config:(StyleConfig *)config isInline:(BOOL)isInline;
 
