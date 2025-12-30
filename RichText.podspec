@@ -13,13 +13,14 @@ Pod::Spec.new do |s|
   s.platforms    = { :ios => min_ios_version_supported }
   s.source       = { :git => "https://github.com/software-mansion-labs/react-native-rich-text.git", :tag => "#{s.version}" }
 
-  s.source_files = "ios/**/*.{h,m,mm,cpp}", "cpp/md4c/*.{c,h}"
+  s.source_files = "ios/**/*.{h,m,mm,cpp}", "cpp/md4c/*.{c,h}", "cpp/parser/*.{hpp,cpp}"
   s.private_header_files = "ios/**/*.h"
   
-  # Set header search paths to cpp/md4c and add preprocessor definitions
+  # Set header search paths to cpp/md4c and cpp/parser, add preprocessor definitions
   s.pod_target_xcconfig = {
-    'HEADER_SEARCH_PATHS' => '$(PODS_TARGET_SRCROOT)/cpp/md4c',
-    'GCC_PREPROCESSOR_DEFINITIONS' => '$(inherited) MD4C_USE_UTF8=1'
+    'HEADER_SEARCH_PATHS' => '"$(PODS_TARGET_SRCROOT)/cpp/md4c" "$(PODS_TARGET_SRCROOT)/cpp/parser"',
+    'GCC_PREPROCESSOR_DEFINITIONS' => '$(inherited) MD4C_USE_UTF8=1',
+    'CLANG_CXX_LANGUAGE_STANDARD' => 'c++17'
   }
 
 

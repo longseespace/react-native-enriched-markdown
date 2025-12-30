@@ -2,24 +2,22 @@ package com.richtext.renderer
 
 import android.content.Context
 import android.text.SpannableStringBuilder
+import com.richtext.parser.MarkdownASTNode
 import com.richtext.spans.ImageSpan
 import com.richtext.utils.SPAN_FLAGS_EXCLUSIVE_EXCLUSIVE
 import com.richtext.utils.isInlineImage
-import org.commonmark.node.Image
-import org.commonmark.node.Node
 
 class ImageRenderer(
   private val config: RendererConfig,
   private val context: Context,
 ) : NodeRenderer {
   override fun render(
-    node: Node,
+    node: MarkdownASTNode,
     builder: SpannableStringBuilder,
     onLinkPress: ((String) -> Unit)?,
     factory: RendererFactory,
   ) {
-    val image = node as? Image ?: return
-    val imageUrl = image.destination ?: return
+    val imageUrl = node.getAttribute("url") ?: return
 
     val isInline = builder.isInlineImage()
     val start = builder.length

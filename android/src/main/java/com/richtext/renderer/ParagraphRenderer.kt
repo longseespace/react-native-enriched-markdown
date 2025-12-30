@@ -1,38 +1,31 @@
 package com.richtext.renderer
 
 import android.text.SpannableStringBuilder
+import com.richtext.parser.MarkdownASTNode
 import com.richtext.styles.ParagraphStyle
 import com.richtext.utils.SPAN_FLAGS_EXCLUSIVE_EXCLUSIVE
 import com.richtext.utils.applyMarginBottom
 import com.richtext.utils.containsBlockImage
 import com.richtext.utils.createLineHeightSpan
 import com.richtext.utils.getMarginBottomForParagraph
-import org.commonmark.node.Node
-import org.commonmark.node.Paragraph
 
 class ParagraphRenderer(
   private val config: RendererConfig,
 ) : NodeRenderer {
-  // ============================================================================
-  // Rendering
-  // ============================================================================
-
   override fun render(
-    node: Node,
+    node: MarkdownASTNode,
     builder: SpannableStringBuilder,
     onLinkPress: ((String) -> Unit)?,
     factory: RendererFactory,
   ) {
-    val paragraph = node as Paragraph
-
     // When inside a block element, render content without paragraph-specific spans
     // The parent block element (blockquote, list, etc.) handles spacing and styling
     if (factory.blockStyleContext.isInsideBlockElement()) {
-      renderParagraphContent(paragraph, builder, onLinkPress, factory)
+      renderParagraphContent(node, builder, onLinkPress, factory)
       return
     }
 
-    renderTopLevelParagraph(paragraph, builder, onLinkPress, factory)
+    renderTopLevelParagraph(node, builder, onLinkPress, factory)
   }
 
   // ============================================================================
@@ -45,7 +38,7 @@ class ParagraphRenderer(
    * - Margin bottom (calculated based on paragraph content)
    */
   private fun renderTopLevelParagraph(
-    paragraph: Paragraph,
+    paragraph: MarkdownASTNode,
     builder: SpannableStringBuilder,
     onLinkPress: ((String) -> Unit)?,
     factory: RendererFactory,
@@ -74,7 +67,7 @@ class ParagraphRenderer(
    */
   private fun applyLineHeight(
     builder: SpannableStringBuilder,
-    paragraph: Paragraph,
+    paragraph: MarkdownASTNode,
     paragraphStyle: ParagraphStyle,
     start: Int,
     end: Int,
@@ -96,7 +89,7 @@ class ParagraphRenderer(
    */
   private fun applyParagraphMarginBottom(
     builder: SpannableStringBuilder,
-    paragraph: Paragraph,
+    paragraph: MarkdownASTNode,
     paragraphStyle: ParagraphStyle,
     start: Int,
   ) {
@@ -113,7 +106,7 @@ class ParagraphRenderer(
    * Used when paragraph is inside a block element that handles its own spacing.
    */
   private fun renderParagraphContent(
-    paragraph: Paragraph,
+    paragraph: MarkdownASTNode,
     builder: SpannableStringBuilder,
     onLinkPress: ((String) -> Unit)?,
     factory: RendererFactory,

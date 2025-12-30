@@ -2,27 +2,21 @@ package com.richtext.renderer
 
 import android.text.SpannableStringBuilder
 import android.text.style.LineHeightSpan
+import com.richtext.parser.MarkdownASTNode
 import com.richtext.spans.BlockquoteSpan
 import com.richtext.spans.MarginBottomSpan
 import com.richtext.utils.SPAN_FLAGS_EXCLUSIVE_EXCLUSIVE
 import com.richtext.utils.createLineHeightSpan
-import org.commonmark.node.BlockQuote
-import org.commonmark.node.Node
 
 class BlockquoteRenderer(
   private val config: RendererConfig,
 ) : NodeRenderer {
-  // ============================================================================
-  // Rendering
-  // ============================================================================
-
   override fun render(
-    node: Node,
+    node: MarkdownASTNode,
     builder: SpannableStringBuilder,
     onLinkPress: ((String) -> Unit)?,
     factory: RendererFactory,
   ) {
-    val blockquote = node as BlockQuote
     val start = builder.length
     val blockquoteStyle = config.style.getBlockquoteStyle()
     val currentDepth = factory.blockStyleContext.blockquoteDepth
@@ -32,7 +26,7 @@ class BlockquoteRenderer(
     factory.blockStyleContext.setBlockquoteStyle(blockquoteStyle)
 
     try {
-      factory.renderChildren(blockquote, builder, onLinkPress)
+      factory.renderChildren(node, builder, onLinkPress)
     } finally {
       factory.blockStyleContext.clearBlockStyle()
       factory.blockStyleContext.blockquoteDepth = currentDepth

@@ -3,9 +3,8 @@ package com.richtext.renderer
 import android.content.Context
 import android.text.SpannableString
 import android.text.SpannableStringBuilder
+import com.richtext.parser.MarkdownASTNode
 import com.richtext.styles.StyleConfig
-import org.commonmark.node.Document
-import org.commonmark.node.Node
 
 class Renderer {
   private var style: StyleConfig? = null
@@ -28,7 +27,7 @@ class Renderer {
   }
 
   fun renderDocument(
-    document: Document,
+    document: MarkdownASTNode,
     onLinkPress: ((String) -> Unit)? = null,
   ): SpannableString {
     val builder = SpannableStringBuilder()
@@ -42,7 +41,7 @@ class Renderer {
   }
 
   private fun renderNode(
-    node: Node,
+    node: MarkdownASTNode,
     builder: SpannableStringBuilder,
     onLinkPress: ((String) -> Unit)? = null,
     factory: RendererFactory,
