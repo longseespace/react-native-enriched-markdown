@@ -11,9 +11,6 @@ data class HeadingStyle(
   override val lineHeight: Float,
 ) : BaseBlockStyle {
   companion object {
-    /**
-     * @param level The heading level (1-6), used to determine default marginBottom.
-     */
     fun fromReadableMap(
       map: ReadableMap,
       parser: StyleParser,
