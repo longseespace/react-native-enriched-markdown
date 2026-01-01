@@ -41,10 +41,7 @@ class ListRenderer(
     val contextManager = ListContextManager(factory.blockStyleContext, config.style)
     val entryState = contextManager.enterList(listType, listStyle)
 
-    // Ensure nested lists start on a new line (without spacing)
-    if (entryState.previousDepth > 0 && builder.isNotEmpty() && builder.last() != '\n') {
-      builder.append("\n")
-    }
+    ensureNestedListNewline(builder, entryState.previousDepth)
 
     try {
       factory.renderChildren(node, builder, onLinkPress)
@@ -58,6 +55,24 @@ class ListRenderer(
     applyStylingAndSpacing(builder, start, end, entryState.previousDepth, listStyle)
   }
 
+  /**
+   * Ensures nested lists start on a new line (without spacing).
+   * This prevents list items from being concatenated on the same line.
+   */
+  private fun ensureNestedListNewline(
+    builder: SpannableStringBuilder,
+    currentDepth: Int,
+  ) {
+    if (currentDepth > 0 && builder.isNotEmpty() && builder.last() != '\n') {
+      builder.append("\n")
+    }
+  }
+
+  /**
+   * Applies line height and margin bottom styling to the list.
+   * Line height is applied to the entire list range.
+   * Margin bottom is only applied to top-level lists (depth 0).
+   */
   private fun applyStylingAndSpacing(
     builder: SpannableStringBuilder,
     start: Int,
