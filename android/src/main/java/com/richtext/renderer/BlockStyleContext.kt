@@ -2,15 +2,18 @@ package com.richtext.renderer
 
 import com.richtext.styles.BlockquoteStyle
 import com.richtext.styles.HeadingStyle
+import com.richtext.styles.OrderedListStyle
 import com.richtext.styles.ParagraphStyle
+import com.richtext.styles.UnorderedListStyle
 
 enum class BlockType {
   NONE,
   PARAGRAPH,
   HEADING,
   BLOCKQUOTE,
+  UNORDERED_LIST,
+  ORDERED_LIST,
   // TODO: Add when implementing:
-  // LIST,
   // CODE_BLOCK,
 }
 
@@ -26,9 +29,19 @@ class BlockStyleContext {
   private var currentBlockStyle: BlockStyle? = null
   private var currentHeadingLevel: Int = 0
   var blockquoteDepth: Int = 0
-  // TODO: Add listDepth and codeBlockDepth when implementing lists and code blocks
-  // var listDepth: Int = 0
+  var listDepth: Int = 0
+  var listType: ListType? = null
+  var listItemNumber: Int = 0
+
+  // Stack to track item numbers per depth level for ordered lists
+  private val orderedListItemNumbers: MutableList<Int> = mutableListOf()
+  // TODO: Add codeBlockDepth when implementing code blocks
   // var codeBlockDepth: Int = 0
+
+  enum class ListType {
+    UNORDERED,
+    ORDERED,
+  }
 
   /**
    * Returns true if we're inside a block element that should handle its own spacing
@@ -36,9 +49,9 @@ class BlockStyleContext {
    * skip their own lineHeight and marginBottom spans.
    */
   fun isInsideBlockElement(): Boolean {
-    return blockquoteDepth > 0
+    return blockquoteDepth > 0 || listDepth > 0
     // TODO: Add other block elements when implementing:
-    // || listDepth > 0 || codeBlockDepth > 0
+    // || codeBlockDepth > 0
   }
 
   fun setParagraphStyle(style: ParagraphStyle) {
@@ -78,6 +91,70 @@ class BlockStyleContext {
         fontWeight = style.fontWeight,
         color = style.color,
       )
+  }
+
+  fun setUnorderedListStyle(style: UnorderedListStyle) {
+    currentBlockType = BlockType.UNORDERED_LIST
+    currentHeadingLevel = 0
+    listType = ListType.UNORDERED
+    currentBlockStyle =
+      BlockStyle(
+        fontSize = style.fontSize,
+        fontFamily = style.fontFamily,
+        fontWeight = style.fontWeight,
+        color = style.color,
+      )
+  }
+
+  fun setOrderedListStyle(style: OrderedListStyle) {
+    currentBlockType = BlockType.ORDERED_LIST
+    currentHeadingLevel = 0
+    listType = ListType.ORDERED
+    currentBlockStyle =
+      BlockStyle(
+        fontSize = style.fontSize,
+        fontFamily = style.fontFamily,
+        fontWeight = style.fontWeight,
+        color = style.color,
+      )
+  }
+
+  fun incrementListItemNumber() {
+    listItemNumber++
+  }
+
+  fun resetListItemNumber() {
+    listItemNumber = 0
+  }
+
+  /**
+   * Pushes the current item number to the stack before entering a nested list.
+   * This preserves the parent list's item number.
+   */
+  fun pushOrderedListItemNumber() {
+    orderedListItemNumbers.add(listItemNumber)
+  }
+
+  /**
+   * Pops the parent list's item number from the stack after exiting a nested list.
+   * This restores the parent list's item number.
+   */
+  fun popOrderedListItemNumber() {
+    if (orderedListItemNumbers.isNotEmpty()) {
+      listItemNumber = orderedListItemNumbers.removeAt(orderedListItemNumbers.size - 1)
+    }
+  }
+
+  fun clearListStyle() {
+    // Only clear list style when exiting the top-level list (listDepth == 0)
+    // When exiting nested lists, we should still have the parent list's context
+    if (listDepth == 0 && (currentBlockType == BlockType.UNORDERED_LIST || currentBlockType == BlockType.ORDERED_LIST)) {
+      // Clear block style and list-specific fields when exiting the top-level list
+      currentBlockType = BlockType.NONE
+      currentBlockStyle = null
+      listType = null
+      listItemNumber = 0
+    }
   }
 
   fun getBlockStyle(): BlockStyle? = currentBlockStyle

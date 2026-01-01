@@ -87,6 +87,34 @@
   CGFloat _blockquoteBorderWidth;
   CGFloat _blockquoteGapWidth;
   UIColor *_blockquoteBackgroundColor;
+  // Unordered list properties
+  CGFloat _unorderedListFontSize;
+  NSString *_unorderedListFontFamily;
+  NSString *_unorderedListFontWeight;
+  UIColor *_unorderedListColor;
+  CGFloat _unorderedListMarginBottom;
+  CGFloat _unorderedListLineHeight;
+  UIColor *_unorderedListBulletColor;
+  CGFloat _unorderedListBulletSize;
+  CGFloat _unorderedListGapWidth;
+  CGFloat _unorderedListMarginLeft;
+  CGFloat _unorderedListItemMarginBottom;
+  CGFloat _unorderedListNestedMarginBottom;
+  // Ordered list properties
+  CGFloat _orderedListFontSize;
+  NSString *_orderedListFontFamily;
+  NSString *_orderedListFontWeight;
+  UIColor *_orderedListColor;
+  CGFloat _orderedListMarginBottom;
+  CGFloat _orderedListLineHeight;
+  UIColor *_orderedListMarkerColor;
+  CGFloat _orderedListMarkerFontSize;
+  NSString *_orderedListMarkerFontFamily;
+  NSString *_orderedListMarkerFontWeight;
+  CGFloat _orderedListGapWidth;
+  CGFloat _orderedListMarginLeft;
+  CGFloat _orderedListItemMarginBottom;
+  CGFloat _orderedListNestedMarginBottom;
 }
 
 - (instancetype)init
@@ -169,6 +197,32 @@
   copy->_blockquoteBorderWidth = _blockquoteBorderWidth;
   copy->_blockquoteGapWidth = _blockquoteGapWidth;
   copy->_blockquoteBackgroundColor = [_blockquoteBackgroundColor copy];
+  copy->_unorderedListFontSize = _unorderedListFontSize;
+  copy->_unorderedListFontFamily = [_unorderedListFontFamily copy];
+  copy->_unorderedListFontWeight = [_unorderedListFontWeight copy];
+  copy->_unorderedListColor = [_unorderedListColor copy];
+  copy->_unorderedListMarginBottom = _unorderedListMarginBottom;
+  copy->_unorderedListLineHeight = _unorderedListLineHeight;
+  copy->_unorderedListBulletColor = [_unorderedListBulletColor copy];
+  copy->_unorderedListBulletSize = _unorderedListBulletSize;
+  copy->_unorderedListGapWidth = _unorderedListGapWidth;
+  copy->_unorderedListMarginLeft = _unorderedListMarginLeft;
+  copy->_unorderedListItemMarginBottom = _unorderedListItemMarginBottom;
+  copy->_unorderedListNestedMarginBottom = _unorderedListNestedMarginBottom;
+  copy->_orderedListFontSize = _orderedListFontSize;
+  copy->_orderedListFontFamily = [_orderedListFontFamily copy];
+  copy->_orderedListFontWeight = [_orderedListFontWeight copy];
+  copy->_orderedListColor = [_orderedListColor copy];
+  copy->_orderedListMarginBottom = _orderedListMarginBottom;
+  copy->_orderedListLineHeight = _orderedListLineHeight;
+  copy->_orderedListMarkerColor = [_orderedListMarkerColor copy];
+  copy->_orderedListMarkerFontSize = _orderedListMarkerFontSize;
+  copy->_orderedListMarkerFontFamily = [_orderedListMarkerFontFamily copy];
+  copy->_orderedListMarkerFontWeight = [_orderedListMarkerFontWeight copy];
+  copy->_orderedListGapWidth = _orderedListGapWidth;
+  copy->_orderedListMarginLeft = _orderedListMarginLeft;
+  copy->_orderedListItemMarginBottom = _orderedListItemMarginBottom;
+  copy->_orderedListNestedMarginBottom = _orderedListNestedMarginBottom;
 
   return copy;
 }
@@ -871,6 +925,268 @@
 - (void)setBlockquoteBackgroundColor:(UIColor *)newValue
 {
   _blockquoteBackgroundColor = newValue;
+}
+
+// Unordered list properties
+- (CGFloat)unorderedListFontSize
+{
+  return _unorderedListFontSize;
+}
+
+- (void)setUnorderedListFontSize:(CGFloat)newValue
+{
+  _unorderedListFontSize = newValue;
+}
+
+- (NSString *)unorderedListFontFamily
+{
+  return _unorderedListFontFamily;
+}
+
+- (void)setUnorderedListFontFamily:(NSString *)newValue
+{
+  _unorderedListFontFamily = newValue;
+}
+
+- (NSString *)unorderedListFontWeight
+{
+  return _unorderedListFontWeight;
+}
+
+- (void)setUnorderedListFontWeight:(NSString *)newValue
+{
+  _unorderedListFontWeight = newValue;
+}
+
+- (UIColor *)unorderedListColor
+{
+  return _unorderedListColor;
+}
+
+- (void)setUnorderedListColor:(UIColor *)newValue
+{
+  _unorderedListColor = newValue;
+}
+
+- (CGFloat)unorderedListMarginBottom
+{
+  return _unorderedListMarginBottom;
+}
+
+- (void)setUnorderedListMarginBottom:(CGFloat)newValue
+{
+  _unorderedListMarginBottom = newValue;
+}
+
+- (CGFloat)unorderedListLineHeight
+{
+  return _unorderedListLineHeight;
+}
+
+- (void)setUnorderedListLineHeight:(CGFloat)newValue
+{
+  _unorderedListLineHeight = newValue;
+}
+
+- (UIColor *)unorderedListBulletColor
+{
+  return _unorderedListBulletColor;
+}
+
+- (void)setUnorderedListBulletColor:(UIColor *)newValue
+{
+  _unorderedListBulletColor = newValue;
+}
+
+- (CGFloat)unorderedListBulletSize
+{
+  return _unorderedListBulletSize;
+}
+
+- (void)setUnorderedListBulletSize:(CGFloat)newValue
+{
+  _unorderedListBulletSize = newValue;
+}
+
+- (CGFloat)unorderedListGapWidth
+{
+  return _unorderedListGapWidth;
+}
+
+- (void)setUnorderedListGapWidth:(CGFloat)newValue
+{
+  _unorderedListGapWidth = newValue;
+}
+
+- (CGFloat)unorderedListMarginLeft
+{
+  return _unorderedListMarginLeft;
+}
+
+- (void)setUnorderedListMarginLeft:(CGFloat)newValue
+{
+  _unorderedListMarginLeft = newValue;
+}
+
+- (CGFloat)unorderedListItemMarginBottom
+{
+  return _unorderedListItemMarginBottom;
+}
+
+- (void)setUnorderedListItemMarginBottom:(CGFloat)newValue
+{
+  _unorderedListItemMarginBottom = newValue;
+}
+
+- (CGFloat)unorderedListNestedMarginBottom
+{
+  return _unorderedListNestedMarginBottom;
+}
+
+- (void)setUnorderedListNestedMarginBottom:(CGFloat)newValue
+{
+  _unorderedListNestedMarginBottom = newValue;
+}
+
+// Ordered list properties
+- (CGFloat)orderedListFontSize
+{
+  return _orderedListFontSize;
+}
+
+- (void)setOrderedListFontSize:(CGFloat)newValue
+{
+  _orderedListFontSize = newValue;
+}
+
+- (NSString *)orderedListFontFamily
+{
+  return _orderedListFontFamily;
+}
+
+- (void)setOrderedListFontFamily:(NSString *)newValue
+{
+  _orderedListFontFamily = newValue;
+}
+
+- (NSString *)orderedListFontWeight
+{
+  return _orderedListFontWeight;
+}
+
+- (void)setOrderedListFontWeight:(NSString *)newValue
+{
+  _orderedListFontWeight = newValue;
+}
+
+- (UIColor *)orderedListColor
+{
+  return _orderedListColor;
+}
+
+- (void)setOrderedListColor:(UIColor *)newValue
+{
+  _orderedListColor = newValue;
+}
+
+- (CGFloat)orderedListMarginBottom
+{
+  return _orderedListMarginBottom;
+}
+
+- (void)setOrderedListMarginBottom:(CGFloat)newValue
+{
+  _orderedListMarginBottom = newValue;
+}
+
+- (CGFloat)orderedListLineHeight
+{
+  return _orderedListLineHeight;
+}
+
+- (void)setOrderedListLineHeight:(CGFloat)newValue
+{
+  _orderedListLineHeight = newValue;
+}
+
+- (UIColor *)orderedListMarkerColor
+{
+  return _orderedListMarkerColor;
+}
+
+- (void)setOrderedListMarkerColor:(UIColor *)newValue
+{
+  _orderedListMarkerColor = newValue;
+}
+
+- (CGFloat)orderedListMarkerFontSize
+{
+  return _orderedListMarkerFontSize;
+}
+
+- (void)setOrderedListMarkerFontSize:(CGFloat)newValue
+{
+  _orderedListMarkerFontSize = newValue;
+}
+
+- (NSString *)orderedListMarkerFontFamily
+{
+  return _orderedListMarkerFontFamily;
+}
+
+- (void)setOrderedListMarkerFontFamily:(NSString *)newValue
+{
+  _orderedListMarkerFontFamily = newValue;
+}
+
+- (NSString *)orderedListMarkerFontWeight
+{
+  return _orderedListMarkerFontWeight;
+}
+
+- (void)setOrderedListMarkerFontWeight:(NSString *)newValue
+{
+  _orderedListMarkerFontWeight = newValue;
+}
+
+- (CGFloat)orderedListGapWidth
+{
+  return _orderedListGapWidth;
+}
+
+- (void)setOrderedListGapWidth:(CGFloat)newValue
+{
+  _orderedListGapWidth = newValue;
+}
+
+- (CGFloat)orderedListMarginLeft
+{
+  return _orderedListMarginLeft;
+}
+
+- (void)setOrderedListMarginLeft:(CGFloat)newValue
+{
+  _orderedListMarginLeft = newValue;
+}
+
+- (CGFloat)orderedListItemMarginBottom
+{
+  return _orderedListItemMarginBottom;
+}
+
+- (void)setOrderedListItemMarginBottom:(CGFloat)newValue
+{
+  _orderedListItemMarginBottom = newValue;
+}
+
+- (CGFloat)orderedListNestedMarginBottom
+{
+  return _orderedListNestedMarginBottom;
+}
+
+- (void)setOrderedListNestedMarginBottom:(CGFloat)newValue
+{
+  _orderedListNestedMarginBottom = newValue;
 }
 
 @end

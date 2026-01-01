@@ -23,6 +23,8 @@ class StyleConfig(
   private lateinit var imageStyle: ImageStyle
   private lateinit var inlineImageStyle: InlineImageStyle
   private lateinit var blockquoteStyle: BlockquoteStyle
+  private lateinit var unorderedListStyle: UnorderedListStyle
+  private lateinit var orderedListStyle: OrderedListStyle
 
   private val styleParser = StyleParser(context)
 
@@ -58,6 +60,10 @@ class StyleConfig(
   fun getInlineImageStyle(): InlineImageStyle = inlineImageStyle
 
   fun getBlockquoteStyle(): BlockquoteStyle = blockquoteStyle
+
+  fun getUnorderedListStyle(): UnorderedListStyle = unorderedListStyle
+
+  fun getOrderedListStyle(): OrderedListStyle = orderedListStyle
 
   /**
    * Gets the cached typeface for a heading level.
@@ -137,6 +143,18 @@ class StyleConfig(
         "Blockquote style not found. JS should always provide defaults."
       }
     blockquoteStyle = BlockquoteStyle.fromReadableMap(blockquoteStyleMap, styleParser)
+
+    val unorderedListStyleMap =
+      requireNotNull(style.getMap("unorderedList")) {
+        "UnorderedList style not found. JS should always provide defaults."
+      }
+    unorderedListStyle = UnorderedListStyle.fromReadableMap(unorderedListStyleMap, styleParser)
+
+    val orderedListStyleMap =
+      requireNotNull(style.getMap("orderedList")) {
+        "OrderedList style not found. JS should always provide defaults."
+      }
+    orderedListStyle = OrderedListStyle.fromReadableMap(orderedListStyleMap, styleParser)
   }
 
   override fun equals(other: Any?): Boolean {
@@ -151,7 +169,9 @@ class StyleConfig(
       codeStyle == other.codeStyle &&
       imageStyle == other.imageStyle &&
       inlineImageStyle == other.inlineImageStyle &&
-      blockquoteStyle == other.blockquoteStyle
+      blockquoteStyle == other.blockquoteStyle &&
+      unorderedListStyle == other.unorderedListStyle &&
+      orderedListStyle == other.orderedListStyle
   }
 
   override fun hashCode(): Int {
@@ -164,6 +184,8 @@ class StyleConfig(
     result = 31 * result + imageStyle.hashCode()
     result = 31 * result + inlineImageStyle.hashCode()
     result = 31 * result + blockquoteStyle.hashCode()
+    result = 31 * result + unorderedListStyle.hashCode()
+    result = 31 * result + orderedListStyle.hashCode()
     return result
   }
 }

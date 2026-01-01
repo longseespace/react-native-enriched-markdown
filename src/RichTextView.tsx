@@ -41,6 +41,40 @@ export interface BlockquoteStyle {
   backgroundColor?: string;
 }
 
+export interface UnorderedListStyle {
+  fontSize?: number;
+  fontFamily?: string;
+  fontWeight?: string;
+  color?: string;
+  marginBottom?: number;
+  lineHeight?: number;
+  bulletColor?: string;
+  bulletSize?: number;
+  gapWidth?: number;
+  marginLeft?: number;
+  itemMarginBottom?: number;
+  /** @deprecated Use itemMarginBottom instead. This property will be removed in a future version. */
+  nestedMarginBottom?: number;
+}
+
+export interface OrderedListStyle {
+  fontSize?: number;
+  fontFamily?: string;
+  fontWeight?: string;
+  color?: string;
+  marginBottom?: number;
+  lineHeight?: number;
+  markerColor?: string;
+  markerFontSize?: number;
+  markerFontFamily?: string;
+  markerFontWeight?: string;
+  gapWidth?: number;
+  marginLeft?: number;
+  itemMarginBottom?: number;
+  /** @deprecated Use itemMarginBottom instead. This property will be removed in a future version. */
+  nestedMarginBottom?: number;
+}
+
 export interface LinkStyle {
   color?: string;
   underline?: boolean;
@@ -79,6 +113,8 @@ export interface RichTextStyle {
   h5?: HeadingStyle;
   h6?: HeadingStyle;
   blockquote?: BlockquoteStyle;
+  unorderedList?: UnorderedListStyle;
+  orderedList?: OrderedListStyle;
   link?: LinkStyle;
   strong?: StrongStyle;
   em?: EmphasisStyle;

@@ -1,0 +1,60 @@
+package com.richtext.styles
+
+import com.facebook.react.bridge.ReadableMap
+
+data class OrderedListStyle(
+  override val fontSize: Float,
+  override val fontFamily: String,
+  override val fontWeight: String,
+  override val color: Int,
+  override val marginBottom: Float,
+  override val lineHeight: Float,
+  val markerColor: Int,
+  val markerFontSize: Float,
+  val markerFontFamily: String,
+  val markerFontWeight: String,
+  val gapWidth: Float,
+  val marginLeft: Float,
+  val itemMarginBottom: Float,
+  val nestedMarginBottom: Float,
+) : BaseBlockStyle {
+  companion object {
+    fun fromReadableMap(
+      map: ReadableMap,
+      parser: StyleParser,
+    ): OrderedListStyle {
+      val fontSize = parser.toPixelFromSP(map.getDouble("fontSize").toFloat())
+      val fontFamily = parser.parseString(map, "fontFamily")
+      val fontWeight = parser.parseString(map, "fontWeight", "normal")
+      val color = parser.parseColor(map, "color")
+      val marginBottom = parser.toPixelFromDIP(map.getDouble("marginBottom").toFloat())
+      val lineHeightRaw = map.getDouble("lineHeight").toFloat()
+      val lineHeight = parser.toPixelFromSP(lineHeightRaw)
+      val markerColor = parser.parseColor(map, "markerColor")
+      val markerFontSize = parser.toPixelFromSP(map.getDouble("markerFontSize").toFloat())
+      val markerFontFamily = parser.parseString(map, "markerFontFamily")
+      val markerFontWeight = parser.parseString(map, "markerFontWeight", "normal")
+      val gapWidth = parser.toPixelFromDIP(map.getDouble("gapWidth").toFloat())
+      val marginLeft = parser.toPixelFromDIP(map.getDouble("marginLeft").toFloat())
+      val itemMarginBottom = parser.toPixelFromDIP(map.getDouble("itemMarginBottom").toFloat())
+      val nestedMarginBottom = parser.toPixelFromDIP(map.getDouble("nestedMarginBottom").toFloat())
+
+      return OrderedListStyle(
+        fontSize,
+        fontFamily,
+        fontWeight,
+        color,
+        marginBottom,
+        lineHeight,
+        markerColor,
+        markerFontSize,
+        markerFontFamily,
+        markerFontWeight,
+        gapWidth,
+        marginLeft,
+        itemMarginBottom,
+        nestedMarginBottom,
+      )
+    }
+  }
+}

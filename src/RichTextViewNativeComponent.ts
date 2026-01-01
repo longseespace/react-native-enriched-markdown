@@ -27,6 +27,26 @@ interface BlockquoteStyleInternal extends BaseBlockStyleInternal {
   backgroundColor: ColorValue;
 }
 
+interface UnorderedListStyleInternal extends BaseBlockStyleInternal {
+  bulletColor: ColorValue;
+  bulletSize: CodegenTypes.Float;
+  gapWidth: CodegenTypes.Float;
+  marginLeft: CodegenTypes.Float;
+  itemMarginBottom: CodegenTypes.Float; // Spacing between consecutive list items at the same level
+  nestedMarginBottom: CodegenTypes.Float; // Spacing when a list item contains a nested list
+}
+
+interface OrderedListStyleInternal extends BaseBlockStyleInternal {
+  markerColor: ColorValue;
+  markerFontSize: CodegenTypes.Float;
+  markerFontFamily: string;
+  markerFontWeight: string;
+  gapWidth: CodegenTypes.Float;
+  marginLeft: CodegenTypes.Float;
+  itemMarginBottom: CodegenTypes.Float; // Spacing between consecutive list items at the same level
+  nestedMarginBottom: CodegenTypes.Float; // Spacing when a list item contains a nested list
+}
+
 interface LinkStyleInternal {
   color: ColorValue;
   underline: boolean;
@@ -65,6 +85,8 @@ export interface RichTextStyleInternal {
   h5: HeadingStyleInternal;
   h6: HeadingStyleInternal;
   blockquote: BlockquoteStyleInternal;
+  unorderedList: UnorderedListStyleInternal;
+  orderedList: OrderedListStyleInternal;
   link: LinkStyleInternal;
   strong: StrongStyleInternal;
   em: EmphasisStyleInternal;
