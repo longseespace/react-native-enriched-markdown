@@ -54,6 +54,11 @@ class BlockStyleContext {
     // || codeBlockDepth > 0
   }
 
+  /**
+   * Returns true if we're currently in an ordered list context.
+   */
+  fun isInOrderedList(): Boolean = listType == ListType.ORDERED
+
   fun setParagraphStyle(style: ParagraphStyle) {
     currentBlockType = BlockType.PARAGRAPH
     currentHeadingLevel = 0
@@ -145,16 +150,26 @@ class BlockStyleContext {
     }
   }
 
+  /**
+   * Clears list style when exiting the top-level list (listDepth == 0).
+   * When exiting nested lists, we should still have the parent list's context.
+   */
   fun clearListStyle() {
-    // Only clear list style when exiting the top-level list (listDepth == 0)
-    // When exiting nested lists, we should still have the parent list's context
     if (listDepth == 0 && (currentBlockType == BlockType.UNORDERED_LIST || currentBlockType == BlockType.ORDERED_LIST)) {
-      // Clear block style and list-specific fields when exiting the top-level list
-      currentBlockType = BlockType.NONE
-      currentBlockStyle = null
-      listType = null
-      listItemNumber = 0
+      reset()
     }
+  }
+
+  /**
+   * Resets all list-related state to initial values.
+   * This is called when exiting the top-level list.
+   */
+  private fun reset() {
+    currentBlockType = BlockType.NONE
+    currentBlockStyle = null
+    listType = null
+    listItemNumber = 0
+    orderedListItemNumbers.clear()
   }
 
   fun getBlockStyle(): BlockStyle? = currentBlockStyle
