@@ -1,8 +1,7 @@
 package com.richtext.renderer
 
-import com.richtext.styles.OrderedListStyle
+import com.richtext.styles.ListStyle
 import com.richtext.styles.StyleConfig
-import com.richtext.styles.UnorderedListStyle
 
 /**
  * Manages list context transitions (entering/exiting lists, handling nesting, etc.).
@@ -54,11 +53,11 @@ class ListContextManager(
     context.listDepth = previousDepth + 1
     when (listType) {
       BlockStyleContext.ListType.ORDERED -> {
-        context.setOrderedListStyle(style as OrderedListStyle)
+        context.setOrderedListStyle(style as ListStyle)
       }
 
       BlockStyleContext.ListType.UNORDERED -> {
-        context.setUnorderedListStyle(style as UnorderedListStyle)
+        context.setUnorderedListStyle(style as ListStyle)
       }
     }
     context.resetListItemNumber()
@@ -93,11 +92,11 @@ class ListContextManager(
   private fun restoreParentListContext(parentListType: BlockStyleContext.ListType?) {
     when (parentListType) {
       BlockStyleContext.ListType.UNORDERED -> {
-        context.setUnorderedListStyle(styleConfig.getUnorderedListStyle())
+        context.setUnorderedListStyle(styleConfig.getListStyle())
       }
 
       BlockStyleContext.ListType.ORDERED -> {
-        context.setOrderedListStyle(styleConfig.getOrderedListStyle())
+        context.setOrderedListStyle(styleConfig.getListStyle())
       }
 
       null -> {}

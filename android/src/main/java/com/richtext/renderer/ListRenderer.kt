@@ -30,12 +30,7 @@ class ListRenderer(
         BlockStyleContext.ListType.UNORDERED
       }
 
-    val listStyle: com.richtext.styles.BaseBlockStyle =
-      if (isOrdered) {
-        config.style.getOrderedListStyle()
-      } else {
-        config.style.getUnorderedListStyle()
-      }
+    val listStyle: com.richtext.styles.BaseBlockStyle = config.style.getListStyle()
 
     val contextManager = ListContextManager(factory.blockStyleContext, config.style)
     val entryState = contextManager.enterList(listType, listStyle)

@@ -7,7 +7,7 @@ import android.graphics.Typeface
 import android.text.Layout
 import android.text.TextPaint
 import com.richtext.renderer.BlockStyle
-import com.richtext.styles.OrderedListStyle
+import com.richtext.styles.ListStyle
 import com.richtext.styles.StyleConfig
 
 /**
@@ -15,7 +15,7 @@ import com.richtext.styles.StyleConfig
  * Note: Item numbering is currently simplified - proper per-level counters will be added later.
  */
 class OrderedListSpan(
-  val style: OrderedListStyle,
+  val style: ListStyle,
   depth: Int,
   context: Context? = null,
   richTextStyle: StyleConfig? = null,

@@ -2,9 +2,8 @@ package com.richtext.renderer
 
 import com.richtext.styles.BlockquoteStyle
 import com.richtext.styles.HeadingStyle
-import com.richtext.styles.OrderedListStyle
+import com.richtext.styles.ListStyle
 import com.richtext.styles.ParagraphStyle
-import com.richtext.styles.UnorderedListStyle
 
 enum class BlockType {
   NONE,
@@ -116,7 +115,7 @@ class BlockStyleContext {
       )
   }
 
-  fun setUnorderedListStyle(style: UnorderedListStyle) {
+  fun setUnorderedListStyle(style: ListStyle) {
     currentBlockType = BlockType.UNORDERED_LIST
     currentHeadingLevel = 0
     listType = ListType.UNORDERED
@@ -129,7 +128,7 @@ class BlockStyleContext {
       )
   }
 
-  fun setOrderedListStyle(style: OrderedListStyle) {
+  fun setOrderedListStyle(style: ListStyle) {
     currentBlockType = BlockType.ORDERED_LIST
     currentHeadingLevel = 0
     listType = ListType.ORDERED

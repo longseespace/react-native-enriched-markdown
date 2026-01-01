@@ -6,15 +6,15 @@ import android.graphics.Paint
 import android.text.Layout
 import android.text.TextPaint
 import com.richtext.renderer.BlockStyle
+import com.richtext.styles.ListStyle
 import com.richtext.styles.StyleConfig
-import com.richtext.styles.UnorderedListStyle
 import com.richtext.utils.applyBlockStyleFont
 
 /**
  * Span for rendering unordered lists with bullet points and indentation.
  */
 class UnorderedListSpan(
-  private val style: UnorderedListStyle,
+  private val style: ListStyle,
   depth: Int,
   context: Context? = null,
   richTextStyle: StyleConfig? = null,

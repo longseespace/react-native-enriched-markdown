@@ -123,32 +123,20 @@ const defaultBlockquoteStyle: RichTextStyleInternal['blockquote'] = {
   backgroundColor: defaultBlockquoteBackgroundColor,
 };
 
-const defaultUnorderedListBulletColor = processColor('#000000') as ColorValue;
+const defaultListBulletColor = processColor('#000000') as ColorValue;
+const defaultListMarkerColor = processColor('#000000') as ColorValue;
 
-const defaultUnorderedListStyle: RichTextStyleInternal['unorderedList'] = {
+const defaultListStyle: RichTextStyleInternal['listStyle'] = {
   fontSize: 16,
   fontFamily: '',
   fontWeight: 'normal',
   color: defaultColor,
   marginBottom: 16,
   lineHeight: 16 * 1.4,
-  bulletColor: defaultUnorderedListBulletColor,
+  bulletColor: defaultListBulletColor,
   bulletSize: 8,
-  gapWidth: 16,
-  marginLeft: 16,
-};
-
-const defaultOrderedListMarkerColor = processColor('#000000') as ColorValue;
-
-const defaultOrderedListStyle: RichTextStyleInternal['orderedList'] = {
-  fontSize: 16,
-  fontFamily: '',
-  fontWeight: 'normal',
-  color: defaultColor,
-  marginBottom: 16,
-  lineHeight: 16 * 1.4,
-  markerColor: defaultOrderedListMarkerColor,
-  markerFontWeight: 'bold',
+  markerColor: defaultListMarkerColor,
+  markerFontWeight: 'normal',
   gapWidth: 16,
   marginLeft: 16,
 };
@@ -249,53 +237,25 @@ export const normalizeRichTextStyle = (
       defaultBlockquoteStyle.backgroundColor,
   };
 
-  const unorderedList: RichTextStyleInternal['unorderedList'] = {
-    fontSize:
-      style.unorderedList?.fontSize ?? defaultUnorderedListStyle.fontSize,
-    fontFamily:
-      style.unorderedList?.fontFamily ?? defaultUnorderedListStyle.fontFamily,
-    fontWeight:
-      style.unorderedList?.fontWeight ?? defaultUnorderedListStyle.fontWeight,
-    color:
-      normalizeColor(style.unorderedList?.color) ??
-      defaultUnorderedListStyle.color,
+  const listStyle: RichTextStyleInternal['listStyle'] = {
+    fontSize: style.listStyle?.fontSize ?? defaultListStyle.fontSize,
+    fontFamily: style.listStyle?.fontFamily ?? defaultListStyle.fontFamily,
+    fontWeight: style.listStyle?.fontWeight ?? defaultListStyle.fontWeight,
+    color: normalizeColor(style.listStyle?.color) ?? defaultListStyle.color,
     marginBottom:
-      style.unorderedList?.marginBottom ??
-      defaultUnorderedListStyle.marginBottom,
-    lineHeight:
-      style.unorderedList?.lineHeight ?? defaultUnorderedListStyle.lineHeight,
+      style.listStyle?.marginBottom ?? defaultListStyle.marginBottom,
+    lineHeight: style.listStyle?.lineHeight ?? defaultListStyle.lineHeight,
     bulletColor:
-      normalizeColor(style.unorderedList?.bulletColor) ??
-      defaultUnorderedListStyle.bulletColor,
-    bulletSize:
-      style.unorderedList?.bulletSize ?? defaultUnorderedListStyle.bulletSize,
-    gapWidth:
-      style.unorderedList?.gapWidth ?? defaultUnorderedListStyle.gapWidth,
-    marginLeft:
-      style.unorderedList?.marginLeft ?? defaultUnorderedListStyle.marginLeft,
-  };
-
-  const orderedList: RichTextStyleInternal['orderedList'] = {
-    fontSize: style.orderedList?.fontSize ?? defaultOrderedListStyle.fontSize,
-    fontFamily:
-      style.orderedList?.fontFamily ?? defaultOrderedListStyle.fontFamily,
-    fontWeight:
-      style.orderedList?.fontWeight ?? defaultOrderedListStyle.fontWeight,
-    color:
-      normalizeColor(style.orderedList?.color) ?? defaultOrderedListStyle.color,
-    marginBottom:
-      style.orderedList?.marginBottom ?? defaultOrderedListStyle.marginBottom,
-    lineHeight:
-      style.orderedList?.lineHeight ?? defaultOrderedListStyle.lineHeight,
+      normalizeColor(style.listStyle?.bulletColor) ??
+      defaultListStyle.bulletColor,
+    bulletSize: style.listStyle?.bulletSize ?? defaultListStyle.bulletSize,
     markerColor:
-      normalizeColor(style.orderedList?.markerColor) ??
-      defaultOrderedListStyle.markerColor,
+      normalizeColor(style.listStyle?.markerColor) ??
+      defaultListStyle.markerColor,
     markerFontWeight:
-      style.orderedList?.markerFontWeight ??
-      defaultOrderedListStyle.markerFontWeight,
-    gapWidth: style.orderedList?.gapWidth ?? defaultOrderedListStyle.gapWidth,
-    marginLeft:
-      style.orderedList?.marginLeft ?? defaultOrderedListStyle.marginLeft,
+      style.listStyle?.markerFontWeight ?? defaultListStyle.markerFontWeight,
+    gapWidth: style.listStyle?.gapWidth ?? defaultListStyle.gapWidth,
+    marginLeft: style.listStyle?.marginLeft ?? defaultListStyle.marginLeft,
   };
 
   return {
@@ -307,8 +267,7 @@ export const normalizeRichTextStyle = (
     h5,
     h6,
     blockquote,
-    unorderedList,
-    orderedList,
+    listStyle,
     link: {
       ...defaultLinkStyle,
       ...style.link,

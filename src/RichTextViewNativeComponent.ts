@@ -27,14 +27,9 @@ interface BlockquoteStyleInternal extends BaseBlockStyleInternal {
   backgroundColor: ColorValue;
 }
 
-interface UnorderedListStyleInternal extends BaseBlockStyleInternal {
+interface ListStyleInternal extends BaseBlockStyleInternal {
   bulletColor: ColorValue;
   bulletSize: CodegenTypes.Float;
-  gapWidth: CodegenTypes.Float;
-  marginLeft: CodegenTypes.Float;
-}
-
-interface OrderedListStyleInternal extends BaseBlockStyleInternal {
   markerColor: ColorValue;
   markerFontWeight: string;
   gapWidth: CodegenTypes.Float;
@@ -79,8 +74,7 @@ export interface RichTextStyleInternal {
   h5: HeadingStyleInternal;
   h6: HeadingStyleInternal;
   blockquote: BlockquoteStyleInternal;
-  unorderedList: UnorderedListStyleInternal;
-  orderedList: OrderedListStyleInternal;
+  listStyle: ListStyleInternal;
   link: LinkStyleInternal;
   strong: StrongStyleInternal;
   em: EmphasisStyleInternal;

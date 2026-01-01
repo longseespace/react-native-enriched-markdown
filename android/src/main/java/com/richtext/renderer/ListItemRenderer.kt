@@ -21,11 +21,11 @@ class ListItemRenderer(
     if (factory.blockStyleContext.getBlockStyle() == null) {
       when (listType) {
         BlockStyleContext.ListType.UNORDERED -> {
-          factory.blockStyleContext.setUnorderedListStyle(config.style.getUnorderedListStyle())
+          factory.blockStyleContext.setUnorderedListStyle(config.style.getListStyle())
         }
 
         BlockStyleContext.ListType.ORDERED -> {
-          factory.blockStyleContext.setOrderedListStyle(config.style.getOrderedListStyle())
+          factory.blockStyleContext.setOrderedListStyle(config.style.getListStyle())
         }
 
         null -> {
@@ -56,11 +56,12 @@ class ListItemRenderer(
     // We subtract 1 to get the visual depth (0-based) for margin/indentation calculations.
     // Example: listDepth=1 (top-level) -> depth=0, listDepth=2 (nested) -> depth=1
     val depth = factory.blockStyleContext.listDepth - 1
+    val listStyle = config.style.getListStyle()
     val span =
       when (listType) {
         BlockStyleContext.ListType.UNORDERED -> {
           UnorderedListSpan(
-            config.style.getUnorderedListStyle(),
+            listStyle,
             depth,
             factory.context,
             config.style,
@@ -69,7 +70,7 @@ class ListItemRenderer(
 
         BlockStyleContext.ListType.ORDERED -> {
           OrderedListSpan(
-            config.style.getOrderedListStyle(),
+            listStyle,
             depth,
             factory.context,
             config.style,
