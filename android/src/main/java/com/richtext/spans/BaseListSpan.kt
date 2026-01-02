@@ -14,10 +14,6 @@ import com.richtext.styles.StyleConfig
 import com.richtext.utils.applyBlockStyleFont
 import com.richtext.utils.applyColorPreserving
 
-/**
- * Base class for list spans (ordered and unordered).
- * Handles common functionality like text styling, margin calculation, and whitespace checking.
- */
 abstract class BaseListSpan(
   val depth: Int,
   protected val context: Context?,
@@ -27,30 +23,17 @@ abstract class BaseListSpan(
   protected val gapWidth: Float,
 ) : MetricAffectingSpan(),
   LeadingMarginSpan {
-  // ============================================================================
-  // MetricAffectingSpan Implementation
-  // ============================================================================
+  // --- MetricAffectingSpan Implementation ---
 
   override fun updateMeasureState(tp: TextPaint) = applyTextStyle(tp)
 
   override fun updateDrawState(tp: TextPaint) = applyTextStyle(tp)
 
-  // ============================================================================
-  // LeadingMarginSpan Implementation
-  // ============================================================================
+  // --- LeadingMarginSpan Implementation ---
 
   override fun getLeadingMargin(first: Boolean): Int {
-    // Android accumulates leading margins when multiple LeadingMarginSpan instances
-    // are applied to the same text. To prevent double-counting for nested lists,
-    // we return incremental margins:
-    // - depth=0: marginLeft + gapWidth (no parent, need full spacing)
-    // - depth>0: marginLeft only (parent already contributed gapWidth)
-    // This ensures nested lists have correct indentation without excessive spacing.
-    return if (depth == 0) {
-      (marginLeft + gapWidth).toInt()
-    } else {
-      marginLeft.toInt()
-    }
+    // Incremental margin calculation to support Android's span accumulation
+    return (marginLeft + (if (depth == 0) gapWidth else 0f)).toInt()
   }
 
   override fun drawLeadingMargin(
@@ -67,26 +50,16 @@ abstract class BaseListSpan(
     first: Boolean,
     layout: Layout?,
   ) {
-    if (shouldSkipDrawing(text, start) || !first) return
-    if (!hasNonWhitespaceContent(text, start, end)) return
+    // Draw only on the first line of paragraphs that have content and are not nested deeper
+    if (!first || shouldSkipDrawing(text, start) || !hasContent(text, start, end)) return
 
     val originalStyle = p.style
     val originalColor = p.color
-
     drawMarker(c, p, x, dir, top, baseline, bottom, layout, start)
-
     p.style = originalStyle
     p.color = originalColor
   }
 
-  // ============================================================================
-  // Abstract Methods
-  // ============================================================================
-
-  /**
-   * Draws the list marker (bullet or number) at the correct position.
-   * Subclasses implement this to draw their specific marker type.
-   */
   protected abstract fun drawMarker(
     c: Canvas,
     p: Paint,
@@ -99,32 +72,20 @@ abstract class BaseListSpan(
     start: Int,
   )
 
-  // ============================================================================
-  // Text Styling
-  // ============================================================================
+  // --- Text Styling ---
 
   private fun applyTextStyle(tp: TextPaint) {
-    if (context == null) return
-
+    val ctx = context ?: return
     tp.textSize = blockStyle.fontSize
-    preserveAndApplyTypeface(tp)
-    applyColor(tp)
-  }
 
-  private fun preserveAndApplyTypeface(tp: TextPaint) {
-    val preservedStyles =
-      (tp.typeface?.style ?: Typeface.NORMAL) and
-        (Typeface.BOLD or Typeface.ITALIC)
-    tp.applyBlockStyleFont(blockStyle, context!!)
-
-    if (preservedStyles != 0) {
-      val listTypeface = tp.typeface ?: Typeface.DEFAULT
-      val combinedStyle = listTypeface.style or preservedStyles
-      tp.typeface = Typeface.create(listTypeface, combinedStyle)
+    // Preserve bold/italic styles while applying custom block font
+    val preservedStyle = (tp.typeface?.style ?: Typeface.NORMAL) and (Typeface.BOLD or Typeface.ITALIC)
+    tp.applyBlockStyleFont(blockStyle, ctx)
+    if (preservedStyle != 0) {
+      tp.typeface = Typeface.create(tp.typeface ?: Typeface.DEFAULT, (tp.typeface?.style ?: 0) or preservedStyle)
     }
-  }
 
-  private fun applyColor(tp: TextPaint) {
+    // Apply color while respecting specific inline colors (links, code, etc.)
     if (richTextStyle != null) {
       tp.applyColorPreserving(blockStyle.color, *getColorsToPreserve().toIntArray())
     } else {
@@ -132,40 +93,26 @@ abstract class BaseListSpan(
     }
   }
 
-  private fun getColorsToPreserve(): List<Int> {
-    if (richTextStyle == null) return emptyList()
-    return buildList {
-      richTextStyle.getStrongColor()?.takeIf { it != 0 }?.let { add(it) }
-      richTextStyle.getEmphasisColor()?.takeIf { it != 0 }?.let { add(it) }
-      richTextStyle.getLinkColor().takeIf { it != 0 }?.let { add(it) }
-      richTextStyle
-        .getCodeStyle()
-        ?.color
-        ?.takeIf { it != 0 }
-        ?.let { add(it) }
+  private fun getColorsToPreserve() =
+    buildList {
+      richTextStyle?.run {
+        getStrongColor()?.takeIf { it != 0 }?.let { add(it) }
+        getEmphasisColor()?.takeIf { it != 0 }?.let { add(it) }
+        getLinkColor().takeIf { it != 0 }?.let { add(it) }
+        getCodeStyle()?.color?.takeIf { it != 0 }?.let { add(it) }
+      }
     }
-  }
 
-  // ============================================================================
-  // Helper Methods
-  // ============================================================================
+  // --- Helper Methods ---
 
-  private fun hasNonWhitespaceContent(
+  private fun hasContent(
     text: CharSequence?,
     start: Int,
     end: Int,
   ): Boolean {
     if (text == null || end <= start) return false
-    if (end == start) return false
-    if (end == start + 1 && text[start] == '\n') return false
-
-    val lineContent = text.subSequence(start, end)
-    for (i in 0 until lineContent.length) {
-      if (!lineContent[i].isWhitespace()) {
-        return true
-      }
-    }
-    return false
+    // Check if there is at least one non-whitespace character in the range
+    return (start until end).any { !text[it].isWhitespace() }
   }
 
   private fun shouldSkipDrawing(
@@ -173,12 +120,8 @@ abstract class BaseListSpan(
     start: Int,
   ): Boolean {
     if (text !is Spanned) return false
-
-    // Skip drawing if there's a deeper nested list span at this position.
-    // When multiple list spans overlap (nested lists), only the deepest one should draw its marker.
-    // This prevents parent list markers from appearing on lines that contain nested list items.
-    val allListSpans = text.getSpans(start, start + 1, BaseListSpan::class.java)
-    val maxDepth = allListSpans.maxOfOrNull { it.depth } ?: -1
-    return maxDepth > depth
+    // Determine if a deeper nested list exists at this start point
+    val spans = text.getSpans(start, start + 1, BaseListSpan::class.java)
+    return spans.any { it.depth > depth }
   }
 }

@@ -10,12 +10,8 @@ import com.richtext.renderer.BlockStyle
 import com.richtext.styles.ListStyle
 import com.richtext.styles.StyleConfig
 
-/**
- * Span for rendering ordered lists with numbered markers and indentation.
- * Note: Item numbering is currently simplified - proper per-level counters will be added later.
- */
 class OrderedListSpan(
-  val style: ListStyle,
+  private val listStyle: ListStyle, // Renamed from 'style' to avoid collision with BaseListSpan
   depth: Int,
   context: Context? = null,
   richTextStyle: StyleConfig? = null,
@@ -25,40 +21,31 @@ class OrderedListSpan(
     richTextStyle = richTextStyle,
     blockStyle =
       BlockStyle(
-        fontSize = style.fontSize,
-        fontFamily = style.fontFamily,
-        fontWeight = style.fontWeight,
-        color = style.color,
+        fontSize = listStyle.fontSize,
+        fontFamily = listStyle.fontFamily,
+        fontWeight = listStyle.fontWeight,
+        color = listStyle.color,
       ),
-    marginLeft = style.marginLeft,
-    gapWidth = style.gapWidth,
+    marginLeft = listStyle.marginLeft,
+    gapWidth = listStyle.gapWidth,
   ) {
-  private val markerPaint: TextPaint
+  // We initialize the paint using the 'listStyle' constructor parameter
+  private val markerPaint =
+    TextPaint().apply {
+      textSize = listStyle.fontSize
+      color = listStyle.markerColor
+      isAntiAlias = true
+      typeface =
+        Typeface.create(
+          listStyle.fontFamily,
+          when (listStyle.markerFontWeight.lowercase()) {
+            "bold", "700", "800", "900" -> Typeface.BOLD
+            else -> Typeface.NORMAL
+          },
+        )
+    }
+
   private var itemNumber: Int = 1
-
-  init {
-    val markerColor = style.markerColor
-    val markerFontWeight = style.markerFontWeight
-    val fontSize = style.fontSize
-    val fontFamily = style.fontFamily
-
-    markerPaint =
-      TextPaint().apply {
-        textSize = fontSize
-        color = markerColor
-        typeface = Typeface.create(fontFamily, getTypefaceStyleFromString(markerFontWeight))
-        isAntiAlias = true
-      }
-  }
-
-  companion object {
-    private fun getTypefaceStyleFromString(fontWeight: String): Int =
-      when (fontWeight.lowercase()) {
-        "bold", "700", "800", "900" -> Typeface.BOLD
-        "normal", "400", "300", "200", "100" -> Typeface.NORMAL
-        else -> Typeface.NORMAL
-      }
-  }
 
   override fun drawMarker(
     c: Canvas,
@@ -71,13 +58,16 @@ class OrderedListSpan(
     layout: Layout?,
     start: Int,
   ) {
-    val markerText = "$itemNumber."
-    val markerWidth = markerPaint.measureText(markerText)
-    val depthOffset = depth * marginLeft
-    val markerX = x + (depthOffset + marginLeft - markerWidth) * dir
-    val markerY = baseline.toFloat()
+    val text = "$itemNumber."
+    val textWidth = markerPaint.measureText(text)
 
-    c.drawText(markerText, markerX, markerY, markerPaint)
+    // Indentation calculation based on depth and margin
+    val textStartX = x + ((depth + 1) * marginLeft) * dir
+
+    // Precise marker placement relative to the text start point
+    val markerX = textStartX - (textWidth + (gapWidth / 4f)) * dir
+
+    c.drawText(text, markerX, baseline.toFloat(), markerPaint)
   }
 
   fun setItemNumber(number: Int) {

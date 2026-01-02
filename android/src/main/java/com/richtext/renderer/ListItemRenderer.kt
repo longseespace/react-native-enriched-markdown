@@ -15,74 +15,44 @@ class ListItemRenderer(
     onLinkPress: ((String) -> Unit)?,
     factory: RendererFactory,
   ) {
+    val styleContext = factory.blockStyleContext
     val start = builder.length
-    val listType = factory.blockStyleContext.listType
+    val listType = styleContext.listType ?: return
 
-    if (factory.blockStyleContext.getBlockStyle() == null) {
-      when (listType) {
-        BlockStyleContext.ListType.UNORDERED -> {
-          factory.blockStyleContext.setUnorderedListStyle(config.style.getListStyle())
-        }
-
-        BlockStyleContext.ListType.ORDERED -> {
-          factory.blockStyleContext.setOrderedListStyle(config.style.getListStyle())
-        }
-
-        null -> {
-          factory.blockStyleContext.setParagraphStyle(config.style.getParagraphStyle())
-        }
-      }
-    }
-
+    // 1. Maintain item state
     if (listType == BlockStyleContext.ListType.ORDERED) {
-      factory.blockStyleContext.incrementListItemNumber()
+      styleContext.incrementListItemNumber()
     }
 
+    // 2. Render Children
     factory.renderChildren(node, builder, onLinkPress)
 
-    val end = builder.length
-    if (end == start || builder.substring(start, end).isBlank()) return
+    // 3. Normalize whitespace: Ensure the item ends with exactly one newline
+    if (builder.length == start || builder.substring(start).isBlank()) return
 
-    var contentEnd = builder.length
-    while (contentEnd > start && builder[contentEnd - 1] == '\n') {
-      contentEnd--
-    }
-    if (contentEnd < builder.length) {
-      builder.delete(contentEnd, builder.length)
+    while (builder.length > start && builder.last() == '\n') {
+      builder.delete(builder.length - 1, builder.length)
     }
     builder.append("\n")
 
-    // Depth calculation: listDepth represents the current nesting level (1-based).
-    // We subtract 1 to get the visual depth (0-based) for margin/indentation calculations.
-    // Example: listDepth=1 (top-level) -> depth=0, listDepth=2 (nested) -> depth=1
-    val depth = factory.blockStyleContext.listDepth - 1
+    // 4. Calculate Depth and Style
+    val depth = styleContext.listDepth - 1
     val listStyle = config.style.getListStyle()
+
+    // 5. Apply the correct Span
     val span =
       when (listType) {
         BlockStyleContext.ListType.UNORDERED -> {
-          UnorderedListSpan(
-            listStyle,
-            depth,
-            factory.context,
-            config.style,
-          )
+          UnorderedListSpan(listStyle, depth, factory.context, config.style)
         }
 
         BlockStyleContext.ListType.ORDERED -> {
-          OrderedListSpan(
-            listStyle,
-            depth,
-            factory.context,
-            config.style,
-          ).apply {
-            setItemNumber(factory.blockStyleContext.listItemNumber)
+          OrderedListSpan(listStyle, depth, factory.context, config.style).apply {
+            setItemNumber(styleContext.listItemNumber)
           }
         }
-
-        null -> {
-          return
-        }
       }
+
     builder.setSpan(span, start, builder.length, SPAN_FLAGS_EXCLUSIVE_EXCLUSIVE)
   }
 }

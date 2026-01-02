@@ -3,15 +3,9 @@ package com.richtext.renderer
 import android.text.SpannableStringBuilder
 import com.richtext.parser.MarkdownASTNode
 import com.richtext.spans.MarginBottomSpan
-import com.richtext.spans.OrderedListSpan
-import com.richtext.spans.UnorderedListSpan
 import com.richtext.utils.SPAN_FLAGS_EXCLUSIVE_EXCLUSIVE
 import com.richtext.utils.createLineHeightSpan
 
-/**
- * Unified renderer for both ordered and unordered lists.
- * Handles all list rendering logic including nesting, context management, and styling.
- */
 class ListRenderer(
   private val config: RendererConfig,
   private val isOrdered: Boolean,
@@ -23,19 +17,17 @@ class ListRenderer(
     factory: RendererFactory,
   ) {
     val start = builder.length
-    val listType =
-      if (isOrdered) {
-        BlockStyleContext.ListType.ORDERED
-      } else {
-        BlockStyleContext.ListType.UNORDERED
-      }
+    val listStyle = config.style.getListStyle()
+    val listType = if (isOrdered) BlockStyleContext.ListType.ORDERED else BlockStyleContext.ListType.UNORDERED
 
-    val listStyle: com.richtext.styles.BaseBlockStyle = config.style.getListStyle()
-
+    // 1. Context Lifecycle Management
     val contextManager = ListContextManager(factory.blockStyleContext, config.style)
     val entryState = contextManager.enterList(listType, listStyle)
 
-    ensureNestedListNewline(builder, entryState.previousDepth)
+    // 2. Nested List Isolation
+    if (entryState.previousDepth > 0 && builder.isNotEmpty() && builder.last() != '\n') {
+      builder.append("\n")
+    }
 
     try {
       factory.renderChildren(node, builder, onLinkPress)
@@ -43,53 +35,32 @@ class ListRenderer(
       contextManager.exitList(entryState)
     }
 
-    val end = builder.length
-    if (end == start) return
-
-    applyStylingAndSpacing(builder, start, end, entryState.previousDepth, listStyle)
-  }
-
-  /**
-   * Ensures nested lists start on a new line to prevent concatenation.
-   * Only needed for nested lists (previousDepth > 0), not top-level lists.
-   */
-  private fun ensureNestedListNewline(
-    builder: SpannableStringBuilder,
-    currentDepth: Int,
-  ) {
-    if (currentDepth > 0 && builder.isNotEmpty() && builder.last() != '\n') {
-      builder.append("\n")
+    // 3. Spacing & Styling
+    if (builder.length > start) {
+      applyListSpacing(builder, start, entryState.previousDepth, listStyle)
     }
   }
 
-  /**
-   * Applies line height and margin bottom styling to the list.
-   *
-   * **Depth-based margin logic:**
-   * - Line height: Applied to entire list regardless of depth
-   * - Margin bottom: Only applied to top-level lists (depth 0)
-   *   The parent list's margin bottom handles spacing after the entire nested structure.
-   */
-  private fun applyStylingAndSpacing(
+  private fun applyListSpacing(
     builder: SpannableStringBuilder,
     start: Int,
-    end: Int,
-    currentDepth: Int,
-    listStyle: com.richtext.styles.BaseBlockStyle,
+    depth: Int,
+    style: com.richtext.styles.BaseBlockStyle,
   ) {
+    // Apply line height to the entire list block
     builder.setSpan(
-      createLineHeightSpan(listStyle.lineHeight),
+      createLineHeightSpan(style.lineHeight),
       start,
-      end,
+      builder.length,
       SPAN_FLAGS_EXCLUSIVE_EXCLUSIVE,
     )
 
-    if (currentDepth == 0 && listStyle.marginBottom > 0) {
-      val spacerLocation = builder.length
+    // Only apply bottom margin for top-level lists
+    if (depth == 0 && style.marginBottom > 0) {
       builder.append("\n")
       builder.setSpan(
-        MarginBottomSpan(listStyle.marginBottom),
-        spacerLocation,
+        MarginBottomSpan(style.marginBottom),
+        builder.length - 1,
         builder.length,
         SPAN_FLAGS_EXCLUSIVE_EXCLUSIVE,
       )

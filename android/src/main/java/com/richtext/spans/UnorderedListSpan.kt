@@ -4,15 +4,10 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.text.Layout
-import android.text.TextPaint
 import com.richtext.renderer.BlockStyle
 import com.richtext.styles.ListStyle
 import com.richtext.styles.StyleConfig
-import com.richtext.utils.applyBlockStyleFont
 
-/**
- * Span for rendering unordered lists with bullet points and indentation.
- */
 class UnorderedListSpan(
   private val style: ListStyle,
   depth: Int,
@@ -32,7 +27,7 @@ class UnorderedListSpan(
     marginLeft = style.marginLeft,
     gapWidth = style.gapWidth,
   ) {
-  private val markerWidth: Float = style.bulletSize
+  private val radius: Float = style.bulletSize / 2f
 
   override fun drawMarker(
     c: Canvas,
@@ -47,24 +42,17 @@ class UnorderedListSpan(
   ) {
     p.style = Paint.Style.FILL
     p.color = style.bulletColor
+    p.isAntiAlias = true
 
-    val depthOffset = depth * marginLeft
-    val radius = markerWidth / 2f
-    val bulletRightEdge = x + (depthOffset + marginLeft) * dir
-    val bulletX = bulletRightEdge - radius * dir
+    // 1. Calculate the right-hand boundary of the margin
+    val rightBoundaryX = x + ((depth + 1) * marginLeft) * dir
 
-    val textPaint =
-      if (context != null) {
-        TextPaint().apply {
-          textSize = blockStyle.fontSize
-          applyBlockStyleFont(blockStyle, context)
-        }
-      } else {
-        TextPaint(p)
-      }
-    val fontMetrics = android.graphics.Paint.FontMetrics()
-    textPaint.getFontMetrics(fontMetrics)
-    val bulletY = baseline + (fontMetrics.ascent + fontMetrics.descent) / 2f
+    // 2. Center bullet in the space before the text
+    val bulletX = rightBoundaryX - (gapWidth / 2f) * dir
+
+    // 3. Vertical centering based on font metrics
+    val fm = p.fontMetrics
+    val bulletY = baseline + (fm.ascent + fm.descent) / 2f
 
     c.drawCircle(bulletX, bulletY, radius, p)
   }
