@@ -11,7 +11,7 @@ import com.richtext.styles.ListStyle
 import com.richtext.styles.StyleConfig
 
 class OrderedListSpan(
-  private val listStyle: ListStyle, // Renamed from 'style' to avoid collision with BaseListSpan
+  private val listStyle: ListStyle,
   depth: Int,
   context: Context? = null,
   richTextStyle: StyleConfig? = null,
