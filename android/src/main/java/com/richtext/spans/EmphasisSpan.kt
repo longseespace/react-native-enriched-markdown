@@ -6,9 +6,12 @@ import android.text.style.MetricAffectingSpan
 import com.richtext.renderer.BlockStyle
 import com.richtext.styles.StyleConfig
 import com.richtext.utils.applyColorPreserving
-import com.richtext.utils.calculateStrongColor
 import com.richtext.utils.getColorsToPreserveForInlineStyle
 
+/**
+ * A span that applies italic styling and optional color emphasis.
+ * Handles nested 'strong' spans by preserving bold-italic hierarchy and colors.
+ */
 class EmphasisSpan(
   private val style: StyleConfig,
   private val blockStyle: BlockStyle,
@@ -23,33 +26,29 @@ class EmphasisSpan(
   }
 
   private fun applyEmphasisStyle(tp: TextPaint) {
-    val currentTypeface = tp.typeface ?: Typeface.DEFAULT
-    val currentStyle = currentTypeface.style
+    val old = tp.typeface ?: Typeface.DEFAULT
+    // Typeface.create handles merging styles automatically.
+    // If the old typeface was BOLD, this results in BOLD_ITALIC.
+    val combinedStyle = old.style or Typeface.ITALIC
 
-    if ((currentStyle and Typeface.ITALIC) != 0) return
-
-    val combinedStyle =
-      if ((currentStyle and Typeface.BOLD) != 0) {
-        Typeface.BOLD_ITALIC
-      } else {
-        Typeface.ITALIC
-      }
-
-    tp.typeface = Typeface.create(currentTypeface, combinedStyle)
+    if (old.style != combinedStyle) {
+      tp.typeface = Typeface.create(old, combinedStyle)
+    }
   }
 
   private fun applyEmphasisColor(tp: TextPaint) {
     val configEmphasisColor = style.getEmphasisColor()
-    val strongColorToUse = calculateStrongColor(style, blockStyle)
 
-    // Check if nested inside strong: text is bold and color matches strong color
-    val isNestedInStrong =
-      ((tp.typeface ?: Typeface.DEFAULT).style and Typeface.BOLD) != 0 &&
-        tp.color == strongColorToUse
+    // We only apply emphasis color if a specific color is configured
+    // and if the current color is still the base block color (not already changed by Strong/Link).
+    val colorToUse =
+      if (tp.color == blockStyle.color) {
+        configEmphasisColor ?: blockStyle.color
+      } else {
+        tp.color
+      }
 
-    // If nested inside strong, preserve strong color; otherwise use emphasis color or block color
-    val colorToUse = if (isNestedInStrong) tp.color else (configEmphasisColor ?: blockStyle.color)
-
+    // Apply color while protecting specific UI colors like Links or Code backgrounds.
     tp.applyColorPreserving(colorToUse, *getColorsToPreserveForInlineStyle(style))
   }
 }
