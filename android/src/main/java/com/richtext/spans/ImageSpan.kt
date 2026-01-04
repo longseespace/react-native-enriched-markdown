@@ -7,9 +7,7 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.drawable.Drawable
-import android.text.Editable
 import android.text.Spannable
-import android.util.Log
 import androidx.core.graphics.drawable.toDrawable
 import androidx.core.graphics.withSave
 import com.richtext.RichTextView
@@ -304,6 +302,7 @@ class ImageSpan(
 
       override fun setColorFilter(cf: android.graphics.ColorFilter?) {}
 
+      @Deprecated("Deprecated in Java")
       override fun getOpacity(): Int = android.graphics.PixelFormat.TRANSLUCENT
 
       override fun getIntrinsicWidth(): Int = w
