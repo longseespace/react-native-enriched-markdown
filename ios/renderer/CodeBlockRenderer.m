@@ -31,9 +31,10 @@
 
   CGFloat padding = [_config codeBlockPadding];
   CGFloat lineHeight = [_config codeBlockLineHeight];
+  CGFloat marginBottom = [_config codeBlockMarginBottom];
   NSUInteger blockStart = output.length;
 
-  // 1. TOP PADDING: Symmetrical Spacer
+  // 1. TOP PADDING: Inside the background
   [output appendAttributedString:[[NSAttributedString alloc] initWithString:@"\n"]];
   NSMutableParagraphStyle *topSpacerStyle = [[NSMutableParagraphStyle alloc] init];
   topSpacerStyle.minimumLineHeight = padding;
@@ -42,10 +43,6 @@
 
   // 2. RENDER CONTENT
   NSUInteger contentStart = output.length;
-
-  BlockStyle *blockStyle = [context getBlockStyle];
-  UIFont *codeFont = fontFromBlockStyle(blockStyle);
-
   @try {
     [_rendererFactory renderChildrenOfNode:node into:output context:context];
   } @finally {
@@ -59,6 +56,7 @@
   NSRange contentRange = NSMakeRange(contentStart, contentEnd - contentStart);
 
   // 3. CONTENT STYLING
+  UIFont *codeFont = fontFromBlockStyle([context getBlockStyle]);
   [output addAttribute:NSFontAttributeName value:codeFont range:contentRange];
   if ([_config codeBlockColor]) {
     [output addAttribute:NSForegroundColorAttributeName value:[_config codeBlockColor] range:contentRange];
@@ -68,28 +66,34 @@
     applyLineHeight(output, contentRange, lineHeight);
   }
 
-  // 4. HORIZONTAL INDENTS
+  // HORIZONTAL INDENTS
   NSMutableParagraphStyle *baseStyle = [getOrCreateParagraphStyle(output, contentStart) mutableCopy];
   baseStyle.firstLineHeadIndent = padding;
   baseStyle.headIndent = padding;
   baseStyle.tailIndent = -padding;
   [output addAttribute:NSParagraphStyleAttributeName value:baseStyle range:contentRange];
 
-  // 5. BOTTOM PADDING + MARGIN: Unified Spacer
-  NSUInteger bottomSpacerStart = output.length;
+  // 4. BOTTOM PADDING: Inside the background
+  NSUInteger bottomPaddingStart = output.length;
   [output appendAttributedString:[[NSAttributedString alloc] initWithString:@"\n"]];
+  NSMutableParagraphStyle *bottomPaddingStyle = [[NSMutableParagraphStyle alloc] init];
+  bottomPaddingStyle.minimumLineHeight = padding;
+  bottomPaddingStyle.maximumLineHeight = padding;
+  [output addAttribute:NSParagraphStyleAttributeName value:bottomPaddingStyle range:NSMakeRange(bottomPaddingStart, 1)];
 
-  CGFloat marginBottom = [_config codeBlockMarginBottom];
-  CGFloat totalBottomHeight = padding + MAX(0, marginBottom);
-
-  NSMutableParagraphStyle *bottomSpacerStyle = [[NSMutableParagraphStyle alloc] init];
-  bottomSpacerStyle.minimumLineHeight = totalBottomHeight;
-  bottomSpacerStyle.maximumLineHeight = totalBottomHeight;
-  [output addAttribute:NSParagraphStyleAttributeName value:bottomSpacerStyle range:NSMakeRange(bottomSpacerStart, 1)];
-
-  // 6. MARK BACKGROUND
+  // MARK BACKGROUND: Ends here to exclude the margin
   NSRange backgroundRange = NSMakeRange(blockStart, output.length - blockStart);
   [output addAttribute:CodeBlockAttributeName value:@YES range:backgroundRange];
+
+  // 5. EXTERNAL MARGIN: Outside the background
+  if (marginBottom > 0) {
+    NSUInteger marginStart = output.length;
+    [output appendAttributedString:[[NSAttributedString alloc] initWithString:@"\n"]];
+    NSMutableParagraphStyle *marginStyle = [[NSMutableParagraphStyle alloc] init];
+    marginStyle.minimumLineHeight = marginBottom;
+    marginStyle.maximumLineHeight = marginBottom;
+    [output addAttribute:NSParagraphStyleAttributeName value:marginStyle range:NSMakeRange(marginStart, 1)];
+  }
 }
 
 @end
