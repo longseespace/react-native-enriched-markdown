@@ -99,7 +99,6 @@ class CodeBlockSpan(
 
     val inset = style.borderWidth / 2f
 
-    // Update the reusable rect
     rect.set(
       left.toFloat() + inset,
       top.toFloat() + (if (isFirstLine) inset else 0f),
