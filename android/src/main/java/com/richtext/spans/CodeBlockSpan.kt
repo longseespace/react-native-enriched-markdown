@@ -180,10 +180,21 @@ class CodeBlockSpan(
 
   private fun applyTextStyle(tp: TextPaint) {
     tp.textSize = blockStyle.fontSize
+
     if (blockStyle.fontFamily.isEmpty()) {
       val currentTypeface = tp.typeface ?: Typeface.DEFAULT
-      val preservedStyle = currentTypeface.style and (Typeface.BOLD or Typeface.ITALIC)
-      tp.typeface = if (preservedStyle != 0) Typeface.create(Typeface.MONOSPACE, preservedStyle) else Typeface.MONOSPACE
+
+      val styleFlag =
+        if (currentTypeface.isBold && currentTypeface.isItalic) {
+          Typeface.BOLD_ITALIC
+        } else if (currentTypeface.isBold) {
+          Typeface.BOLD
+        } else if (currentTypeface.isItalic) {
+          Typeface.ITALIC
+        } else {
+          Typeface.NORMAL
+        }
+      tp.typeface = Typeface.create(Typeface.MONOSPACE, styleFlag)
     } else {
       if (context != null) tp.applyBlockStyleFont(blockStyle, context)
     }
