@@ -33,12 +33,10 @@ class CodeBlockSpan(
       color = style.color,
     )
 
-  // Pre-allocated objects to avoid allocations during drawBackground
   private val path = Path()
   private val rect = RectF()
   private val arcRect = RectF()
 
-  // Radii array pre-allocated to avoid array creation in the draw loop
   private val radiiArray = FloatArray(8)
 
   private val bgPaint =
