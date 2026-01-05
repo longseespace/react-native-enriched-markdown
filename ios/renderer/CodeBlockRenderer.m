@@ -42,6 +42,10 @@
 
   // 2. RENDER CONTENT
   NSUInteger contentStart = output.length;
+
+  BlockStyle *blockStyle = [context getBlockStyle];
+  UIFont *codeFont = fontFromBlockStyle(blockStyle);
+
   @try {
     [_rendererFactory renderChildrenOfNode:node into:output context:context];
   } @finally {
@@ -50,14 +54,12 @@
 
   NSUInteger contentEnd = output.length;
   if (contentEnd <= contentStart)
-    return; // Safety check
+    return;
 
   NSRange contentRange = NSMakeRange(contentStart, contentEnd - contentStart);
 
   // 3. CONTENT STYLING
-  UIFont *codeFont = [self createCodeBlockFont];
   [output addAttribute:NSFontAttributeName value:codeFont range:contentRange];
-
   if ([_config codeBlockColor]) {
     [output addAttribute:NSForegroundColorAttributeName value:[_config codeBlockColor] range:contentRange];
   }
@@ -67,7 +69,6 @@
   }
 
   // 4. HORIZONTAL INDENTS
-  // Production Fix: Always mutableCopy to avoid modifying a shared style from the context/storage
   NSMutableParagraphStyle *baseStyle = [getOrCreateParagraphStyle(output, contentStart) mutableCopy];
   baseStyle.firstLineHeadIndent = padding;
   baseStyle.headIndent = padding;
@@ -87,47 +88,8 @@
   [output addAttribute:NSParagraphStyleAttributeName value:bottomSpacerStyle range:NSMakeRange(bottomSpacerStart, 1)];
 
   // 6. MARK BACKGROUND
-  // Use the comprehensive range from the start of the top spacer to the end of the bottom spacer
   NSRange backgroundRange = NSMakeRange(blockStart, output.length - blockStart);
   [output addAttribute:RichTextCodeBlockAttributeName value:@YES range:backgroundRange];
-}
-
-#pragma mark - Font Helpers
-
-- (UIFont *)createCodeBlockFont
-{
-  CGFloat fontSize = [_config codeBlockFontSize];
-  NSString *fontFamily = [_config codeBlockFontFamily];
-  NSString *fontWeight = [_config codeBlockFontWeight];
-
-  if (!fontFamily || fontFamily.length == 0) {
-    return [UIFont monospacedSystemFontOfSize:fontSize weight:[self parseFontWeight:fontWeight]];
-  }
-
-  UIFontDescriptor *descriptor = [UIFontDescriptor fontDescriptorWithName:fontFamily size:fontSize];
-  if (fontWeight && ![fontWeight isEqualToString:@"normal"]) {
-    descriptor = [descriptor fontDescriptorByAddingAttributes:@{
-      UIFontDescriptorTraitsAttribute : @{UIFontWeightTrait : @([self parseFontWeight:fontWeight])}
-    }];
-  }
-
-  UIFont *font = [UIFont fontWithDescriptor:descriptor size:fontSize];
-  // Safety fallback to system monospace
-  return font ?: [UIFont monospacedSystemFontOfSize:fontSize weight:UIFontWeightRegular];
-}
-
-- (UIFontWeight)parseFontWeight:(NSString *)fontWeight
-{
-  if (!fontWeight)
-    return UIFontWeightRegular;
-  NSString *lowercase = [fontWeight lowercaseString];
-  if ([lowercase isEqualToString:@"bold"] || [lowercase isEqualToString:@"700"])
-    return UIFontWeightBold;
-  if ([lowercase isEqualToString:@"600"] || [lowercase isEqualToString:@"semibold"])
-    return UIFontWeightSemibold;
-  if ([lowercase isEqualToString:@"500"] || [lowercase isEqualToString:@"medium"])
-    return UIFontWeightMedium;
-  return UIFontWeightRegular;
 }
 
 @end

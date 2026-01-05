@@ -20,8 +20,8 @@ import com.richtext.utils.applyColorPreserving
 
 class CodeBlockSpan(
   private val style: CodeBlockStyle,
-  private val context: Context? = null,
-  private val richTextStyle: StyleConfig? = null,
+  private val context: Context,
+  private val richTextStyle: StyleConfig,
 ) : MetricAffectingSpan(),
   LineBackgroundSpan,
   LeadingMarginSpan {
@@ -181,33 +181,12 @@ class CodeBlockSpan(
   private fun applyTextStyle(tp: TextPaint) {
     tp.textSize = blockStyle.fontSize
 
-    if (blockStyle.fontFamily.isEmpty()) {
-      val currentTypeface = tp.typeface ?: Typeface.DEFAULT
+    tp.applyBlockStyleFont(blockStyle, context)
 
-      val styleFlag =
-        if (currentTypeface.isBold && currentTypeface.isItalic) {
-          Typeface.BOLD_ITALIC
-        } else if (currentTypeface.isBold) {
-          Typeface.BOLD
-        } else if (currentTypeface.isItalic) {
-          Typeface.ITALIC
-        } else {
-          Typeface.NORMAL
-        }
-      tp.typeface = Typeface.create(Typeface.MONOSPACE, styleFlag)
-    } else {
-      if (context != null) tp.applyBlockStyleFont(blockStyle, context)
-    }
-
-    if (richTextStyle != null) {
-      tp.applyColorPreserving(blockStyle.color, *getColorsToPreserve().toIntArray())
-    } else {
-      tp.color = blockStyle.color
-    }
+    tp.applyColorPreserving(blockStyle.color, *getColorsToPreserve().toIntArray())
   }
 
   private fun getColorsToPreserve(): List<Int> {
-    if (richTextStyle == null) return emptyList()
     val colors = mutableListOf<Int>()
     richTextStyle.getStrongColor()?.takeIf { it != 0 }?.let { colors.add(it) }
     richTextStyle.getEmphasisColor()?.takeIf { it != 0 }?.let { colors.add(it) }
