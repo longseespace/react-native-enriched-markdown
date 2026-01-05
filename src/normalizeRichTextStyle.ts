@@ -1,4 +1,4 @@
-import { processColor, type ColorValue } from 'react-native';
+import { Platform, processColor, type ColorValue } from 'react-native';
 import type { RichTextStyle } from './RichTextView';
 import type { RichTextStyleInternal } from './RichTextViewNativeComponent';
 
@@ -12,81 +12,104 @@ export const normalizeColor = (
   return processColor(color);
 };
 
-const defaultColor = processColor('#000000') as ColorValue;
+const defaultTextColor = processColor('#1F2937') as ColorValue;
+const defaultHeadingColor = processColor('#111827') as ColorValue;
+
+const getMonospaceFont = () =>
+  Platform.select({
+    ios: 'Menlo',
+    android: 'monospace',
+    default: 'monospace',
+  });
+
+const getSystemFont = () =>
+  Platform.select({
+    ios: 'System', // SF Pro on iOS
+    android: 'sans-serif',
+    default: 'sans-serif',
+  });
+
+// Helper to get platform-specific line height multiplier
+const getLineHeightMultiplier = (baseMultiplier: number) =>
+  Platform.select({
+    ios: baseMultiplier * 0.75, // Tighter line height on iOS
+    android: baseMultiplier,
+    default: baseMultiplier,
+  });
 
 const paragraphDefaultStyles: RichTextStyleInternal['paragraph'] = {
   fontSize: 16,
-  fontFamily: '',
+  fontFamily: getSystemFont(),
   fontWeight: 'normal',
-  color: defaultColor,
-  marginBottom: 16,
-  lineHeight: 16 * 1.4,
+  color: defaultTextColor,
+  marginBottom: 20,
+  lineHeight: 16 * getLineHeightMultiplier(1.6),
 };
 
 const defaultH1Style: RichTextStyleInternal['h1'] = {
-  fontSize: 36,
-  fontFamily: 'Helvetica-Bold',
+  fontSize: 32,
+  fontFamily: getSystemFont(),
   fontWeight: 'bold',
-  color: defaultColor,
-  marginBottom: 24,
-  lineHeight: 28 * 1.1,
+  color: defaultHeadingColor,
+  marginBottom: 12,
+  lineHeight: 32 * getLineHeightMultiplier(1.2),
 };
 
 const defaultH2Style: RichTextStyleInternal['h2'] = {
-  fontSize: 28,
-  fontFamily: 'Helvetica-Bold',
-  fontWeight: 'normal',
-  color: defaultColor,
-  marginBottom: 24,
-  lineHeight: 28 * 1.1,
+  fontSize: 24,
+  fontFamily: getSystemFont(),
+  fontWeight: 'bold',
+  color: defaultHeadingColor,
+  marginBottom: 12,
+  lineHeight: 24 * getLineHeightMultiplier(1.25),
 };
 
 const defaultH3Style: RichTextStyleInternal['h3'] = {
-  fontSize: 24,
-  fontFamily: 'Helvetica-Bold',
-  fontWeight: 'normal',
-  color: defaultColor,
-  marginBottom: 20,
-  lineHeight: 24 * 1.1,
+  fontSize: 20,
+  fontFamily: getSystemFont(),
+  fontWeight: 'bold',
+  color: defaultHeadingColor,
+  marginBottom: 12,
+  lineHeight: 20 * getLineHeightMultiplier(1.3),
 };
 
 const defaultH4Style: RichTextStyleInternal['h4'] = {
-  fontSize: 20,
-  fontFamily: 'Helvetica-Bold',
-  fontWeight: 'normal',
-  color: defaultColor,
-  marginBottom: 18,
-  lineHeight: 20 * 1.1,
+  fontSize: 18,
+  fontFamily: getSystemFont(),
+  fontWeight: 'bold',
+  color: defaultHeadingColor,
+  marginBottom: 12,
+  lineHeight: 18 * getLineHeightMultiplier(1.35),
 };
 
 const defaultH5Style: RichTextStyleInternal['h5'] = {
-  fontSize: 18,
-  fontFamily: 'Helvetica-Bold',
-  fontWeight: 'normal',
-  color: defaultColor,
-  marginBottom: 16,
-  lineHeight: 18 * 1.1,
+  fontSize: 17,
+  fontFamily: getSystemFont(),
+  fontWeight: 'bold',
+  color: defaultHeadingColor,
+  marginBottom: 12,
+  lineHeight: 17 * getLineHeightMultiplier(1.4),
 };
 
 const defaultH6Style: RichTextStyleInternal['h6'] = {
   fontSize: 16,
-  fontFamily: 'Helvetica-Bold',
-  fontWeight: 'normal',
-  color: defaultColor,
-  marginBottom: 16,
-  lineHeight: 16 * 1.1,
+  fontFamily: getSystemFont(),
+  fontWeight: 'bold',
+  color: defaultHeadingColor,
+  marginBottom: 12,
+  lineHeight: 16 * getLineHeightMultiplier(1.4),
 };
 
-const defaultLinkColor = processColor('#007AFF') as ColorValue;
+const defaultLinkColor = processColor('#2563EB') as ColorValue;
 
 const defaultLinkStyle: RichTextStyleInternal['link'] = {
   color: defaultLinkColor,
   underline: true,
 };
 
-const defaultCodeColor = processColor('#E83E8C') as ColorValue;
-const defaultCodeBackgroundColor = processColor('#F3F4F6') as ColorValue;
-const defaultCodeBorderColor = processColor('#D1D5DB') as ColorValue;
+const defaultCodeColor = processColor('#D72B3F') as ColorValue;
+const defaultCodeBackgroundColor = processColor('#F8F8F8') as ColorValue;
+const defaultCodeBorderColor = processColor('#E1E1E1') as ColorValue;
 
 const defaultCodeStyle: RichTextStyleInternal['code'] = {
   color: defaultCodeColor,
@@ -97,65 +120,64 @@ const defaultCodeStyle: RichTextStyleInternal['code'] = {
 const defaultImageStyle: RichTextStyleInternal['image'] = {
   height: 200,
   borderRadius: 10,
-  marginBottom: 16,
+  marginBottom: 32,
 };
 
 const defaultInlineImageStyle: RichTextStyleInternal['inlineImage'] = {
   size: 16,
 };
 
-const defaultBlockquoteBorderColor = processColor('#CCCCCC') as ColorValue;
-const defaultBlockquoteBackgroundColor = processColor(
-  'transparent'
-) as ColorValue;
+const defaultBlockquoteBorderColor = processColor('#3B82F6') as ColorValue;
+const defaultBlockquoteBackgroundColor = processColor('#EFF6FF') as ColorValue;
 
 const defaultBlockquoteStyle: RichTextStyleInternal['blockquote'] = {
   fontSize: 16,
-  fontFamily: '',
+  fontFamily: getSystemFont(),
   fontWeight: 'normal',
-  color: defaultColor,
-  marginBottom: 16,
+  color: processColor('#374151') as ColorValue,
+  marginBottom: 20,
   nestedMarginBottom: 16,
-  lineHeight: 16 * 1.4,
+  lineHeight: 16 * getLineHeightMultiplier(1.6),
   borderColor: defaultBlockquoteBorderColor,
   borderWidth: 4,
   gapWidth: 16,
   backgroundColor: defaultBlockquoteBackgroundColor,
 };
 
-const defaultListBulletColor = processColor('#000000') as ColorValue;
-const defaultListMarkerColor = processColor('#000000') as ColorValue;
+const defaultListBulletColor = processColor('#6B7280') as ColorValue;
+const defaultListMarkerColor = processColor('#1F2937') as ColorValue;
 
 const defaultListStyle: RichTextStyleInternal['listStyle'] = {
-  fontSize: 16,
-  fontFamily: '',
+  fontSize: 17,
+  fontFamily: getSystemFont(),
   fontWeight: 'normal',
-  color: defaultColor,
+  color: defaultTextColor,
   marginBottom: 16,
-  lineHeight: 16 * 1.4,
+  lineHeight: 17 * getLineHeightMultiplier(1.6),
   bulletColor: defaultListBulletColor,
-  bulletSize: 8,
+  bulletSize: 6,
   markerColor: defaultListMarkerColor,
-  markerFontWeight: 'normal',
-  gapWidth: 16,
-  marginLeft: 16,
+  markerFontWeight: '600',
+  gapWidth: 12,
+  marginLeft: 20,
 };
 
-const defaultCodeBlockBackgroundColor = processColor('#F3F4F6') as ColorValue;
-const defaultCodeBlockBorderColor = processColor('#D1D5DB') as ColorValue;
+const defaultCodeBlockBackgroundColor = processColor('#1F2937') as ColorValue; // Dark background (Gray-800)
+const defaultCodeBlockBorderColor = processColor('#374151') as ColorValue; // Gray-700 border
+const defaultCodeBlockTextColor = processColor('#F9FAFB') as ColorValue; // Gray-50 text for contrast
 
 const defaultCodeBlockStyle: RichTextStyleInternal['codeBlock'] = {
   fontSize: 14,
-  fontFamily: '',
+  fontFamily: getMonospaceFont(),
   fontWeight: 'normal',
-  color: defaultColor,
-  marginBottom: 16,
-  lineHeight: 14 * 1.5,
+  color: defaultCodeBlockTextColor,
+  marginBottom: 24,
+  lineHeight: 14 * getLineHeightMultiplier(1.6),
   backgroundColor: defaultCodeBlockBackgroundColor,
   borderColor: defaultCodeBlockBorderColor,
   borderRadius: 8,
-  borderWidth: 0,
-  padding: 12,
+  borderWidth: 1,
+  padding: 16,
 };
 
 export const normalizeRichTextStyle = (
