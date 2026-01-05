@@ -48,7 +48,6 @@ class CodeBlockRenderer(
     )
 
     // 2. Apply Boundary Vertical Padding
-    // Replicates the "Sandwich" strategy by adjusting FontMetrics only at block boundaries
     builder.setSpan(
       CodeBlockBoundaryPaddingSpan(padding),
       start,
@@ -57,7 +56,6 @@ class CodeBlockRenderer(
     )
 
     // 3. Apply External Margin Bottom
-    // Replicates the iOS physical spacer/margin logic for consistent spacing
     if (style.marginBottom > 0) {
       val marginStart = builder.length
       builder.append("\n")
