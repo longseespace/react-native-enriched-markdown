@@ -61,7 +61,7 @@
 
   // Final spacing for root container
   if (prevDepth == 0 && [_config listStyleMarginBottom] > 0) {
-    applyBlockquoteSpacing(output, [_config listStyleMarginBottom]);
+    applyBlockSpacing(output, [_config listStyleMarginBottom]);
   }
 }
 

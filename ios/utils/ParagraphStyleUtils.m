@@ -6,6 +6,7 @@ NSMutableParagraphStyle *getOrCreateParagraphStyle(NSMutableAttributedString *ou
   return existing ? [existing mutableCopy] : [[NSMutableParagraphStyle alloc] init];
 }
 
+// For content blocks (paragraphs, headings) - applies paragraphSpacing to the content range
 void applyParagraphSpacing(NSMutableAttributedString *output, NSUInteger start, CGFloat marginBottom)
 {
   [output appendAttributedString:[[NSAttributedString alloc] initWithString:@"\n"]];
@@ -13,24 +14,22 @@ void applyParagraphSpacing(NSMutableAttributedString *output, NSUInteger start, 
   NSMutableParagraphStyle *style = getOrCreateParagraphStyle(output, start);
   style.paragraphSpacing = marginBottom;
 
-  // Set defaults only if lineHeight wasn't already applied
-  if (!style.lineHeightMultiple) {
-    style.lineSpacing = 0;
-    style.lineHeightMultiple = 1.0;
-  }
-
   NSRange range = NSMakeRange(start, output.length - start);
   [output addAttribute:NSParagraphStyleAttributeName value:style range:range];
 }
 
-void applyBlockquoteSpacing(NSMutableAttributedString *output, CGFloat marginBottom)
+// For container blocks (blockquotes, lists, code blocks) - isolated spacer that doesn't affect content styles
+void applyBlockSpacing(NSMutableAttributedString *output, CGFloat marginBottom)
 {
   NSUInteger spacerLocation = output.length;
   [output appendAttributedString:[[NSAttributedString alloc] initWithString:@"\n"]];
 
   NSMutableParagraphStyle *spacerStyle = [[NSMutableParagraphStyle alloc] init];
-  spacerStyle.minimumLineHeight = marginBottom;
-  spacerStyle.maximumLineHeight = marginBottom;
+  // Collapse the line height to minimal (the \n itself should be nearly invisible)
+  spacerStyle.minimumLineHeight = 1;
+  spacerStyle.maximumLineHeight = 1;
+  // Add the actual margin as space after the line
+  spacerStyle.paragraphSpacing = marginBottom;
 
   [output addAttribute:NSParagraphStyleAttributeName value:spacerStyle range:NSMakeRange(spacerLocation, 1)];
 }

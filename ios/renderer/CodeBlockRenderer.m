@@ -87,12 +87,7 @@
 
   // 5. EXTERNAL MARGIN: Outside the background
   if (marginBottom > 0) {
-    NSUInteger marginStart = output.length;
-    [output appendAttributedString:[[NSAttributedString alloc] initWithString:@"\n"]];
-    NSMutableParagraphStyle *marginStyle = [[NSMutableParagraphStyle alloc] init];
-    marginStyle.minimumLineHeight = marginBottom;
-    marginStyle.maximumLineHeight = marginBottom;
-    [output addAttribute:NSParagraphStyleAttributeName value:marginStyle range:NSMakeRange(marginStart, 1)];
+    applyBlockSpacing(output, marginBottom);
   }
 }
 

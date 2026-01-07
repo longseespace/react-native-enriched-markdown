@@ -88,7 +88,7 @@ static NSString *const kNestedInfoRangeKey = @"range";
   if (currentDepth == 0) {
     CGFloat marginBottom = [_config blockquoteMarginBottom];
     if (marginBottom > 0) {
-      applyBlockquoteSpacing(output, marginBottom);
+      applyBlockSpacing(output, marginBottom);
     }
   }
 }
