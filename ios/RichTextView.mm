@@ -941,11 +941,7 @@ Class<RCTComponentViewProtocol> RichTextViewCls(void)
 
 #pragma mark - UITextViewDelegate (Edit Menu)
 
-/**
- * Customizes the edit menu when text is selected.
- * Delegates to buildEditMenuForSelection() utility function.
- * iOS 16+ only.
- */
+// Customizes the edit menu
 - (UIMenu *)textView:(UITextView *)textView
     editMenuForTextInRange:(NSRange)range
           suggestedActions:(NSArray<UIMenuElement *> *)suggestedActions API_AVAILABLE(ios(16.0))
