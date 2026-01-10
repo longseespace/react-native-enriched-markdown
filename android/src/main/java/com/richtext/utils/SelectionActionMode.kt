@@ -8,15 +8,15 @@ import android.view.ActionMode
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.TextView
+import com.richtext.RichTextView
 import com.richtext.spans.ImageSpan
 
 private const val MENU_ITEM_COPY_MARKDOWN = 1000
 private const val MENU_ITEM_COPY_IMAGE_URL = 1001
 
 /**
- * Creates an ActionMode.Callback that adds custom copy options:
- * - "Copy Markdown" for selected text
- * - "Copy Image URL" for selected images
+ * Creates an ActionMode.Callback that adds custom copy options and
+ * overrides the default "Copy" action to include HTML for rich text support.
  */
 fun createSelectionActionModeCallback(textView: TextView): ActionMode.Callback =
   object : ActionMode.Callback {
@@ -34,12 +34,10 @@ fun createSelectionActionModeCallback(textView: TextView): ActionMode.Callback =
       menu.removeItem(MENU_ITEM_COPY_MARKDOWN)
       menu.removeItem(MENU_ITEM_COPY_IMAGE_URL)
 
-      // Add "Copy Markdown" if we have a selection
       if (textView.selectionStart >= 0 && textView.selectionEnd > textView.selectionStart) {
-        menu.add(Menu.NONE, MENU_ITEM_COPY_MARKDOWN, Menu.NONE, "Copy Markdown")
+        menu.add(Menu.NONE, MENU_ITEM_COPY_MARKDOWN, Menu.NONE, "Copy as Markdown")
       }
 
-      // Add "Copy Image URL" for remote images
       val imageUrls = textView.getImageUrlsInSelection()
       if (imageUrls.isNotEmpty()) {
         val title =
@@ -59,6 +57,12 @@ fun createSelectionActionModeCallback(textView: TextView): ActionMode.Callback =
       item: MenuItem?,
     ): Boolean {
       when (item?.itemId) {
+        android.R.id.copy -> {
+          textView.copyWithHTML()
+          mode?.finish()
+          return true
+        }
+
         MENU_ITEM_COPY_MARKDOWN -> {
           textView.copyMarkdownToClipboard()
           mode?.finish()
@@ -77,39 +81,51 @@ fun createSelectionActionModeCallback(textView: TextView): ActionMode.Callback =
     override fun onDestroyActionMode(mode: ActionMode?) {}
   }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Copy Markdown
-// ─────────────────────────────────────────────────────────────────────────────
+/** Copies selection as both plain text and HTML with inline styles. */
+private fun TextView.copyWithHTML() {
+  val start = selectionStart
+  val end = selectionEnd
+  if (start < 0 || end < 0 || start >= end) return
 
-/**
- * Copies markdown for the current selection to clipboard.
- * Uses MarkdownExtractor for the extraction logic.
- */
+  val spannable = text as? Spannable ?: return
+  val selectedText = spannable.subSequence(start, end)
+  val plainText = selectedText.toString()
+
+  val richTextView = this as? RichTextView
+  val styleConfig = richTextView?.richTextStyle
+  val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+
+  if (styleConfig != null && selectedText is Spannable) {
+    // Density values convert device pixels back to CSS pixels
+    val displayMetrics = context.resources.displayMetrics
+    val html =
+      HTMLGenerator.generateHTML(
+        selectedText as Spannable,
+        styleConfig,
+        displayMetrics.scaledDensity,
+        displayMetrics.density,
+      )
+    clipboard.setPrimaryClip(ClipData.newHtmlText("RichText", plainText, html))
+  } else {
+    clipboard.setPrimaryClip(ClipData.newPlainText("Text", plainText))
+  }
+}
+
 private fun TextView.copyMarkdownToClipboard() {
   val markdown = MarkdownExtractor.getMarkdownForSelection(this) ?: return
   val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-  val clip = ClipData.newPlainText("Markdown", markdown)
-  clipboard.setPrimaryClip(clip)
+  clipboard.setPrimaryClip(ClipData.newPlainText("Markdown", markdown))
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Copy Image URLs
-// ─────────────────────────────────────────────────────────────────────────────
-
-/**
- * Extracts remote image URLs from ImageSpans within the current selection.
- * Only includes http/https URLs, excludes local file paths.
- */
+/** Returns remote image URLs (http/https only) from the current selection. */
 private fun TextView.getImageUrlsInSelection(): List<String> {
   val start = selectionStart
   val end = selectionEnd
-
   if (start < 0 || end < 0 || start >= end) return emptyList()
 
   val spannable = text as? Spannable ?: return emptyList()
-  val imageSpans = spannable.getSpans(start, end, ImageSpan::class.java)
-
-  return imageSpans
+  return spannable
+    .getSpans(start, end, ImageSpan::class.java)
     .mapNotNull { it.imageUrl }
     .filter { it.startsWith("http://") || it.startsWith("https://") }
 }
@@ -118,8 +134,6 @@ private fun TextView.copyImageUrlsToClipboard() {
   val urls = getImageUrlsInSelection()
   if (urls.isEmpty()) return
 
-  val urlText = urls.joinToString("\n")
   val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-  val clip = ClipData.newPlainText("Image URLs", urlText)
-  clipboard.setPrimaryClip(clip)
+  clipboard.setPrimaryClip(ClipData.newPlainText("Image URLs", urls.joinToString("\n")))
 }

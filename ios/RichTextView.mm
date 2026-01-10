@@ -1,5 +1,6 @@
 #import "RichTextView.h"
 #import "AttributedRenderer.h"
+#import "EditMenuUtils.h"
 #import "FontUtils.h"
 #import "ImageAttachment.h"
 #import "MarkdownASTNode.h"
@@ -32,8 +33,6 @@ static const CGFloat kLabelPadding = 10.0;
 - (void)textTapped:(UITapGestureRecognizer *)recognizer;
 - (void)setupLayoutManager;
 - (MarkdownASTNode *)getOrParseAST:(NSString *)markdownString;
-- (NSArray<NSString *> *)imageURLsInRange:(NSRange)range;
-- (NSString *)markdownForRange:(NSRange)range;
 @end
 
 @implementation RichTextView {
@@ -43,6 +42,7 @@ static const CGFloat kLabelPadding = 10.0;
   RenderContext *_renderContext;
   MarkdownASTNode *_cachedAST;
   NSString *_cachedMarkdown;
+  StyleConfig *_config;
 }
 
 + (ComponentDescriptorProvider)componentDescriptorProvider
@@ -943,108 +943,14 @@ Class<RCTComponentViewProtocol> RichTextViewCls(void)
 
 /**
  * Customizes the edit menu when text is selected.
- * Adds "Copy Markdown" and "Copy Image URL" actions.
- *
- * NOTE: This delegate method is iOS 16+ only.
+ * Delegates to buildEditMenuForSelection() utility function.
+ * iOS 16+ only.
  */
 - (UIMenu *)textView:(UITextView *)textView
     editMenuForTextInRange:(NSRange)range
           suggestedActions:(NSArray<UIMenuElement *> *)suggestedActions API_AVAILABLE(ios(16.0))
 {
-  NSMutableArray *customActions = [NSMutableArray array];
-
-  // Add "Copy Markdown" option
-  NSString *markdown = [self markdownForRange:range];
-  if (markdown.length > 0) {
-    UIAction *copyMarkdownAction = [UIAction
-        actionWithTitle:@"Copy Markdown"
-                  image:[UIImage systemImageNamed:@"doc.text"]
-             identifier:@"com.richtext.copyMarkdown"
-                handler:^(__kindof UIAction *action) { [[UIPasteboard generalPasteboard] setString:markdown]; }];
-    [customActions addObject:copyMarkdownAction];
-  }
-
-  // Add "Copy Image URL" option for remote images
-  NSArray<NSString *> *imageURLs = [self imageURLsInRange:range];
-  if (imageURLs.count > 0) {
-    NSString *urlsToCopy = [imageURLs componentsJoinedByString:@"\n"];
-    NSString *title = imageURLs.count == 1
-                          ? @"Copy Image URL"
-                          : [NSString stringWithFormat:@"Copy %lu Image URLs", (unsigned long)imageURLs.count];
-
-    UIAction *copyURLAction = [UIAction
-        actionWithTitle:title
-                  image:[UIImage systemImageNamed:@"link"]
-             identifier:@"com.richtext.copyImageURL"
-                handler:^(__kindof UIAction *action) { [[UIPasteboard generalPasteboard] setString:urlsToCopy]; }];
-    [customActions addObject:copyURLAction];
-  }
-
-  if (customActions.count == 0) {
-    return [UIMenu menuWithChildren:suggestedActions];
-  }
-
-  return [UIMenu menuWithChildren:[suggestedActions arrayByAddingObjectsFromArray:customActions]];
-}
-
-/**
- * Hybrid approach for Copy Markdown:
- * - Full selection: Returns original markdown
- * - Partial selection: Reverse engineers markdown from attributed string
- */
-- (NSString *)markdownForRange:(NSRange)range
-{
-  if (!_cachedMarkdown || range.length == 0) {
-    return nil;
-  }
-
-  NSAttributedString *text = _textView.attributedText;
-  if (range.location >= text.length) {
-    return nil;
-  }
-
-  // Clamp range
-  range.length = MIN(range.length, text.length - range.location);
-
-  // Check if this is a full selection (entire document)
-  BOOL isFullSelection = (range.location == 0 && range.length >= text.length - 1);
-  if (isFullSelection) {
-    return _cachedMarkdown;
-  }
-
-  // Partial selection: extract markdown from attributes
-  return extractMarkdownFromAttributedString(text, range);
-}
-
-/// Extracts remote image URLs from ImageAttachments within the given range.
-/// Only includes http/https URLs, excludes local file paths.
-- (NSArray<NSString *> *)imageURLsInRange:(NSRange)range
-{
-  NSAttributedString *text = _textView.attributedText;
-
-  if (range.location == NSNotFound || range.length == 0 || range.location >= text.length) {
-    return @[];
-  }
-
-  // Clamp range to text bounds
-  range.length = MIN(range.length, text.length - range.location);
-
-  NSMutableArray<NSString *> *urls = [NSMutableArray array];
-
-  [text enumerateAttribute:NSAttachmentAttributeName
-                   inRange:range
-                   options:0
-                usingBlock:^(id value, NSRange r, BOOL *stop) {
-                  if ([value isKindOfClass:[ImageAttachment class]]) {
-                    NSString *url = ((ImageAttachment *)value).imageURL;
-                    // Only include remote URLs (http/https), skip local file paths
-                    if (url && ([url hasPrefix:@"http://"] || [url hasPrefix:@"https://"])) {
-                      [urls addObject:url];
-                    }
-                  }
-                }];
-
-  return urls;
+  return buildEditMenuForSelection(_textView.attributedText, range, _cachedMarkdown, _config, suggestedActions);
 }
 
 @end
