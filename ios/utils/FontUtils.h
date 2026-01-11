@@ -2,6 +2,7 @@
 #import <UIKit/UIKit.h>
 
 @class BlockStyle;
+@class RenderContext;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -9,16 +10,10 @@ NS_ASSUME_NONNULL_BEGIN
 extern "C" {
 #endif
 
-/**
- * Creates a UIFont from BlockStyle properties.
- * Uses RCTFont.updateFont to handle font family, size, and weight with proper fallbacks.
- */
-extern UIFont *fontFromBlockStyle(BlockStyle *blockStyle);
+/** Returns a cached UIFont from BlockStyle properties via RenderContext. */
+extern UIFont *cachedFontFromBlockStyle(BlockStyle *blockStyle, RenderContext *context);
 
-/**
- * Creates a UIFont from individual font properties.
- * Uses RCTFont.updateFont to handle font family, size, and weight with proper fallbacks.
- */
+/** Creates a UIFont from individual font properties (uncached). */
 extern UIFont *fontFromProperties(CGFloat fontSize, NSString *fontFamily, NSString *fontWeight);
 
 #ifdef __cplusplus

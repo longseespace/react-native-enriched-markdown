@@ -39,7 +39,8 @@
                              options:NSAttributedStringEnumerationLongestEffectiveRangeNotRequired
                           usingBlock:^(NSDictionary<NSAttributedStringKey, id> *attrs, NSRange subrange, BOOL *stop) {
                             // 1. Resolve Font
-                            UIFont *currentFont = attrs[NSFontAttributeName] ?: fontFromBlockStyle(blockStyle);
+                            UIFont *currentFont =
+                                attrs[NSFontAttributeName] ?: cachedFontFromBlockStyle(blockStyle, context);
 
                             // Optimization: Only apply bold if not already bold
                             if (!([currentFont.fontDescriptor symbolicTraits] & UIFontDescriptorTraitBold)) {

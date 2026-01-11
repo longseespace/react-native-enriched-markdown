@@ -44,7 +44,8 @@
                          options:NSAttributedStringEnumerationLongestEffectiveRangeNotRequired
                       usingBlock:^(NSDictionary<NSAttributedStringKey, id> *attrs, NSRange subrange, BOOL *stop) {
                         // 1. Font Optimization: Only apply italic trait if not already present
-                        UIFont *currentFont = attrs[NSFontAttributeName] ?: fontFromBlockStyle(blockStyle);
+                        UIFont *currentFont =
+                            attrs[NSFontAttributeName] ?: cachedFontFromBlockStyle(blockStyle, context);
                         if (currentFont && !(currentFont.fontDescriptor.symbolicTraits & UIFontDescriptorTraitItalic)) {
                           UIFont *italicFont = [self ensureFontIsItalic:currentFont];
                           if (italicFont) {

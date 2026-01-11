@@ -28,7 +28,7 @@
 
   UIColor *codeColor = _config.codeColor;
 
-  UIFont *blockFont = fontFromBlockStyle(blockStyle);
+  UIFont *blockFont = cachedFontFromBlockStyle(blockStyle, context);
   CGFloat codeFontSize = blockStyle.fontSize * 0.85;
 
   UIFontDescriptorSymbolicTraits traits = blockFont.fontDescriptor.symbolicTraits;

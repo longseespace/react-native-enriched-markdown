@@ -1,21 +1,49 @@
 #import "RenderContext.h"
 #import "CodeBackground.h"
+#import <React/RCTFont.h>
 
 @implementation BlockStyle
 @end
 
-@implementation RenderContext
+@implementation RenderContext {
+  NSMutableDictionary<NSString *, UIFont *> *_fontCache;
+}
 
 - (instancetype)init
 {
   if (self = [super init]) {
     _linkRanges = [NSMutableArray array];
     _linkURLs = [NSMutableArray array];
-    // Pre-allocate the style object to be reused throughout the session to prevent churn
+    _fontCache = [NSMutableDictionary dictionary];
     _currentBlockStyle = [[BlockStyle alloc] init];
     [self reset];
   }
   return self;
+}
+
+#pragma mark - Font Cache
+
+- (UIFont *)cachedFontForSize:(CGFloat)fontSize family:(NSString *)fontFamily weight:(NSString *)fontWeight
+{
+  NSString *key = [NSString stringWithFormat:@"%.1f|%@|%@", fontSize, fontFamily ?: @"", fontWeight ?: @"normal"];
+
+  UIFont *cached = _fontCache[key];
+  if (cached) {
+    return cached;
+  }
+
+  UIFont *font = [RCTFont updateFont:nil
+                          withFamily:fontFamily.length > 0 ? fontFamily : nil
+                                size:@(fontSize)
+                              weight:fontWeight ?: @"normal"
+                               style:nil
+                             variant:nil
+                     scaleMultiplier:1];
+
+  if (font) {
+    _fontCache[key] = font;
+  }
+  return font;
 }
 
 #pragma mark - Link Registry

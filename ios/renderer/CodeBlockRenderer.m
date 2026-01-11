@@ -56,7 +56,7 @@
   NSRange contentRange = NSMakeRange(contentStart, contentEnd - contentStart);
 
   // 3. CONTENT STYLING
-  UIFont *codeFont = fontFromBlockStyle([context getBlockStyle]);
+  UIFont *codeFont = cachedFontFromBlockStyle([context getBlockStyle], context);
   [output addAttribute:NSFontAttributeName value:codeFont range:contentRange];
   if ([_config codeBlockColor]) {
     [output addAttribute:NSForegroundColorAttributeName value:[_config codeBlockColor] range:contentRange];

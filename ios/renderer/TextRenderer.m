@@ -1,5 +1,6 @@
 #import "TextRenderer.h"
 #import "FontUtils.h"
+#import "RenderContext.h"
 
 @implementation TextRenderer
 
@@ -9,7 +10,7 @@
     return;
 
   BlockStyle *blockStyle = [context getBlockStyle];
-  UIFont *textFont = fontFromBlockStyle(blockStyle);
+  UIFont *textFont = cachedFontFromBlockStyle(blockStyle, context);
   UIColor *textColor = blockStyle.color;
 
   NSAttributedString *text = [[NSAttributedString alloc]
