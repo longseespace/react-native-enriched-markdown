@@ -48,7 +48,7 @@ class InlineCodeBackgroundSpan(
 
     val spanStart = text.getSpanStart(this)
     val spanEnd = text.getSpanEnd(this)
-    if (spanStart < 0 || spanEnd <= spanStart) return
+    if (spanStart !in 0 until spanEnd) return
 
     // 1. Determine relative positioning
     val isFirst = spanStart >= start
@@ -88,7 +88,6 @@ class InlineCodeBackgroundSpan(
     isFirst: Boolean,
     isLast: Boolean,
   ) {
-    val r = CORNER_RADIUS
     val radii = createRadii(isFirst, isLast)
 
     path.reset()
