@@ -1,6 +1,5 @@
 #import "CodeBlockRenderer.h"
 #import "CodeBlockBackground.h"
-#import "FontUtils.h"
 #import "MarkdownASTNode.h"
 #import "ParagraphStyleUtils.h"
 #import "RenderContext.h"
@@ -54,7 +53,7 @@
   NSRange contentRange = NSMakeRange(contentStart, contentEnd - contentStart);
 
   // 3. CONTENT STYLING
-  UIFont *codeFont = cachedFontFromBlockStyle([context getBlockStyle], context);
+  UIFont *codeFont = [_config codeBlockFont];
   UIColor *codeColor = [_config codeBlockColor];
   if (codeColor) {
     [output addAttributes:@{NSFontAttributeName : codeFont, NSForegroundColorAttributeName : codeColor}

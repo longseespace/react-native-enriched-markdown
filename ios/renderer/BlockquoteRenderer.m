@@ -29,10 +29,9 @@ static NSString *const kNestedInfoRangeKey = @"range";
   context.blockquoteDepth = currentDepth + 1;
 
   [context setBlockStyle:BlockTypeBlockquote
-                fontSize:[_config blockquoteFontSize]
-              fontFamily:[_config blockquoteFontFamily]
-              fontWeight:[_config blockquoteFontWeight]
-                   color:[_config blockquoteColor]];
+                    font:[_config blockquoteFont]
+                   color:[_config blockquoteColor]
+            headingLevel:0];
 
   NSUInteger start = output.length;
   @try {

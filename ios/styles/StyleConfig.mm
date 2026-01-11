@@ -126,6 +126,10 @@
   CGFloat _codeBlockBorderRadius;
   CGFloat _codeBlockBorderWidth;
   CGFloat _codeBlockPadding;
+  UIFont *_codeBlockFont;
+  BOOL _codeBlockFontNeedsRecreation;
+  UIFont *_blockquoteFont;
+  BOOL _blockquoteFontNeedsRecreation;
 }
 
 - (instancetype)init
@@ -139,6 +143,8 @@
   _h5FontNeedsRecreation = YES;
   _h6FontNeedsRecreation = YES;
   _listMarkerFontNeedsRecreation = YES;
+  _codeBlockFontNeedsRecreation = YES;
+  _blockquoteFontNeedsRecreation = YES;
   _linkUnderline = YES;
   return self;
 }
@@ -244,6 +250,8 @@
   copy->_codeBlockBorderRadius = _codeBlockBorderRadius;
   copy->_codeBlockBorderWidth = _codeBlockBorderWidth;
   copy->_codeBlockPadding = _codeBlockPadding;
+  copy->_codeBlockFontNeedsRecreation = YES;
+  copy->_blockquoteFontNeedsRecreation = YES;
 
   return copy;
 }
@@ -954,6 +962,7 @@
 - (void)setBlockquoteFontSize:(CGFloat)newValue
 {
   _blockquoteFontSize = newValue;
+  _blockquoteFontNeedsRecreation = YES;
 }
 
 - (NSString *)blockquoteFontFamily
@@ -964,6 +973,7 @@
 - (void)setBlockquoteFontFamily:(NSString *)newValue
 {
   _blockquoteFontFamily = newValue;
+  _blockquoteFontNeedsRecreation = YES;
 }
 
 - (NSString *)blockquoteFontWeight
@@ -974,6 +984,7 @@
 - (void)setBlockquoteFontWeight:(NSString *)newValue
 {
   _blockquoteFontWeight = newValue;
+  _blockquoteFontNeedsRecreation = YES;
 }
 
 - (UIColor *)blockquoteColor
@@ -1014,6 +1025,21 @@
 - (void)setBlockquoteLineHeight:(CGFloat)newValue
 {
   _blockquoteLineHeight = newValue;
+}
+
+- (UIFont *)blockquoteFont
+{
+  if (_blockquoteFontNeedsRecreation || !_blockquoteFont) {
+    _blockquoteFont = [RCTFont updateFont:nil
+                               withFamily:_blockquoteFontFamily.length > 0 ? _blockquoteFontFamily : nil
+                                     size:@(_blockquoteFontSize)
+                                   weight:_blockquoteFontWeight ?: @"normal"
+                                    style:nil
+                                  variant:nil
+                          scaleMultiplier:1];
+    _blockquoteFontNeedsRecreation = NO;
+  }
+  return _blockquoteFont;
 }
 
 - (UIColor *)blockquoteBorderColor
@@ -1204,6 +1230,7 @@
 - (void)setCodeBlockFontSize:(CGFloat)newValue
 {
   _codeBlockFontSize = newValue;
+  _codeBlockFontNeedsRecreation = YES;
 }
 
 - (NSString *)codeBlockFontFamily
@@ -1214,6 +1241,7 @@
 - (void)setCodeBlockFontFamily:(NSString *)newValue
 {
   _codeBlockFontFamily = newValue;
+  _codeBlockFontNeedsRecreation = YES;
 }
 
 - (NSString *)codeBlockFontWeight
@@ -1224,6 +1252,7 @@
 - (void)setCodeBlockFontWeight:(NSString *)newValue
 {
   _codeBlockFontWeight = newValue;
+  _codeBlockFontNeedsRecreation = YES;
 }
 
 - (UIColor *)codeBlockColor
@@ -1304,6 +1333,21 @@
 - (void)setCodeBlockPadding:(CGFloat)newValue
 {
   _codeBlockPadding = newValue;
+}
+
+- (UIFont *)codeBlockFont
+{
+  if (_codeBlockFontNeedsRecreation || !_codeBlockFont) {
+    _codeBlockFont = [RCTFont updateFont:nil
+                              withFamily:_codeBlockFontFamily.length > 0 ? _codeBlockFontFamily : nil
+                                    size:@(_codeBlockFontSize)
+                                  weight:_codeBlockFontWeight ?: @"normal"
+                                   style:nil
+                                 variant:nil
+                         scaleMultiplier:1];
+    _codeBlockFontNeedsRecreation = NO;
+  }
+  return _codeBlockFont;
 }
 
 @end

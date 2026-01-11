@@ -153,6 +153,7 @@
 - (void)setBlockquoteNestedMarginBottom:(CGFloat)newValue;
 - (CGFloat)blockquoteLineHeight;
 - (void)setBlockquoteLineHeight:(CGFloat)newValue;
+- (UIFont *)blockquoteFont;
 - (UIColor *)blockquoteBorderColor;
 - (void)setBlockquoteBorderColor:(UIColor *)newValue;
 - (CGFloat)blockquoteBorderWidth;
@@ -210,5 +211,6 @@
 - (void)setCodeBlockBorderWidth:(CGFloat)newValue;
 - (CGFloat)codeBlockPadding;
 - (void)setCodeBlockPadding:(CGFloat)newValue;
+- (UIFont *)codeBlockFont;
 
 @end
