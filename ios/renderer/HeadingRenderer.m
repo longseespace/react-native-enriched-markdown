@@ -59,7 +59,7 @@ typedef struct {
   if (range.length == 0)
     return;
 
-  // Mark text as heading for Copy Markdown reverse engineering
+  // Mark as heading for HTML generation and Copy as Markdown
   NSString *headingType = [NSString stringWithFormat:@"heading-%ld", (long)level];
   [output addAttribute:MarkdownTypeAttributeName value:headingType range:range];
 
