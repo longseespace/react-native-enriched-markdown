@@ -7,14 +7,7 @@ NS_ASSUME_NONNULL_BEGIN
 extern "C" {
 #endif
 
-/**
- * Extracts markdown from an attributed string.
- * Best-effort reconstruction - may not match original exactly.
- *
- * @param attributedText The attributed string to convert
- * @param range The range within the attributed string
- * @return Markdown string representation
- */
+/// Extracts markdown from an attributed string (best-effort reconstruction).
 NSString *_Nullable extractMarkdownFromAttributedString(NSAttributedString *attributedText, NSRange range);
 
 #ifdef __cplusplus

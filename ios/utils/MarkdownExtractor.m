@@ -6,20 +6,14 @@
 
 #pragma mark - Extraction Context
 
-/**
- * Holds state during markdown extraction to avoid many __block variables.
- */
 typedef struct {
   NSInteger blockquoteDepth; // -1 = not in blockquote
   NSInteger listDepth;       // -1 = not in list
-  BOOL needsBlankLine;       // True after block elements (heading, image, code block)
+  BOOL needsBlankLine;
 } ExtractionState;
 
 #pragma mark - Helper Functions
 
-/**
- * Ensures exactly one blank line at the end of result (for block separation).
- */
 static void ensureBlankLine(NSMutableString *result)
 {
   if (result.length == 0)
@@ -30,18 +24,12 @@ static void ensureBlankLine(NSMutableString *result)
   [result appendString:[result hasSuffix:@"\n"] ? @"\n" : @"\n\n"];
 }
 
-/**
- * Checks if result is at a line start (empty or ends with newline).
- */
 static BOOL isAtLineStart(NSMutableString *result)
 {
   return result.length == 0 || [result hasSuffix:@"\n"];
 }
 
-/**
- * Builds blockquote prefix string for given depth.
- * Depth 0 = "> ", Depth 1 = "> > ", etc.
- */
+/// Depth 0 = "> ", Depth 1 = "> > ", etc.
 static NSString *buildBlockquotePrefix(NSInteger depth)
 {
   NSMutableString *prefix = [NSMutableString string];
@@ -51,9 +39,6 @@ static NSString *buildBlockquotePrefix(NSInteger depth)
   return prefix;
 }
 
-/**
- * Builds list item prefix with indentation and marker.
- */
 static NSString *buildListPrefix(NSInteger depth, BOOL isOrdered, NSInteger itemNumber)
 {
   NSString *indent = [@"" stringByPaddingToLength:(depth * 2) withString:@" " startingAtIndex:0];
@@ -61,17 +46,11 @@ static NSString *buildListPrefix(NSInteger depth, BOOL isOrdered, NSInteger item
   return [NSString stringWithFormat:@"%@%@ ", indent, marker];
 }
 
-/**
- * Builds heading prefix (e.g., "## " for level 2).
- */
 static NSString *buildHeadingPrefix(NSInteger level)
 {
   return [NSString stringWithFormat:@"%@ ", [@"" stringByPaddingToLength:level withString:@"#" startingAtIndex:0]];
 }
 
-/**
- * Extracts font traits from attributes.
- */
 static void extractFontTraits(NSDictionary *attrs, BOOL *isBold, BOOL *isItalic, BOOL *isMonospace)
 {
   UIFont *font = attrs[NSFontAttributeName];
@@ -87,14 +66,11 @@ static void extractFontTraits(NSDictionary *attrs, BOOL *isBold, BOOL *isItalic,
   }
 }
 
-/**
- * Applies inline markdown formatting (bold, italic, code, link) to text.
- */
 static NSString *applyInlineFormatting(NSString *text, BOOL isBold, BOOL isItalic, BOOL isMonospace, NSString *linkURL)
 {
   NSMutableString *result = [NSMutableString stringWithString:text];
 
-  // Apply innermost formatting first
+  // Innermost first
   if (isMonospace && !linkURL) {
     result = [NSMutableString stringWithFormat:@"`%@`", result];
   }
@@ -113,33 +89,21 @@ static NSString *applyInlineFormatting(NSString *text, BOOL isBold, BOOL isItali
 
 #pragma mark - Main Extraction Function
 
-/**
- * Extracts markdown from attributed string attributes within a given range.
- * Best-effort reconstruction - may not match original exactly.
- *
- * Supports: headings, bold, italic, links, images, inline code,
- * code blocks, blockquotes, and lists.
- */
 NSString *_Nullable extractMarkdownFromAttributedString(NSAttributedString *attributedText, NSRange range)
 {
-  // Validate input
   if (!attributedText || range.length == 0 || range.location >= attributedText.length) {
     return nil;
   }
 
-  // Clamp range to valid bounds
   range.length = MIN(range.length, attributedText.length - range.location);
 
   NSMutableString *result = [NSMutableString string];
 
-  // Heading accumulator (headings may span multiple attribute runs)
+  // Headings may span multiple attribute runs
   __block NSString *currentHeadingType = nil;
   __block NSMutableString *headingContent = nil;
-
-  // Extraction state
   __block ExtractionState state = {.blockquoteDepth = -1, .listDepth = -1, .needsBlankLine = NO};
 
-  // Helper to flush accumulated heading content
   void (^flushHeading)(void) = ^{
     if (!currentHeadingType || headingContent.length == 0)
       return;
@@ -153,7 +117,6 @@ NSString *_Nullable extractMarkdownFromAttributedString(NSAttributedString *attr
     state.needsBlankLine = YES;
   };
 
-  // Process each attribute run
   [attributedText
       enumerateAttributesInRange:range
                          options:0
@@ -162,9 +125,7 @@ NSString *_Nullable extractMarkdownFromAttributedString(NSAttributedString *attr
                         if (text.length == 0)
                           return;
 
-                        // ─────────────────────────────────────────────────────────────────────────
-                        // IMAGES
-                        // ─────────────────────────────────────────────────────────────────────────
+                        // Images
                         NSTextAttachment *attachment = attrs[NSAttachmentAttributeName];
                         if ([attachment isKindOfClass:[ImageAttachment class]]) {
                           ImageAttachment *img = (ImageAttachment *)attachment;
@@ -172,10 +133,8 @@ NSString *_Nullable extractMarkdownFromAttributedString(NSAttributedString *attr
                             return;
 
                           if (img.isInline) {
-                            // Inline: no spacing, stays with surrounding text
                             [result appendFormat:@"![image](%@)", img.imageURL];
                           } else {
-                            // Block: ensure spacing around it
                             ensureBlankLine(result);
                             [result appendFormat:@"![image](%@)\n", img.imageURL];
                             state.needsBlankLine = YES;
@@ -185,34 +144,28 @@ NSString *_Nullable extractMarkdownFromAttributedString(NSAttributedString *attr
                           return;
                         }
 
-                        // Skip object replacement character (placeholder for attachments)
                         if ([text isEqualToString:@"\uFFFC"])
                           return;
 
-                        // ─────────────────────────────────────────────────────────────────────────
-                        // NEWLINES (paragraph breaks)
-                        // ─────────────────────────────────────────────────────────────────────────
+                        // Newlines
                         if ([text isEqualToString:@"\n"] || [text isEqualToString:@"\n\n"]) {
                           NSNumber *bqDepth = attrs[RichTextBlockquoteDepthAttributeName];
                           NSNumber *listDepth = attrs[@"ListDepth"];
                           BOOL inBlockquote = (bqDepth != nil);
                           BOOL inList = (listDepth != nil);
 
-                          // Exiting blockquote → blank line between blocks
                           if (!inBlockquote && state.blockquoteDepth >= 0) {
                             ensureBlankLine(result);
                             state.blockquoteDepth = -1;
                             return;
                           }
 
-                          // Exiting list → blank line between blocks
                           if (!inList && state.listDepth >= 0) {
                             ensureBlankLine(result);
                             state.listDepth = -1;
                             return;
                           }
 
-                          // Inside blockquote or list → single newline (prefix added on next line)
                           if (inBlockquote || inList) {
                             if (![result hasSuffix:@"\n"]) {
                               [result appendString:@"\n"];
@@ -220,35 +173,27 @@ NSString *_Nullable extractMarkdownFromAttributedString(NSAttributedString *attr
                             return;
                           }
 
-                          // Outside blocks → blank line for paragraph separation
                           ensureBlankLine(result);
                           return;
                         }
 
-                        // ─────────────────────────────────────────────────────────────────────────
-                        // HEADINGS
-                        // ─────────────────────────────────────────────────────────────────────────
+                        // Headings
                         NSString *markdownType = attrs[MarkdownTypeAttributeName];
 
                         if (markdownType && [markdownType hasPrefix:@"heading-"]) {
-                          // Starting a new heading or continuing current one
                           if (![markdownType isEqualToString:currentHeadingType]) {
                             flushHeading();
                             currentHeadingType = markdownType;
                             headingContent = [NSMutableString string];
                           }
-                          // Accumulate content (strip trailing newlines)
                           [headingContent
                               appendString:[text stringByTrimmingCharactersInSet:[NSCharacterSet newlineCharacterSet]]];
                           return;
                         } else if (currentHeadingType) {
-                          // Exiting heading → flush it
                           flushHeading();
                         }
 
-                        // ─────────────────────────────────────────────────────────────────────────
-                        // CODE BLOCKS
-                        // ─────────────────────────────────────────────────────────────────────────
+                        // Code blocks
                         NSNumber *isCodeBlock = attrs[CodeBlockAttributeName];
                         if ([isCodeBlock boolValue]) {
                           if (state.needsBlankLine) {
@@ -270,9 +215,7 @@ NSString *_Nullable extractMarkdownFromAttributedString(NSAttributedString *attr
                           return;
                         }
 
-                        // ─────────────────────────────────────────────────────────────────────────
-                        // BLOCKQUOTES - detect and track depth
-                        // ─────────────────────────────────────────────────────────────────────────
+                        // Blockquotes
                         NSNumber *bqDepthNum = attrs[RichTextBlockquoteDepthAttributeName];
                         NSInteger currentBqDepth = bqDepthNum ? [bqDepthNum integerValue] : -1;
                         NSString *blockquotePrefix = nil;
@@ -281,14 +224,11 @@ NSString *_Nullable extractMarkdownFromAttributedString(NSAttributedString *attr
                           blockquotePrefix = buildBlockquotePrefix(currentBqDepth);
                           state.blockquoteDepth = currentBqDepth;
                         } else if (state.blockquoteDepth >= 0) {
-                          // Exiting blockquote
                           ensureBlankLine(result);
                           state.blockquoteDepth = -1;
                         }
 
-                        // ─────────────────────────────────────────────────────────────────────────
-                        // LISTS - detect and track depth
-                        // ─────────────────────────────────────────────────────────────────────────
+                        // Lists
                         NSNumber *listDepthNum = attrs[@"ListDepth"];
                         NSNumber *listTypeNum = attrs[@"ListType"];
                         NSNumber *listItemNum = attrs[@"ListItemNumber"];
@@ -297,34 +237,27 @@ NSString *_Nullable extractMarkdownFromAttributedString(NSAttributedString *attr
                         if (currentListDepth >= 0) {
                           state.listDepth = currentListDepth;
                         } else if (state.listDepth >= 0) {
-                          // Exiting list
                           ensureBlankLine(result);
                           state.listDepth = -1;
                         }
 
-                        // ─────────────────────────────────────────────────────────────────────────
-                        // BUILD SEGMENT WITH INLINE FORMATTING
-                        // ─────────────────────────────────────────────────────────────────────────
+                        // Inline formatting
                         BOOL isBold, isItalic, isMonospace;
                         extractFontTraits(attrs, &isBold, &isItalic, &isMonospace);
 
                         NSString *linkURL = attrs[NSLinkAttributeName];
                         NSString *segment = applyInlineFormatting(text, isBold, isItalic, isMonospace, linkURL);
 
-                        // ─────────────────────────────────────────────────────────────────────────
-                        // ADD BLOCK PREFIXES (list markers, blockquote ">")
-                        // ─────────────────────────────────────────────────────────────────────────
+                        // Add block prefixes at line start
                         if (isAtLineStart(result)) {
                           NSMutableString *prefixedSegment = [NSMutableString string];
 
-                          // List prefix
                           if (listDepthNum && ![text hasPrefix:@"\n"]) {
                             BOOL isOrdered = ([listTypeNum integerValue] == 1);
                             NSInteger itemNumber = listItemNum ? [listItemNum integerValue] : 1;
                             [prefixedSegment appendString:buildListPrefix(currentListDepth, isOrdered, itemNumber)];
                           }
 
-                          // Blockquote prefix
                           if (blockquotePrefix) {
                             [prefixedSegment insertString:blockquotePrefix atIndex:0];
                           }
@@ -333,9 +266,6 @@ NSString *_Nullable extractMarkdownFromAttributedString(NSAttributedString *attr
                           segment = prefixedSegment;
                         }
 
-                        // ─────────────────────────────────────────────────────────────────────────
-                        // APPEND SEGMENT TO RESULT
-                        // ─────────────────────────────────────────────────────────────────────────
                         if (state.needsBlankLine && result.length > 0) {
                           ensureBlankLine(result);
                           state.needsBlankLine = NO;
@@ -344,7 +274,7 @@ NSString *_Nullable extractMarkdownFromAttributedString(NSAttributedString *attr
                         [result appendString:segment];
                       }];
 
-  // Flush any remaining heading at end of selection
+  // Flush remaining heading
   if (currentHeadingType && headingContent.length > 0) {
     ensureBlankLine(result);
     NSInteger level = [[currentHeadingType substringFromIndex:8] integerValue];

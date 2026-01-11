@@ -10,10 +10,7 @@ NS_ASSUME_NONNULL_BEGIN
 extern "C" {
 #endif
 
-/**
- * Generates semantic HTML from NSAttributedString with inline styles.
- * Produces clean HTML that works in email clients without external stylesheets.
- */
+/// Generates semantic HTML with inline styles (email-client compatible).
 NSString *_Nullable generateHTML(NSAttributedString *attributedString, StyleConfig *styleConfig);
 
 #ifdef __cplusplus

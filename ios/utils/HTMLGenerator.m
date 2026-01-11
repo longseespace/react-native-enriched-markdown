@@ -419,7 +419,6 @@ static void generateInlineHTML(NSMutableString *html, NSAttributedString *attrib
                         if ([text isEqualToString:@"\n"])
                           return;
 
-                        // Handle image attachments
                         if ([text containsString:kObjectReplacementChar]) {
                           id attachment = attrs[NSAttachmentAttributeName];
                           if ([attachment isKindOfClass:[ImageAttachment class]]) {
@@ -454,7 +453,6 @@ static void generateInlineHTML(NSMutableString *html, NSAttributedString *attrib
                           isItalic = (traits & UIFontDescriptorTraitItalic) != 0;
                         }
 
-                        // Opening tags
                         if (linkAttr) {
                           NSString *href =
                               [linkAttr isKindOfClass:[NSURL class]] ? [(NSURL *)linkAttr absoluteString] : linkAttr;
@@ -495,7 +493,7 @@ static void generateInlineHTML(NSMutableString *html, NSAttributedString *attrib
 
                         [html appendString:escapeHTML(text)];
 
-                        // Closing tags (reverse order)
+                        // Reverse order
                         if ([underline integerValue] > 0 && !linkAttr)
                           [html appendString:@"</u>"];
                         if ([strikethrough integerValue] > 0)
@@ -537,7 +535,7 @@ static void handleBlockquote(NSMutableString *html, ParagraphData *para, NSMutab
 {
   NSInteger depth = para->depth;
 
-  // Start fresh if this is a new blockquote block
+  // Reset if starting a new blockquote block
   if (!state.previousWasBlockquote && state.inBlockquote) {
     closeBlockquotes(html, state);
   }
@@ -586,7 +584,7 @@ static void handleListItem(NSMutableString *html, ParagraphData *para, NSMutable
     state.currentListDepth--;
   }
 
-  // Handle list type change at same depth
+  // List type change at same depth (ul <-> ol)
   if (state.currentListDepth == depth && state.openListTypes.count > 0) {
     NSInteger currentType = [state.openListTypes.lastObject integerValue];
     if (currentType != listTypeValue) {
