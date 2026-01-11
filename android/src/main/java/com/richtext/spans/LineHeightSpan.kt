@@ -1,6 +1,8 @@
 package com.richtext.spans
 
 import android.graphics.Paint
+import kotlin.math.ceil
+import kotlin.math.roundToInt
 import android.text.style.LineHeightSpan as AndroidLineHeightSpan
 
 /**
@@ -20,7 +22,7 @@ class LineHeightSpan(
   ) {
     if (fm == null) return
 
-    val targetHeight = Math.ceil(this.lineHeight.toDouble()).toInt()
+    val targetHeight = ceil(this.lineHeight.toDouble()).toInt()
     val originHeight = fm.descent - fm.ascent
 
     if (originHeight <= 0) {
@@ -28,7 +30,7 @@ class LineHeightSpan(
     }
 
     val ratio = targetHeight.toFloat() / originHeight
-    fm.descent = Math.round(fm.descent * ratio)
+    fm.descent = (fm.descent * ratio).roundToInt()
     fm.ascent = fm.descent - targetHeight
   }
 }
