@@ -99,7 +99,7 @@ abstract class BaseListSpan(
         getStrongColor()?.takeIf { it != 0 }?.let { add(it) }
         getEmphasisColor()?.takeIf { it != 0 }?.let { add(it) }
         getLinkColor().takeIf { it != 0 }?.let { add(it) }
-        getCodeStyle()?.color?.takeIf { it != 0 }?.let { add(it) }
+        getCodeStyle().color.takeIf { it != 0 }?.let { add(it) }
       }
     }
 
