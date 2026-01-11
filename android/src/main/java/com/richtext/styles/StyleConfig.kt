@@ -9,7 +9,7 @@ import com.facebook.react.bridge.ReadableMap
  */
 class StyleConfig(
   style: ReadableMap,
-  private val context: Context,
+  context: Context,
 ) {
   private lateinit var paragraphStyle: ParagraphStyle
   private val headingStyles = arrayOfNulls<HeadingStyle>(7)
