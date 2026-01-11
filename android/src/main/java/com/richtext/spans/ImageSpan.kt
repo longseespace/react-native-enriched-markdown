@@ -7,7 +7,9 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.drawable.Drawable
+import android.os.Build
 import android.text.Spannable
+import android.util.Log
 import androidx.core.graphics.drawable.toDrawable
 import androidx.core.graphics.withSave
 import com.richtext.RichTextView
@@ -22,11 +24,15 @@ import android.text.style.LineHeightSpan as AndroidLineHeightSpan
  * Handles both inline and block images with async loading support.
  */
 class ImageSpan(
-  private val context: Context,
+  context: Context,
   val imageUrl: String,
-  private val style: StyleConfig,
+  style: StyleConfig,
   val isInline: Boolean = false,
-) : AndroidImageSpan(createInitialDrawable(context, style, imageUrl, isInline), imageUrl, ALIGN_CENTER),
+) : AndroidImageSpan(
+    createInitialDrawable(style, imageUrl, isInline),
+    imageUrl,
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) ALIGN_CENTER else ALIGN_BASELINE,
+  ),
   AndroidLineHeightSpan {
   private var loadedDrawable: Drawable? = null
   private val imageStyle = style.getImageStyle()
@@ -188,7 +194,7 @@ class ImageSpan(
     private val targetWidth: Int,
     private val targetHeight: Int,
     private val borderRadius: Int,
-    private val isBlockImage: Boolean,
+    isBlockImage: Boolean,
   ) : Drawable() {
     private val clipPath: Path? =
       if (borderRadius > 0) {
@@ -249,6 +255,8 @@ class ImageSpan(
       imageDrawable.colorFilter = cf
     }
 
+    @Suppress("DEPRECATION")
+    @Deprecated("Deprecated in Java")
     override fun getOpacity(): Int = imageDrawable.opacity
 
     override fun getIntrinsicWidth(): Int = targetWidth
@@ -262,7 +270,6 @@ class ImageSpan(
     private fun calculateInlineImageSize(style: StyleConfig): Int = style.getInlineImageStyle().size.toInt()
 
     private fun createInitialDrawable(
-      context: Context,
       style: StyleConfig,
       url: String,
       isInline: Boolean,
@@ -270,11 +277,10 @@ class ImageSpan(
       val imgStyle = style.getImageStyle()
       val size = if (isInline) calculateInlineImageSize(style) else imgStyle.height.toInt()
 
-      return prepareDrawable(context, url, size, size) ?: PlaceholderDrawable(size, size)
+      return prepareDrawable(url, size, size) ?: PlaceholderDrawable(size, size)
     }
 
     private fun prepareDrawable(
-      context: Context,
       src: String,
       tw: Int,
       th: Int,
@@ -288,6 +294,7 @@ class ImageSpan(
           setBounds(0, 0, intrinsicWidth, intrinsicHeight)
         }
       } catch (e: Exception) {
+        Log.w("ImageSpan", "Failed to load local image: $path", e)
         null
       }
     }
