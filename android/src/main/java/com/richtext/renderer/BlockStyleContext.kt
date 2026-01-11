@@ -80,8 +80,6 @@ class BlockStyleContext {
   // List State Management
   fun isInsideBlockElement(): Boolean = blockquoteDepth > 0 || listDepth > 0
 
-  fun isInOrderedList(): Boolean = listType == ListType.ORDERED
-
   fun incrementListItemNumber() {
     listItemNumber++
   }
@@ -114,8 +112,6 @@ class BlockStyleContext {
     listItemNumber = 0
     orderedListItemNumbers.clear()
   }
-
-  fun getBlockStyle(): BlockStyle? = currentBlockStyle
 
   fun requireBlockStyle(): BlockStyle =
     currentBlockStyle ?: throw IllegalStateException(
