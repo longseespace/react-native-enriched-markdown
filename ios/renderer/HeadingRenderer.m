@@ -14,6 +14,10 @@ typedef struct {
   CGFloat lineHeight;
 } HeadingStyle;
 
+// Static heading type strings (index 0 unused, 1-6 for h1-h6)
+static NSString *const kHeadingTypes[] = {nil,          @"heading-1", @"heading-2", @"heading-3",
+                                          @"heading-4", @"heading-5", @"heading-6"};
+
 @implementation HeadingRenderer {
   RendererFactory *_rendererFactory;
   StyleConfig *_config;
@@ -53,8 +57,7 @@ typedef struct {
     return;
 
   // Mark as heading for HTML generation and Copy as Markdown
-  NSString *headingType = [NSString stringWithFormat:@"heading-%ld", (long)level];
-  [output addAttribute:MarkdownTypeAttributeName value:headingType range:range];
+  [output addAttribute:MarkdownTypeAttributeName value:kHeadingTypes[level] range:range];
 
   applyLineHeight(output, range, style.lineHeight);
   applyParagraphSpacing(output, start, style.marginBottom);
