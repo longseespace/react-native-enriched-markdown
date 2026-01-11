@@ -39,6 +39,7 @@
 - (void)setH1MarginBottom:(CGFloat)newValue;
 - (CGFloat)h1LineHeight;
 - (void)setH1LineHeight:(CGFloat)newValue;
+- (UIFont *)h1Font;
 // H2 properties
 - (CGFloat)h2FontSize;
 - (void)setH2FontSize:(CGFloat)newValue;
@@ -52,6 +53,7 @@
 - (void)setH2MarginBottom:(CGFloat)newValue;
 - (CGFloat)h2LineHeight;
 - (void)setH2LineHeight:(CGFloat)newValue;
+- (UIFont *)h2Font;
 // H3 properties
 - (CGFloat)h3FontSize;
 - (void)setH3FontSize:(CGFloat)newValue;
@@ -65,6 +67,7 @@
 - (void)setH3MarginBottom:(CGFloat)newValue;
 - (CGFloat)h3LineHeight;
 - (void)setH3LineHeight:(CGFloat)newValue;
+- (UIFont *)h3Font;
 // H4 properties
 - (CGFloat)h4FontSize;
 - (void)setH4FontSize:(CGFloat)newValue;
@@ -78,6 +81,7 @@
 - (void)setH4MarginBottom:(CGFloat)newValue;
 - (CGFloat)h4LineHeight;
 - (void)setH4LineHeight:(CGFloat)newValue;
+- (UIFont *)h4Font;
 // H5 properties
 - (CGFloat)h5FontSize;
 - (void)setH5FontSize:(CGFloat)newValue;
@@ -91,6 +95,7 @@
 - (void)setH5MarginBottom:(CGFloat)newValue;
 - (CGFloat)h5LineHeight;
 - (void)setH5LineHeight:(CGFloat)newValue;
+- (UIFont *)h5Font;
 // H6 properties
 - (CGFloat)h6FontSize;
 - (void)setH6FontSize:(CGFloat)newValue;
@@ -104,6 +109,7 @@
 - (void)setH6MarginBottom:(CGFloat)newValue;
 - (CGFloat)h6LineHeight;
 - (void)setH6LineHeight:(CGFloat)newValue;
+- (UIFont *)h6Font;
 // Link properties
 - (UIColor *)linkColor;
 - (void)setLinkColor:(UIColor *)newValue;

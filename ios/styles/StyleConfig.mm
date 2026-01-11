@@ -23,6 +23,8 @@
   UIColor *_h1Color;
   CGFloat _h1MarginBottom;
   CGFloat _h1LineHeight;
+  UIFont *_h1Font;
+  BOOL _h1FontNeedsRecreation;
   // H2 properties
   CGFloat _h2FontSize;
   NSString *_h2FontFamily;
@@ -30,6 +32,8 @@
   UIColor *_h2Color;
   CGFloat _h2MarginBottom;
   CGFloat _h2LineHeight;
+  UIFont *_h2Font;
+  BOOL _h2FontNeedsRecreation;
   // H3 properties
   CGFloat _h3FontSize;
   NSString *_h3FontFamily;
@@ -37,6 +41,8 @@
   UIColor *_h3Color;
   CGFloat _h3MarginBottom;
   CGFloat _h3LineHeight;
+  UIFont *_h3Font;
+  BOOL _h3FontNeedsRecreation;
   // H4 properties
   CGFloat _h4FontSize;
   NSString *_h4FontFamily;
@@ -44,6 +50,8 @@
   UIColor *_h4Color;
   CGFloat _h4MarginBottom;
   CGFloat _h4LineHeight;
+  UIFont *_h4Font;
+  BOOL _h4FontNeedsRecreation;
   // H5 properties
   CGFloat _h5FontSize;
   NSString *_h5FontFamily;
@@ -51,6 +59,8 @@
   UIColor *_h5Color;
   CGFloat _h5MarginBottom;
   CGFloat _h5LineHeight;
+  UIFont *_h5Font;
+  BOOL _h5FontNeedsRecreation;
   // H6 properties
   CGFloat _h6FontSize;
   NSString *_h6FontFamily;
@@ -58,6 +68,8 @@
   UIColor *_h6Color;
   CGFloat _h6MarginBottom;
   CGFloat _h6LineHeight;
+  UIFont *_h6Font;
+  BOOL _h6FontNeedsRecreation;
   // Link properties
   UIColor *_linkColor;
   BOOL _linkUnderline;
@@ -120,6 +132,12 @@
 {
   self = [super init];
   _primaryFontNeedsRecreation = YES;
+  _h1FontNeedsRecreation = YES;
+  _h2FontNeedsRecreation = YES;
+  _h3FontNeedsRecreation = YES;
+  _h4FontNeedsRecreation = YES;
+  _h5FontNeedsRecreation = YES;
+  _h6FontNeedsRecreation = YES;
   _listMarkerFontNeedsRecreation = YES;
   _linkUnderline = YES;
   return self;
@@ -146,36 +164,42 @@
   copy->_h1Color = [_h1Color copy];
   copy->_h1MarginBottom = _h1MarginBottom;
   copy->_h1LineHeight = _h1LineHeight;
+  copy->_h1FontNeedsRecreation = YES;
   copy->_h2FontSize = _h2FontSize;
   copy->_h2FontFamily = [_h2FontFamily copy];
   copy->_h2FontWeight = [_h2FontWeight copy];
   copy->_h2Color = [_h2Color copy];
   copy->_h2MarginBottom = _h2MarginBottom;
   copy->_h2LineHeight = _h2LineHeight;
+  copy->_h2FontNeedsRecreation = YES;
   copy->_h3FontSize = _h3FontSize;
   copy->_h3FontFamily = [_h3FontFamily copy];
   copy->_h3FontWeight = [_h3FontWeight copy];
   copy->_h3Color = [_h3Color copy];
   copy->_h3MarginBottom = _h3MarginBottom;
   copy->_h3LineHeight = _h3LineHeight;
+  copy->_h3FontNeedsRecreation = YES;
   copy->_h4FontSize = _h4FontSize;
   copy->_h4FontFamily = [_h4FontFamily copy];
   copy->_h4FontWeight = [_h4FontWeight copy];
   copy->_h4Color = [_h4Color copy];
   copy->_h4MarginBottom = _h4MarginBottom;
   copy->_h4LineHeight = _h4LineHeight;
+  copy->_h4FontNeedsRecreation = YES;
   copy->_h5FontSize = _h5FontSize;
   copy->_h5FontFamily = [_h5FontFamily copy];
   copy->_h5FontWeight = [_h5FontWeight copy];
   copy->_h5Color = [_h5Color copy];
   copy->_h5MarginBottom = _h5MarginBottom;
   copy->_h5LineHeight = _h5LineHeight;
+  copy->_h5FontNeedsRecreation = YES;
   copy->_h6FontSize = _h6FontSize;
   copy->_h6FontFamily = [_h6FontFamily copy];
   copy->_h6FontWeight = [_h6FontWeight copy];
   copy->_h6Color = [_h6Color copy];
   copy->_h6MarginBottom = _h6MarginBottom;
   copy->_h6LineHeight = _h6LineHeight;
+  copy->_h6FontNeedsRecreation = YES;
   copy->_linkColor = [_linkColor copy];
   copy->_linkUnderline = _linkUnderline;
   copy->_strongColor = [_strongColor copy];
@@ -351,6 +375,7 @@
 - (void)setH1FontSize:(CGFloat)newValue
 {
   _h1FontSize = newValue;
+  _h1FontNeedsRecreation = YES;
 }
 
 - (NSString *)h1FontFamily
@@ -361,6 +386,7 @@
 - (void)setH1FontFamily:(NSString *)newValue
 {
   _h1FontFamily = newValue;
+  _h1FontNeedsRecreation = YES;
 }
 
 - (NSString *)h1FontWeight
@@ -371,6 +397,7 @@
 - (void)setH1FontWeight:(NSString *)newValue
 {
   _h1FontWeight = newValue;
+  _h1FontNeedsRecreation = YES;
 }
 
 - (UIColor *)h1Color
@@ -403,6 +430,21 @@
   _h1LineHeight = newValue;
 }
 
+- (UIFont *)h1Font
+{
+  if (_h1FontNeedsRecreation || !_h1Font) {
+    _h1Font = [RCTFont updateFont:nil
+                       withFamily:_h1FontFamily.length > 0 ? _h1FontFamily : nil
+                             size:@(_h1FontSize)
+                           weight:_h1FontWeight ?: @"bold"
+                            style:nil
+                          variant:nil
+                  scaleMultiplier:1];
+    _h1FontNeedsRecreation = NO;
+  }
+  return _h1Font;
+}
+
 - (CGFloat)h2FontSize
 {
   return _h2FontSize;
@@ -411,6 +453,7 @@
 - (void)setH2FontSize:(CGFloat)newValue
 {
   _h2FontSize = newValue;
+  _h2FontNeedsRecreation = YES;
 }
 
 - (NSString *)h2FontFamily
@@ -421,6 +464,7 @@
 - (void)setH2FontFamily:(NSString *)newValue
 {
   _h2FontFamily = newValue;
+  _h2FontNeedsRecreation = YES;
 }
 
 - (NSString *)h2FontWeight
@@ -431,6 +475,7 @@
 - (void)setH2FontWeight:(NSString *)newValue
 {
   _h2FontWeight = newValue;
+  _h2FontNeedsRecreation = YES;
 }
 
 - (UIColor *)h2Color
@@ -463,6 +508,21 @@
   _h2LineHeight = newValue;
 }
 
+- (UIFont *)h2Font
+{
+  if (_h2FontNeedsRecreation || !_h2Font) {
+    _h2Font = [RCTFont updateFont:nil
+                       withFamily:_h2FontFamily.length > 0 ? _h2FontFamily : nil
+                             size:@(_h2FontSize)
+                           weight:_h2FontWeight ?: @"bold"
+                            style:nil
+                          variant:nil
+                  scaleMultiplier:1];
+    _h2FontNeedsRecreation = NO;
+  }
+  return _h2Font;
+}
+
 - (CGFloat)h3FontSize
 {
   return _h3FontSize;
@@ -471,6 +531,7 @@
 - (void)setH3FontSize:(CGFloat)newValue
 {
   _h3FontSize = newValue;
+  _h3FontNeedsRecreation = YES;
 }
 
 - (NSString *)h3FontFamily
@@ -481,6 +542,7 @@
 - (void)setH3FontFamily:(NSString *)newValue
 {
   _h3FontFamily = newValue;
+  _h3FontNeedsRecreation = YES;
 }
 
 - (NSString *)h3FontWeight
@@ -491,6 +553,7 @@
 - (void)setH3FontWeight:(NSString *)newValue
 {
   _h3FontWeight = newValue;
+  _h3FontNeedsRecreation = YES;
 }
 
 - (UIColor *)h3Color
@@ -523,6 +586,21 @@
   _h3LineHeight = newValue;
 }
 
+- (UIFont *)h3Font
+{
+  if (_h3FontNeedsRecreation || !_h3Font) {
+    _h3Font = [RCTFont updateFont:nil
+                       withFamily:_h3FontFamily.length > 0 ? _h3FontFamily : nil
+                             size:@(_h3FontSize)
+                           weight:_h3FontWeight ?: @"bold"
+                            style:nil
+                          variant:nil
+                  scaleMultiplier:1];
+    _h3FontNeedsRecreation = NO;
+  }
+  return _h3Font;
+}
+
 - (CGFloat)h4FontSize
 {
   return _h4FontSize;
@@ -531,6 +609,7 @@
 - (void)setH4FontSize:(CGFloat)newValue
 {
   _h4FontSize = newValue;
+  _h4FontNeedsRecreation = YES;
 }
 
 - (NSString *)h4FontFamily
@@ -541,6 +620,7 @@
 - (void)setH4FontFamily:(NSString *)newValue
 {
   _h4FontFamily = newValue;
+  _h4FontNeedsRecreation = YES;
 }
 
 - (NSString *)h4FontWeight
@@ -551,6 +631,7 @@
 - (void)setH4FontWeight:(NSString *)newValue
 {
   _h4FontWeight = newValue;
+  _h4FontNeedsRecreation = YES;
 }
 
 - (UIColor *)h4Color
@@ -583,6 +664,21 @@
   _h4LineHeight = newValue;
 }
 
+- (UIFont *)h4Font
+{
+  if (_h4FontNeedsRecreation || !_h4Font) {
+    _h4Font = [RCTFont updateFont:nil
+                       withFamily:_h4FontFamily.length > 0 ? _h4FontFamily : nil
+                             size:@(_h4FontSize)
+                           weight:_h4FontWeight ?: @"bold"
+                            style:nil
+                          variant:nil
+                  scaleMultiplier:1];
+    _h4FontNeedsRecreation = NO;
+  }
+  return _h4Font;
+}
+
 - (CGFloat)h5FontSize
 {
   return _h5FontSize;
@@ -591,6 +687,7 @@
 - (void)setH5FontSize:(CGFloat)newValue
 {
   _h5FontSize = newValue;
+  _h5FontNeedsRecreation = YES;
 }
 
 - (NSString *)h5FontFamily
@@ -601,6 +698,7 @@
 - (void)setH5FontFamily:(NSString *)newValue
 {
   _h5FontFamily = newValue;
+  _h5FontNeedsRecreation = YES;
 }
 
 - (NSString *)h5FontWeight
@@ -611,6 +709,7 @@
 - (void)setH5FontWeight:(NSString *)newValue
 {
   _h5FontWeight = newValue;
+  _h5FontNeedsRecreation = YES;
 }
 
 - (UIColor *)h5Color
@@ -643,6 +742,21 @@
   _h5LineHeight = newValue;
 }
 
+- (UIFont *)h5Font
+{
+  if (_h5FontNeedsRecreation || !_h5Font) {
+    _h5Font = [RCTFont updateFont:nil
+                       withFamily:_h5FontFamily.length > 0 ? _h5FontFamily : nil
+                             size:@(_h5FontSize)
+                           weight:_h5FontWeight ?: @"bold"
+                            style:nil
+                          variant:nil
+                  scaleMultiplier:1];
+    _h5FontNeedsRecreation = NO;
+  }
+  return _h5Font;
+}
+
 - (CGFloat)h6FontSize
 {
   return _h6FontSize;
@@ -651,6 +765,7 @@
 - (void)setH6FontSize:(CGFloat)newValue
 {
   _h6FontSize = newValue;
+  _h6FontNeedsRecreation = YES;
 }
 
 - (NSString *)h6FontFamily
@@ -661,6 +776,7 @@
 - (void)setH6FontFamily:(NSString *)newValue
 {
   _h6FontFamily = newValue;
+  _h6FontNeedsRecreation = YES;
 }
 
 - (NSString *)h6FontWeight
@@ -671,6 +787,7 @@
 - (void)setH6FontWeight:(NSString *)newValue
 {
   _h6FontWeight = newValue;
+  _h6FontNeedsRecreation = YES;
 }
 
 - (UIColor *)h6Color
@@ -701,6 +818,21 @@
 - (void)setH6LineHeight:(CGFloat)newValue
 {
   _h6LineHeight = newValue;
+}
+
+- (UIFont *)h6Font
+{
+  if (_h6FontNeedsRecreation || !_h6Font) {
+    _h6Font = [RCTFont updateFont:nil
+                       withFamily:_h6FontFamily.length > 0 ? _h6FontFamily : nil
+                             size:@(_h6FontSize)
+                           weight:_h6FontWeight ?: @"bold"
+                            style:nil
+                          variant:nil
+                  scaleMultiplier:1];
+    _h6FontNeedsRecreation = NO;
+  }
+  return _h6Font;
 }
 
 - (UIColor *)linkColor

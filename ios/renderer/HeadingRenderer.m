@@ -8,9 +8,7 @@
 
 // Lightweight struct to hold style data without object overhead
 typedef struct {
-  CGFloat fontSize;
-  __unsafe_unretained NSString *fontFamily;
-  __unsafe_unretained NSString *fontWeight;
+  __unsafe_unretained UIFont *font;
   __unsafe_unretained UIColor *color;
   CGFloat marginBottom;
   CGFloat lineHeight;
@@ -38,15 +36,10 @@ typedef struct {
   if (level < 1 || level > 6)
     level = 1;
 
-  // Fetch style struct
+  // Fetch style struct with pre-cached font from StyleConfig
   HeadingStyle style = [self styleForLevel:level];
 
-  [context setBlockStyle:BlockTypeHeading
-                fontSize:style.fontSize
-              fontFamily:style.fontFamily
-              fontWeight:style.fontWeight
-                   color:style.color
-            headingLevel:level];
+  [context setBlockStyle:BlockTypeHeading font:style.font color:style.color headingLevel:level];
 
   NSUInteger start = output.length;
   @try {
@@ -76,22 +69,22 @@ typedef struct {
 
   switch (level) {
     case 1:
-      s = (HeadingStyle){c.h1FontSize, c.h1FontFamily, c.h1FontWeight, c.h1Color, c.h1MarginBottom, c.h1LineHeight};
+      s = (HeadingStyle){c.h1Font, c.h1Color, c.h1MarginBottom, c.h1LineHeight};
       break;
     case 2:
-      s = (HeadingStyle){c.h2FontSize, c.h2FontFamily, c.h2FontWeight, c.h2Color, c.h2MarginBottom, c.h2LineHeight};
+      s = (HeadingStyle){c.h2Font, c.h2Color, c.h2MarginBottom, c.h2LineHeight};
       break;
     case 3:
-      s = (HeadingStyle){c.h3FontSize, c.h3FontFamily, c.h3FontWeight, c.h3Color, c.h3MarginBottom, c.h3LineHeight};
+      s = (HeadingStyle){c.h3Font, c.h3Color, c.h3MarginBottom, c.h3LineHeight};
       break;
     case 4:
-      s = (HeadingStyle){c.h4FontSize, c.h4FontFamily, c.h4FontWeight, c.h4Color, c.h4MarginBottom, c.h4LineHeight};
+      s = (HeadingStyle){c.h4Font, c.h4Color, c.h4MarginBottom, c.h4LineHeight};
       break;
     case 5:
-      s = (HeadingStyle){c.h5FontSize, c.h5FontFamily, c.h5FontWeight, c.h5Color, c.h5MarginBottom, c.h5LineHeight};
+      s = (HeadingStyle){c.h5Font, c.h5Color, c.h5MarginBottom, c.h5LineHeight};
       break;
     case 6:
-      s = (HeadingStyle){c.h6FontSize, c.h6FontFamily, c.h6FontWeight, c.h6Color, c.h6MarginBottom, c.h6LineHeight};
+      s = (HeadingStyle){c.h6Font, c.h6Color, c.h6MarginBottom, c.h6LineHeight};
       break;
     default:
       return [self styleForLevel:1];

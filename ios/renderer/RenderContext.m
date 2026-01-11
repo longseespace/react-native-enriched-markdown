@@ -87,6 +87,15 @@
   [self setBlockStyle:type fontSize:fontSize fontFamily:fontFamily fontWeight:fontWeight color:color headingLevel:0];
 }
 
+- (void)setBlockStyle:(BlockType)type font:(UIFont *)font color:(UIColor *)color headingLevel:(NSInteger)headingLevel
+{
+  _currentBlockType = type;
+  _currentHeadingLevel = headingLevel;
+
+  _currentBlockStyle.cachedFont = font;
+  _currentBlockStyle.color = color ?: [UIColor blackColor];
+}
+
 - (BlockStyle *)getBlockStyle
 {
   return _currentBlockStyle;
@@ -96,6 +105,7 @@
 {
   _currentBlockType = BlockTypeNone;
   _currentHeadingLevel = 0;
+  _currentBlockStyle.cachedFont = nil;
 }
 
 #pragma mark - Reset
