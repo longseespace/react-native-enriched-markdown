@@ -29,20 +29,20 @@ static const CGFloat kLabelPadding = 10.0;
 @interface RichTextView () <RCTRichTextViewViewProtocol, UITextViewDelegate>
 - (void)setupTextView;
 - (void)setupConstraints;
-- (void)renderMarkdownContent:(NSString *)markdownString withProps:(const RichTextViewProps &)props;
+- (void)renderMarkdownContent:(NSString *)markdownString;
+- (void)applyRenderedText:(NSMutableAttributedString *)attributedText;
 - (void)textTapped:(UITapGestureRecognizer *)recognizer;
 - (void)setupLayoutManager;
-- (MarkdownASTNode *)getOrParseAST:(NSString *)markdownString;
 @end
 
 @implementation RichTextView {
   UITextView *_textView;
   MarkdownParser *_parser;
-  AttributedRenderer *_attributedRenderer;
-  RenderContext *_renderContext;
-  MarkdownASTNode *_cachedAST;
   NSString *_cachedMarkdown;
   StyleConfig *_config;
+  // Background rendering support
+  dispatch_queue_t _renderQueue;
+  NSUInteger _currentRenderId;
 }
 
 + (ComponentDescriptorProvider)componentDescriptorProvider
@@ -58,6 +58,10 @@ static const CGFloat kLabelPadding = 10.0;
 
     self.backgroundColor = [UIColor clearColor];
     _parser = [[MarkdownParser alloc] init];
+
+    // Serial queue for background rendering
+    _renderQueue = dispatch_queue_create("com.richtext.render", DISPATCH_QUEUE_SERIAL);
+    _currentRenderId = 0;
 
     [self setupTextView];
     [self setupConstraints];
@@ -145,57 +149,55 @@ static const CGFloat kLabelPadding = 10.0;
   ]];
 }
 
-- (MarkdownASTNode *)getOrParseAST:(NSString *)markdownString
-{
-  if (_cachedAST && _cachedMarkdown && [_cachedMarkdown isEqualToString:markdownString]) {
-    return _cachedAST;
-  }
-
-  MarkdownASTNode *ast = [_parser parseMarkdown:markdownString];
-  if (!ast) {
-    NSLog(@"RichTextView: Failed to parse markdown");
-    return nil;
-  }
-
-  _cachedAST = ast;
-  _cachedMarkdown = [markdownString copy];
-
-  return ast;
-}
-
 - (void)renderMarkdownContent:(NSString *)markdownString
 {
-  MarkdownASTNode *ast = [self getOrParseAST:markdownString];
-  if (!ast) {
-    return;
-  }
+  _cachedMarkdown = [markdownString copy];
 
-  // Reuse renderer instances instead of creating new ones on every render
-  if (!_attributedRenderer) {
-    _attributedRenderer = [[AttributedRenderer alloc] initWithConfig:_config];
-  }
+  // Increment render ID to invalidate any in-flight renders
+  NSUInteger renderId = ++_currentRenderId;
 
-  // Reuse render context but reset it for each render
-  if (!_renderContext) {
-    _renderContext = [RenderContext new];
-  } else {
-    // Reset context state for new render
-    [_renderContext reset];
-  }
+  // Capture state needed for background rendering
+  StyleConfig *config = [_config copy];
+  MarkdownParser *parser = _parser;
 
-  NSMutableAttributedString *attributedText = [_attributedRenderer renderRoot:ast context:_renderContext];
+  // Dispatch heavy work to background queue
+  dispatch_async(_renderQueue, ^{
+    // Parse AST on background thread
+    MarkdownASTNode *ast = [parser parseMarkdown:markdownString];
+    if (!ast) {
+      return;
+    }
 
-  // Add custom attributes for links
-  for (NSUInteger i = 0; i < _renderContext.linkRanges.count; i++) {
-    NSValue *rangeValue = _renderContext.linkRanges[i];
-    NSRange range = [rangeValue rangeValue];
-    NSString *url = _renderContext.linkURLs[i];
-    // Add custom attribute for link detection
-    [attributedText addAttribute:@"linkURL" value:url range:range];
-  }
+    // Create fresh renderer and context for this render (thread-safe)
+    AttributedRenderer *renderer = [[AttributedRenderer alloc] initWithConfig:config];
+    RenderContext *context = [RenderContext new];
 
+    // Build attributed string on background thread
+    NSMutableAttributedString *attributedText = [renderer renderRoot:ast context:context];
+
+    // Add link attributes
+    for (NSUInteger i = 0; i < context.linkRanges.count; i++) {
+      NSValue *rangeValue = context.linkRanges[i];
+      NSRange range = [rangeValue rangeValue];
+      NSString *url = context.linkURLs[i];
+      [attributedText addAttribute:@"linkURL" value:url range:range];
+    }
+
+    // Apply result on main thread
+    dispatch_async(dispatch_get_main_queue(), ^{
+      // Check if this render is still current
+      if (renderId != self->_currentRenderId) {
+        return;
+      }
+
+      [self applyRenderedText:attributedText];
+    });
+  });
+}
+
+- (void)applyRenderedText:(NSMutableAttributedString *)attributedText
+{
   // Set config on the layout manager
-  // Use setValue:forKey: for runtime class changes (more reliable than direct property access)
   NSLayoutManager *layoutManager = _textView.layoutManager;
   if ([layoutManager isKindOfClass:[TextViewLayoutManager class]]) {
     [layoutManager setValue:_config forKey:@"config"];
@@ -848,11 +850,6 @@ static const CGFloat kLabelPadding = 10.0;
   }
 
   BOOL markdownChanged = oldViewProps.markdown != newViewProps.markdown;
-
-  if (markdownChanged) {
-    _cachedAST = nil;
-    _cachedMarkdown = nil;
-  }
 
   if (markdownChanged || stylePropChanged) {
     NSString *markdownString = [[NSString alloc] initWithUTF8String:newViewProps.markdown.c_str()];
