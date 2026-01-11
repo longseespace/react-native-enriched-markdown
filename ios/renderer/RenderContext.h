@@ -19,6 +19,7 @@ typedef NS_ENUM(NSInteger, ListType) { ListTypeUnordered, ListTypeOrdered };
 @property (nonatomic, strong) NSString *fontWeight;
 @property (nonatomic, strong) UIColor *color;
 @property (nonatomic, strong) UIFont *cachedFont;
+@property (nonatomic, strong) NSDictionary *cachedTextAttributes;
 @end
 
 @interface RenderContext : NSObject
@@ -50,6 +51,7 @@ typedef NS_ENUM(NSInteger, ListType) { ListTypeUnordered, ListTypeOrdered };
          headingLevel:(NSInteger)headingLevel;
 - (void)setBlockStyle:(BlockType)type font:(UIFont *)font color:(UIColor *)color headingLevel:(NSInteger)headingLevel;
 - (BlockStyle *)getBlockStyle;
+- (NSDictionary *)getTextAttributes;
 - (void)clearBlockStyle;
 
 /**

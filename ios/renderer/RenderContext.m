@@ -92,8 +92,15 @@
   _currentBlockType = type;
   _currentHeadingLevel = headingLevel;
 
+  UIColor *finalColor = color ?: [UIColor blackColor];
   _currentBlockStyle.cachedFont = font;
-  _currentBlockStyle.color = color ?: [UIColor blackColor];
+  _currentBlockStyle.color = finalColor;
+
+  // Pre-create text attributes dictionary if we have both font and color
+  if (font) {
+    _currentBlockStyle.cachedTextAttributes =
+        @{NSFontAttributeName : font, NSForegroundColorAttributeName : finalColor};
+  }
 }
 
 - (BlockStyle *)getBlockStyle
@@ -101,11 +108,33 @@
   return _currentBlockStyle;
 }
 
+- (NSDictionary *)getTextAttributes
+{
+  BlockStyle *style = _currentBlockStyle;
+
+  // Return pre-cached attributes if available
+  if (style.cachedTextAttributes) {
+    return style.cachedTextAttributes;
+  }
+
+  // Fall back to creating attributes from font cache
+  UIFont *font = style.cachedFont;
+  if (!font) {
+    font = [self cachedFontForSize:style.fontSize family:style.fontFamily weight:style.fontWeight];
+  }
+  UIColor *color = style.color ?: [UIColor blackColor];
+
+  // Cache for future calls within same block
+  style.cachedTextAttributes = @{NSFontAttributeName : font, NSForegroundColorAttributeName : color};
+  return style.cachedTextAttributes;
+}
+
 - (void)clearBlockStyle
 {
   _currentBlockType = BlockTypeNone;
   _currentHeadingLevel = 0;
   _currentBlockStyle.cachedFont = nil;
+  _currentBlockStyle.cachedTextAttributes = nil;
 }
 
 #pragma mark - Reset
