@@ -1,5 +1,6 @@
 package com.richtext.spans
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
@@ -77,10 +78,11 @@ class BlockquoteSpan(
     p.color = originalColor
   }
 
+  @SuppressLint("WrongConstant") // Result of mask is always valid: 0, 1, 2, or 3
   private fun applyTextStyle(tp: TextPaint) {
     if (context == null) return
     tp.textSize = blockStyle.fontSize
-    val preserved = (tp.typeface?.style ?: Typeface.NORMAL) and (Typeface.BOLD or Typeface.ITALIC)
+    val preserved = (tp.typeface?.style ?: 0) and BOLD_ITALIC_MASK
     tp.applyBlockStyleFont(blockStyle, context)
     if (preserved != 0) {
       tp.typeface = Typeface.create(tp.typeface ?: Typeface.DEFAULT, preserved)
@@ -90,6 +92,10 @@ class BlockquoteSpan(
     } else {
       tp.color = blockStyle.color
     }
+  }
+
+  companion object {
+    private const val BOLD_ITALIC_MASK = Typeface.BOLD or Typeface.ITALIC
   }
 
   private fun getColorsToPreserve(): List<Int> {
