@@ -60,7 +60,7 @@ android {
     main {
       java.srcDirs += [
         "generated/java",
-        "build/generated/source/codegen/java"
+        "generated/jni"
       ]
     }
   }
