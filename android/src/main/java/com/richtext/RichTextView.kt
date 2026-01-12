@@ -1,7 +1,6 @@
 package com.richtext
 
 import android.content.Context
-import android.graphics.Color
 import android.os.Handler
 import android.os.Looper
 import android.text.method.LinkMovementMethod
@@ -37,6 +36,9 @@ class RichTextView
     private val executor = Executors.newSingleThreadExecutor()
     private var currentRenderId = 0L
 
+    // Layout manager for ShadowNode measurement
+    val layoutManager = RichTextViewLayoutManager(this)
+
     var richTextStyle: StyleConfig? = null
       private set
 
@@ -46,8 +48,6 @@ class RichTextView
     init {
       movementMethod = LinkMovementMethod.getInstance()
       setTextIsSelectable(true)
-      setPadding(0, 0, 0, 0)
-      setBackgroundColor(Color.TRANSPARENT)
       customSelectionActionModeCallback = createSelectionActionModeCallback(this)
     }
 
@@ -113,6 +113,9 @@ class RichTextView
       renderer.getCollectedImageSpans().forEach { span ->
         span.registerTextView(this)
       }
+
+      // Trigger layout recalculation via ShadowNode
+      layoutManager.invalidateLayout()
     }
 
     fun setIsSelectable(selectable: Boolean) {

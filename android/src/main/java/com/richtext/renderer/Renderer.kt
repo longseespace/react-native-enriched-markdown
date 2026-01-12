@@ -5,6 +5,7 @@ import android.text.SpannableString
 import android.text.SpannableStringBuilder
 import com.richtext.parser.MarkdownASTNode
 import com.richtext.spans.ImageSpan
+import com.richtext.spans.MarginBottomSpan
 import com.richtext.styles.StyleConfig
 
 class Renderer {
@@ -44,7 +45,33 @@ class Renderer {
     val builder = SpannableStringBuilder()
     renderNode(document, builder, onLinkPress, factory)
 
+    // Remove trailing margin from last block element
+    removeTrailingMargin(builder)
+
     return SpannableString(builder)
+  }
+
+  /** Removes MarginBottomSpan from the last block element to eliminate bottom margin */
+  private fun removeTrailingMargin(builder: SpannableStringBuilder) {
+    if (builder.isEmpty()) return
+
+    // Find all MarginBottomSpan instances
+    val spans = builder.getSpans(0, builder.length, MarginBottomSpan::class.java)
+    if (spans.isEmpty()) return
+
+    // Find the span that ends at the latest position (last block element)
+    val lastSpan = spans.maxByOrNull { builder.getSpanEnd(it) } ?: return
+    val spanEnd = builder.getSpanEnd(lastSpan)
+
+    // Remove trailing newlines first (they're added for spacing)
+    while (builder.isNotEmpty() && builder.last() == '\n') {
+      builder.delete(builder.length - 1, builder.length)
+    }
+
+    // Remove the last MarginBottomSpan if it's at or near the end
+    if (spanEnd >= builder.length) {
+      builder.removeSpan(lastSpan)
+    }
   }
 
   private fun renderNode(

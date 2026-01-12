@@ -6,9 +6,9 @@ class Parser {
   companion object {
     init {
       try {
-        System.loadLibrary("RichText")
+        System.loadLibrary("react_codegen_RichTextViewSpec")
       } catch (e: UnsatisfiedLinkError) {
-        Log.e("MarkdownParser", "Failed to load RichText native library", e)
+        Log.e("MarkdownParser", "Failed to load native library", e)
       }
     }
 

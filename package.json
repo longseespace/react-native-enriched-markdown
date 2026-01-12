@@ -161,6 +161,10 @@
     "name": "RichTextViewSpec",
     "type": "components",
     "jsSrcsDir": "src",
+    "outputDir": {
+      "ios": "ios/generated",
+      "android": "android/generated"
+    },
     "android": {
       "javaPackageName": "com.richtext"
     },
@@ -170,7 +174,8 @@
           "className": "RichTextView"
         }
       }
-    }
+    },
+    "includesGeneratedCode": true
   },
   "create-react-native-library": {
     "languages": "kotlin-objc",

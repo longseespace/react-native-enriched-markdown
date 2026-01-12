@@ -9,6 +9,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface RichTextView : RCTViewComponentView
 @property (nonatomic, strong) StyleConfig *config;
+- (CGSize)measureSize:(CGFloat)maxWidth;
 @end
 
 NS_ASSUME_NONNULL_END

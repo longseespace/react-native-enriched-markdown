@@ -18,7 +18,7 @@ Pod::Spec.new do |s|
   
   # Set header search paths to cpp/md4c and cpp/parser, add preprocessor definitions
   s.pod_target_xcconfig = {
-    'HEADER_SEARCH_PATHS' => '"$(PODS_TARGET_SRCROOT)/cpp/md4c" "$(PODS_TARGET_SRCROOT)/cpp/parser"',
+    'HEADER_SEARCH_PATHS' => '"$(PODS_TARGET_SRCROOT)/cpp/md4c" "$(PODS_TARGET_SRCROOT)/cpp/parser" "$(PODS_TARGET_SRCROOT)/ios/internals"',
     'GCC_PREPROCESSOR_DEFINITIONS' => '$(inherited) MD4C_USE_UTF8=1',
     'CLANG_CXX_LANGUAGE_STANDARD' => 'c++17'
   }

@@ -35,20 +35,6 @@ android {
   defaultConfig {
     minSdkVersion getExtOrIntegerDefault("minSdkVersion")
     targetSdkVersion getExtOrIntegerDefault("targetSdkVersion")
-
-    externalNativeBuild {
-      cmake {
-        cppFlags "-frtti -fexceptions -Wall -Wextra"
-        arguments "-DANDROID_STL=c++_shared"
-        abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'
-      }
-    }
-  }
-
-  externalNativeBuild {
-    cmake {
-      path "CMakeLists.txt"
-    }
   }
 
   buildFeatures {
@@ -74,7 +60,7 @@ android {
     main {
       java.srcDirs += [
         "generated/java",
-        "generated/jni"
+        "build/generated/source/codegen/java"
       ]
     }
   }
@@ -104,4 +90,10 @@ ktlint {
     exclude("**/build/**")
     exclude("**/generated/**")
   }
+}
+
+react {
+  jsRootDir = file("../src/")
+  libraryName = "RichTextView"
+  codegenJavaPackageName = "com.richtext"
 }
