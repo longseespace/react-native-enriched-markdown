@@ -16,7 +16,7 @@ class EmphasisRenderer(
   ) {
     factory.renderWithSpan(builder, { factory.renderChildren(node, builder, onLinkPress) }) { start, end, blockStyle ->
       builder.setSpan(
-        EmphasisSpan(config.style, blockStyle),
+        EmphasisSpan(factory.styleCache, blockStyle),
         start,
         end,
         SPAN_FLAGS_EXCLUSIVE_EXCLUSIVE,

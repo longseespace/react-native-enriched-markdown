@@ -45,10 +45,36 @@
     [self renderNodeRecursive:node into:output context:context];
   }
 
-  // 3. Cleanup global state to prevent side effects in subsequent renders.
+  // 3. Remove trailing paragraph spacing from last block element
+  [self removeTrailingSpacing:output];
+
+  // 4. Cleanup global state to prevent side effects in subsequent renders.
   [context clearBlockStyle];
 
   return output;
+}
+
+/// Removes trailing newlines and paragraphSpacing to eliminate bottom margin
+- (void)removeTrailingSpacing:(NSMutableAttributedString *)output
+{
+  NSRange last = [output.string rangeOfCharacterFromSet:[[NSCharacterSet newlineCharacterSet] invertedSet]
+                                                options:NSBackwardsSearch];
+  if (last.location == NSNotFound)
+    return;
+
+  // Trim trailing newlines
+  [output deleteCharactersInRange:NSMakeRange(NSMaxRange(last), output.length - NSMaxRange(last))];
+
+  // Zero paragraphSpacing on last paragraph
+  NSRange range;
+  NSParagraphStyle *style = [output attribute:NSParagraphStyleAttributeName
+                                      atIndex:last.location
+                               effectiveRange:&range];
+  if (style.paragraphSpacing > 0) {
+    NSMutableParagraphStyle *fixed = [style mutableCopy];
+    fixed.paragraphSpacing = 0;
+    [output addAttribute:NSParagraphStyleAttributeName value:fixed range:range];
+  }
 }
 
 /**

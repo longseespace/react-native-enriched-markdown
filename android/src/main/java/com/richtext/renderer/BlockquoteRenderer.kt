@@ -45,7 +45,7 @@ class BlockquoteRenderer(
 
     // 3. Apply the Accent Bar Span (Must cover the full range for continuity)
     builder.setSpan(
-      BlockquoteSpan(style, depth, factory.context, config.style),
+      BlockquoteSpan(style, depth, factory.context, factory.styleCache),
       start,
       end,
       SPAN_FLAGS_EXCLUSIVE_EXCLUSIVE,

@@ -21,7 +21,7 @@ class InlineCodeRenderer(
 
     factory.renderWithSpan(builder, { builder.append(codeText) }) { start, end, blockStyle ->
       builder.setSpan(
-        InlineCodeSpan(config.style, blockStyle),
+        InlineCodeSpan(factory.styleCache, blockStyle),
         start,
         end,
         SPAN_FLAGS_EXCLUSIVE_EXCLUSIVE,

@@ -5,18 +5,18 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.text.Layout
 import com.richtext.renderer.BlockStyle
+import com.richtext.renderer.SpanStyleCache
 import com.richtext.styles.ListStyle
-import com.richtext.styles.StyleConfig
 
 class UnorderedListSpan(
   private val style: ListStyle,
   depth: Int,
-  context: Context? = null,
-  richTextStyle: StyleConfig? = null,
+  context: Context,
+  styleCache: SpanStyleCache,
 ) : BaseListSpan(
     depth = depth,
     context = context,
-    richTextStyle = richTextStyle,
+    styleCache = styleCache,
     blockStyle =
       BlockStyle(
         fontSize = style.fontSize,

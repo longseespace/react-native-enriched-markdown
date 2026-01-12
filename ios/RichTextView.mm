@@ -12,7 +12,7 @@
 #import "TextViewLayoutManager.h"
 #import <objc/runtime.h>
 
-#import <react/renderer/components/RichTextViewSpec/ComponentDescriptors.h>
+#import "RichTextViewComponentDescriptor.h"
 #import <react/renderer/components/RichTextViewSpec/EventEmitters.h>
 #import <react/renderer/components/RichTextViewSpec/Props.h>
 #import <react/renderer/components/RichTextViewSpec/RCTComponentViewHelpers.h>
@@ -20,15 +20,12 @@
 #import "RCTFabricComponentsPlugins.h"
 #import <React/RCTConversions.h>
 #import <React/RCTFont.h>
+#import <react/utils/ManagedObjectWrapper.h>
 
 using namespace facebook::react;
 
-static const CGFloat kMinimumHeight = 100.0;
-static const CGFloat kLabelPadding = 10.0;
-
 @interface RichTextView () <RCTRichTextViewViewProtocol, UITextViewDelegate>
 - (void)setupTextView;
-- (void)setupConstraints;
 - (void)renderMarkdownContent:(NSString *)markdownString;
 - (void)applyRenderedText:(NSMutableAttributedString *)attributedText;
 - (void)textTapped:(UITapGestureRecognizer *)recognizer;
@@ -40,14 +37,68 @@ static const CGFloat kLabelPadding = 10.0;
   MarkdownParser *_parser;
   NSString *_cachedMarkdown;
   StyleConfig *_config;
+
   // Background rendering support
   dispatch_queue_t _renderQueue;
   NSUInteger _currentRenderId;
+  BOOL _blockAsyncRender;
+
+  RichTextViewShadowNode::ConcreteState::Shared _state;
+  int _heightUpdateCounter;
 }
 
 + (ComponentDescriptorProvider)componentDescriptorProvider
 {
   return concreteComponentDescriptorProvider<RichTextViewComponentDescriptor>();
+}
+
+#pragma mark - Measuring and State
+
+- (CGSize)measureSize:(CGFloat)maxWidth
+{
+  NSAttributedString *text = _textView.attributedText;
+  CGFloat defaultHeight = [UIFont systemFontOfSize:16.0].lineHeight;
+
+  if (!text || text.length == 0) {
+    return CGSizeMake(maxWidth, defaultHeight);
+  }
+
+  // Find last non-newline character to exclude trailing spacing from measurement
+  NSRange lastContent = [text.string rangeOfCharacterFromSet:[[NSCharacterSet newlineCharacterSet] invertedSet]
+                                                     options:NSBackwardsSearch];
+  if (lastContent.location == NSNotFound) {
+    return CGSizeMake(maxWidth, defaultHeight);
+  }
+
+  NSAttributedString *contentToMeasure = [text attributedSubstringFromRange:NSMakeRange(0, NSMaxRange(lastContent))];
+  CGRect boundingRect =
+      [contentToMeasure boundingRectWithSize:CGSizeMake(maxWidth, CGFLOAT_MAX)
+                                     options:NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading
+                                     context:nil];
+
+  return CGSizeMake(maxWidth, ceil(boundingRect.size.height));
+}
+
+- (void)updateState:(const facebook::react::State::Shared &)state
+           oldState:(const facebook::react::State::Shared &)oldState
+{
+  _state = std::static_pointer_cast<const RichTextViewShadowNode::ConcreteState>(state);
+
+  // Trigger initial height calculation when state is first set
+  if (oldState == nullptr) {
+    [self requestHeightUpdate];
+  }
+}
+
+- (void)requestHeightUpdate
+{
+  if (_state == nullptr) {
+    return;
+  }
+
+  _heightUpdateCounter++;
+  auto selfRef = wrapManagedObjectWeakly(self);
+  _state->updateState(RichTextViewState(_heightUpdateCounter, selfRef));
 }
 
 - (instancetype)initWithFrame:(CGRect)frame
@@ -64,7 +115,6 @@ static const CGFloat kLabelPadding = 10.0;
     _currentRenderId = 0;
 
     [self setupTextView];
-    [self setupConstraints];
   }
 
   return self;
@@ -73,15 +123,12 @@ static const CGFloat kLabelPadding = 10.0;
 - (void)setupTextView
 {
   _textView = [[UITextView alloc] init];
-  _textView.translatesAutoresizingMaskIntoConstraints = NO;
   _textView.text = @"";
   _textView.font = [UIFont systemFontOfSize:16.0];
   _textView.backgroundColor = [UIColor clearColor];
   _textView.textColor = [UIColor blackColor];
   _textView.editable = NO;
   _textView.delegate = self;
-  // TODO: Calculate proper height to fit all content including images
-  // Currently scrollEnabled = NO means content beyond viewport may not render
   _textView.scrollEnabled = NO;
   _textView.textContainerInset = UIEdgeInsetsZero;
   _textView.textContainer.lineFragmentPadding = 0;
@@ -90,13 +137,16 @@ static const CGFloat kLabelPadding = 10.0;
   // isSelectable controls text selection and link previews
   // Default to YES to match the prop default
   _textView.selectable = YES;
+  // Hide initially to prevent flash before content is rendered
+  _textView.hidden = YES;
 
   // Add tap gesture recognizer
   UITapGestureRecognizer *tapRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self
                                                                                   action:@selector(textTapped:)];
   [_textView addGestureRecognizer:tapRecognizer];
 
-  [self addSubview:_textView];
+  // Use RCTViewComponentView's contentView for automatic sizing
+  self.contentView = _textView;
 }
 
 - (void)didAddSubview:(UIView *)subview
@@ -138,19 +188,13 @@ static const CGFloat kLabelPadding = 10.0;
   }
 }
 
-- (void)setupConstraints
-{
-  [NSLayoutConstraint activateConstraints:@[
-    [_textView.topAnchor constraintEqualToAnchor:self.topAnchor constant:kLabelPadding],
-    [_textView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor constant:kLabelPadding],
-    [_textView.trailingAnchor constraintEqualToAnchor:self.trailingAnchor constant:-kLabelPadding],
-    [_textView.bottomAnchor constraintEqualToAnchor:self.bottomAnchor constant:-kLabelPadding],
-    [self.heightAnchor constraintGreaterThanOrEqualToConstant:kMinimumHeight]
-  ]];
-}
-
 - (void)renderMarkdownContent:(NSString *)markdownString
 {
+  // Skip async render for mock views (they use renderMarkdownSynchronously)
+  if (_blockAsyncRender) {
+    return;
+  }
+
   _cachedMarkdown = [markdownString copy];
 
   // Increment render ID to invalidate any in-flight renders
@@ -159,20 +203,24 @@ static const CGFloat kLabelPadding = 10.0;
   // Capture state needed for background rendering
   StyleConfig *config = [_config copy];
   MarkdownParser *parser = _parser;
+  NSUInteger inputLength = markdownString.length;
+  NSDate *scheduleStart = [NSDate date];
 
   // Dispatch heavy work to background queue
   dispatch_async(_renderQueue, ^{
-    // Parse AST on background thread
+    // 1. Parse Markdown → AST (C++ md4c parser)
+    NSDate *parseStart = [NSDate date];
     MarkdownASTNode *ast = [parser parseMarkdown:markdownString];
     if (!ast) {
       return;
     }
+    NSTimeInterval parseTime = [[NSDate date] timeIntervalSinceDate:parseStart] * 1000;
+    NSUInteger nodeCount = ast.children.count;
 
-    // Create fresh renderer and context for this render (thread-safe)
+    // 2. Render AST → NSAttributedString
+    NSDate *renderStart = [NSDate date];
     AttributedRenderer *renderer = [[AttributedRenderer alloc] initWithConfig:config];
     RenderContext *context = [RenderContext new];
-
-    // Build attributed string on background thread
     NSMutableAttributedString *attributedText = [renderer renderRoot:ast context:context];
 
     // Add link attributes
@@ -182,6 +230,14 @@ static const CGFloat kLabelPadding = 10.0;
       NSString *url = context.linkURLs[i];
       [attributedText addAttribute:@"linkURL" value:url range:range];
     }
+    NSTimeInterval renderTime = [[NSDate date] timeIntervalSinceDate:renderStart] * 1000;
+    NSUInteger styledLength = attributedText.length;
+
+    NSLog(@"┌──────────────────────────────────────────────");
+    NSLog(@"│ 📝 Input: %lu chars of Markdown", (unsigned long)inputLength);
+    NSLog(@"│ ⚡ md4c (C++ native): %.0fms → %lu AST nodes", parseTime, (unsigned long)nodeCount);
+    NSLog(@"│ 🎨 NSAttributedString render: %.0fms → %lu styled chars", renderTime, (unsigned long)styledLength);
+    NSLog(@"└──────────────────────────────────────────────");
 
     // Apply result on main thread
     dispatch_async(dispatch_get_main_queue(), ^{
@@ -191,8 +247,41 @@ static const CGFloat kLabelPadding = 10.0;
       }
 
       [self applyRenderedText:attributedText];
+
+      NSTimeInterval totalTime = [[NSDate date] timeIntervalSinceDate:scheduleStart] * 1000;
+      NSLog(@"✅ Total time to display: %.0fms", totalTime);
     });
   });
+}
+
+// Synchronous rendering for mock view measurement (no UI updates needed)
+- (void)renderMarkdownSynchronously:(NSString *)markdownString
+{
+  if (!markdownString || markdownString.length == 0) {
+    return;
+  }
+
+  // Block any async renders triggered by updateProps
+  _blockAsyncRender = YES;
+  _cachedMarkdown = [markdownString copy];
+
+  MarkdownASTNode *ast = [_parser parseMarkdown:markdownString];
+  if (!ast) {
+    return;
+  }
+
+  AttributedRenderer *renderer = [[AttributedRenderer alloc] initWithConfig:_config];
+  RenderContext *context = [RenderContext new];
+  NSMutableAttributedString *attributedText = [renderer renderRoot:ast context:context];
+
+  for (NSUInteger i = 0; i < context.linkRanges.count; i++) {
+    NSValue *rangeValue = context.linkRanges[i];
+    NSRange range = [rangeValue rangeValue];
+    NSString *url = context.linkURLs[i];
+    [attributedText addAttribute:@"linkURL" value:url range:range];
+  }
+
+  _textView.attributedText = attributedText;
 }
 
 - (void)applyRenderedText:(NSMutableAttributedString *)attributedText
@@ -216,6 +305,14 @@ static const CGFloat kLabelPadding = 10.0;
   [_textView setNeedsLayout];
   [_textView setNeedsDisplay];
   [self setNeedsLayout];
+
+  // Request height recalculation from shadow node FIRST
+  [self requestHeightUpdate];
+
+  // Show text view on next run loop, after layout has settled
+  if (_textView.hidden) {
+    dispatch_async(dispatch_get_main_queue(), ^{ self->_textView.hidden = NO; });
+  }
 }
 
 - (void)updateProps:(Props::Shared const &)props oldProps:(Props::Shared const &)oldProps

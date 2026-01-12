@@ -1,13 +1,13 @@
-#include "../../cpp/parser/MD4CParser.hpp"
+#include "MD4CParser.hpp"
 #include <android/log.h>
 #include <jni.h>
 #include <string>
 
 using namespace Markdown;
 
-#define LOG_TAG "RichTextJNI"
-#define LOGI(...) __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__)
-#define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
+#define RICHTEXT_LOG_TAG "RichTextJNI"
+#define LOGI(...) __android_log_print(ANDROID_LOG_INFO, RICHTEXT_LOG_TAG, __VA_ARGS__)
+#define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, RICHTEXT_LOG_TAG, __VA_ARGS__)
 
 // Helper function to convert C++ NodeType to Kotlin enum ordinal
 static jint nodeTypeToJavaOrdinal(NodeType type) {

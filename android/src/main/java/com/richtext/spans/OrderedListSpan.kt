@@ -3,22 +3,21 @@ package com.richtext.spans
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
-import android.graphics.Typeface
 import android.text.Layout
 import android.text.TextPaint
 import com.richtext.renderer.BlockStyle
+import com.richtext.renderer.SpanStyleCache
 import com.richtext.styles.ListStyle
-import com.richtext.styles.StyleConfig
 
 class OrderedListSpan(
   private val listStyle: ListStyle,
   depth: Int,
-  context: Context? = null,
-  richTextStyle: StyleConfig? = null,
+  context: Context,
+  styleCache: SpanStyleCache,
 ) : BaseListSpan(
     depth = depth,
     context = context,
-    richTextStyle = richTextStyle,
+    styleCache = styleCache,
     blockStyle =
       BlockStyle(
         fontSize = listStyle.fontSize,
@@ -29,20 +28,12 @@ class OrderedListSpan(
     marginLeft = listStyle.marginLeft,
     gapWidth = listStyle.gapWidth,
   ) {
-  // We initialize the paint using the 'listStyle' constructor parameter
   private val markerPaint =
     TextPaint().apply {
       textSize = listStyle.fontSize
       color = listStyle.markerColor
       isAntiAlias = true
-      typeface =
-        Typeface.create(
-          listStyle.fontFamily,
-          when (listStyle.markerFontWeight.lowercase()) {
-            "bold", "700", "800", "900" -> Typeface.BOLD
-            else -> Typeface.NORMAL
-          },
-        )
+      typeface = SpanStyleCache.getTypefaceWithWeight(listStyle.fontFamily, listStyle.markerFontWeight)
     }
 
   var itemNumber: Int = 1

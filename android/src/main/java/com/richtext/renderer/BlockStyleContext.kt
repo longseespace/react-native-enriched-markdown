@@ -25,7 +25,8 @@ data class BlockStyle(
 )
 
 class BlockStyleContext {
-  private var currentBlockType = BlockType.NONE
+  var currentBlockType = BlockType.NONE
+    private set
   private var currentBlockStyle: BlockStyle? = null
   private var currentHeadingLevel = 0
 

@@ -43,72 +43,37 @@ fun TextPaint.applyColorPreserving(
   }
 }
 
-/**
- * Calculates the color that should be used for strong text.
- * Uses strongColor if explicitly set (different from block color), otherwise uses block color.
- */
-fun calculateStrongColor(
-  style: StyleConfig,
-  blockStyle: BlockStyle,
-): Int {
-  val strongColor = style.getStrongColor()
-  return if (strongColor != null && strongColor != blockStyle.color) {
-    strongColor
-  } else {
-    blockStyle.color
-  }
-}
-
-/**
- * Gets the list of colors that should be preserved when applying strong or emphasis colors.
- * These are colors from inline elements (code, links) that take priority over strong/emphasis colors.
- */
-fun getColorsToPreserveForInlineStyle(style: StyleConfig): IntArray =
-  intArrayOf(
-    style.getCodeStyle().color,
-    style.getLinkColor(),
-  )
-
-/**
- * Applies a typeface while preserving existing style traits (e.g., BOLD from StrongSpan).
- * Useful when applying a base typeface (e.g., heading font) that should preserve styles.
- */
-fun TextPaint.applyTypefacePreserving(
-  baseTypeface: Typeface,
-  vararg preserveStyles: Int,
-) {
-  val currentTypeface = this.typeface
-  val currentStyle = currentTypeface?.style ?: Typeface.NORMAL
-
-  val preservedTraits =
-    preserveStyles.fold(0) { acc, style ->
-      if ((currentStyle and style) != 0) acc or style else acc
-    }
-
-  this.typeface =
-    if (preservedTraits != 0) {
-      Typeface.create(baseTypeface, preservedTraits)
-    } else {
-      baseTypeface
-    }
-}
+private val typefaceCache = mutableMapOf<String, Typeface>()
+private val fontWeightCache = mutableMapOf<String?, Int>()
 
 /**
  * Applies fontFamily and fontWeight from BlockStyle to TextPaint.
- * Used by spans that inherit font properties from block elements (paragraph, headings).
+ * Uses caching to avoid expensive typeface creation on every call.
  */
 fun TextPaint.applyBlockStyleFont(
   blockStyle: BlockStyle,
   context: Context,
 ) {
+  val cacheKey = "${blockStyle.fontFamily}|${blockStyle.fontWeight}"
+
+  val cachedTypeface = typefaceCache[cacheKey]
+  if (cachedTypeface != null) {
+    this.typeface = cachedTypeface
+    return
+  }
+
   val baseTypeface =
     blockStyle.fontFamily
       .takeIf { it.isNotEmpty() }
       ?.let { Typeface.create(it, Typeface.NORMAL) }
-      ?: (this.typeface ?: Typeface.DEFAULT)
+      ?: Typeface.DEFAULT
 
-  val fontWeight = parseFontWeight(blockStyle.fontWeight)
-  this.typeface =
+  val fontWeight =
+    fontWeightCache.getOrPut(blockStyle.fontWeight) {
+      parseFontWeight(blockStyle.fontWeight)
+    }
+
+  val newTypeface =
     applyStyles(
       baseTypeface,
       ReactConstants.UNSET,
@@ -116,6 +81,9 @@ fun TextPaint.applyBlockStyleFont(
       blockStyle.fontFamily.takeIf { it.isNotEmpty() },
       context.assets,
     )
+
+  typefaceCache[cacheKey] = newTypeface
+  this.typeface = newTypeface
 }
 
 // ============================================================================
