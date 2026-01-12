@@ -26,6 +26,8 @@ class RendererFactory(
 ) {
   val blockStyleContext = BlockStyleContext()
 
+  val styleCache = SpanStyleCache(config.style)
+
   fun resetForNewRender() {
     blockStyleContext.resetForNewRender()
   }

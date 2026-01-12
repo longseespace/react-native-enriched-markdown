@@ -16,7 +16,7 @@ class StrongRenderer(
   ) {
     factory.renderWithSpan(builder, { factory.renderChildren(node, builder, onLinkPress) }) { start, end, blockStyle ->
       builder.setSpan(
-        StrongSpan(config.style, blockStyle),
+        StrongSpan(factory.styleCache, blockStyle),
         start,
         end,
         SPAN_FLAGS_EXCLUSIVE_EXCLUSIVE,

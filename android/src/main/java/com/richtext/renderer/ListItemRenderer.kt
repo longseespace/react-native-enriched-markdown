@@ -43,11 +43,11 @@ class ListItemRenderer(
     val span =
       when (listType) {
         BlockStyleContext.ListType.UNORDERED -> {
-          UnorderedListSpan(listStyle, depth, factory.context, config.style)
+          UnorderedListSpan(listStyle, depth, factory.context, factory.styleCache)
         }
 
         BlockStyleContext.ListType.ORDERED -> {
-          OrderedListSpan(listStyle, depth, factory.context, config.style).apply {
+          OrderedListSpan(listStyle, depth, factory.context, factory.styleCache).apply {
             setItemNumber(styleContext.listItemNumber)
           }
         }

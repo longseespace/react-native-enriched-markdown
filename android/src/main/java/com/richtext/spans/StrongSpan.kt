@@ -4,18 +4,18 @@ import android.graphics.Typeface
 import android.text.TextPaint
 import android.text.style.MetricAffectingSpan
 import com.richtext.renderer.BlockStyle
-import com.richtext.styles.StyleConfig
+import com.richtext.renderer.SpanStyleCache
 import com.richtext.utils.applyColorPreserving
-import com.richtext.utils.calculateStrongColor
-import com.richtext.utils.getColorsToPreserveForInlineStyle
 
 class StrongSpan(
-  private val style: StyleConfig,
+  private val styleCache: SpanStyleCache,
   private val blockStyle: BlockStyle,
 ) : MetricAffectingSpan() {
+  private val strongColor = styleCache.getStrongColorFor(blockStyle.color)
+
   override fun updateDrawState(tp: TextPaint) {
     applyStrongStyle(tp)
-    applyStrongColor(tp)
+    tp.applyColorPreserving(strongColor, *styleCache.colorsToPreserve)
   }
 
   override fun updateMeasureState(tp: TextPaint) {
@@ -28,26 +28,9 @@ class StrongSpan(
     if (kotlin.math.abs(tp.textSize - codeFontSize) > 0.1f) {
       tp.textSize = blockStyle.fontSize
     }
-
-    // Get base typeface from block fontFamily or current typeface
-    val baseTypeface =
-      blockStyle.fontFamily
-        .takeIf { it.isNotEmpty() }
-        ?.let { Typeface.create(it, Typeface.NORMAL) }
-        ?: (tp.typeface ?: Typeface.DEFAULT)
-
-    // Apply bold trait, preserving italic if present
-    val style = baseTypeface.style
-    tp.typeface =
-      if ((style and Typeface.BOLD) == 0) {
-        Typeface.create(baseTypeface, style or Typeface.BOLD)
-      } else {
-        baseTypeface
-      }
-  }
-
-  private fun applyStrongColor(tp: TextPaint) {
-    val colorToUse = calculateStrongColor(style, blockStyle)
-    tp.applyColorPreserving(colorToUse, *getColorsToPreserveForInlineStyle(style))
+    // Preserve italic if already applied (e.g., from EmphasisSpan)
+    val isItalic = (tp.typeface?.style ?: 0) and Typeface.ITALIC != 0
+    val style = if (isItalic) Typeface.BOLD_ITALIC else Typeface.BOLD
+    tp.typeface = SpanStyleCache.getTypeface(blockStyle.fontFamily, style)
   }
 }

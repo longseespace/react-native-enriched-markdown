@@ -6,13 +6,13 @@ import android.text.style.ClickableSpan
 import android.view.View
 import com.richtext.RichTextView
 import com.richtext.renderer.BlockStyle
-import com.richtext.styles.StyleConfig
+import com.richtext.renderer.SpanStyleCache
 import com.richtext.utils.applyBlockStyleFont
 
 class LinkSpan(
   val url: String,
   private val onLinkPress: ((String) -> Unit)?,
-  private val style: StyleConfig,
+  private val styleCache: SpanStyleCache,
   private val blockStyle: BlockStyle,
   private val context: Context,
 ) : ClickableSpan() {
@@ -31,7 +31,7 @@ class LinkSpan(
     textPaint.textSize = blockStyle.fontSize
     textPaint.applyBlockStyleFont(blockStyle, context)
 
-    textPaint.color = style.getLinkColor()
-    textPaint.isUnderlineText = style.getLinkUnderline()
+    textPaint.color = styleCache.linkColor
+    textPaint.isUnderlineText = styleCache.linkUnderline
   }
 }

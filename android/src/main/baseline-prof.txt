@@ -1,0 +1,65 @@
+# Baseline Profile for react-native-rich-text
+# These classes will be AOT compiled during app install
+# to improve cold start performance.
+
+# Core View and Rendering
+Lcom/richtext/RichTextView;
+Lcom/richtext/RichTextViewManager;
+Lcom/richtext/RichTextViewLayoutManager;
+
+# Renderer Classes
+Lcom/richtext/renderer/Renderer;
+Lcom/richtext/renderer/RendererFactory;
+Lcom/richtext/renderer/RendererConfig;
+Lcom/richtext/renderer/BlockStyleContext;
+Lcom/richtext/renderer/BlockStyle;
+Lcom/richtext/renderer/SpanStyleCache;
+Lcom/richtext/renderer/NodeRenderer;
+Lcom/richtext/renderer/TextRenderer;
+Lcom/richtext/renderer/ParagraphRenderer;
+Lcom/richtext/renderer/HeadingRenderer;
+Lcom/richtext/renderer/StrongRenderer;
+Lcom/richtext/renderer/EmphasisRenderer;
+Lcom/richtext/renderer/LinkRenderer;
+Lcom/richtext/renderer/ListRenderer;
+Lcom/richtext/renderer/ListItemRenderer;
+Lcom/richtext/renderer/BlockquoteRenderer;
+Lcom/richtext/renderer/CodeBlockRenderer;
+Lcom/richtext/renderer/InlineCodeRenderer;
+Lcom/richtext/renderer/ImageRenderer;
+Lcom/richtext/renderer/LineBreakRenderer;
+Lcom/richtext/renderer/DocumentRenderer;
+
+# Spans
+Lcom/richtext/spans/StrongSpan;
+Lcom/richtext/spans/EmphasisSpan;
+Lcom/richtext/spans/InlineCodeSpan;
+Lcom/richtext/spans/TextSpan;
+Lcom/richtext/spans/HeadingSpan;
+Lcom/richtext/spans/LinkSpan;
+Lcom/richtext/spans/LineHeightSpan;
+Lcom/richtext/spans/MarginBottomSpan;
+Lcom/richtext/spans/BaseListSpan;
+Lcom/richtext/spans/UnorderedListSpan;
+Lcom/richtext/spans/OrderedListSpan;
+Lcom/richtext/spans/BlockquoteSpan;
+Lcom/richtext/spans/CodeBlockSpan;
+Lcom/richtext/spans/InlineCodeBackgroundSpan;
+Lcom/richtext/spans/ImageSpan;
+
+# Style Configuration
+Lcom/richtext/styles/StyleConfig;
+Lcom/richtext/styles/ParagraphStyle;
+Lcom/richtext/styles/HeadingStyle;
+Lcom/richtext/styles/ListStyle;
+Lcom/richtext/styles/BlockquoteStyle;
+Lcom/richtext/styles/CodeBlockStyle;
+Lcom/richtext/styles/CodeStyle;
+
+# Parser
+Lcom/richtext/parser/Parser;
+Lcom/richtext/parser/MarkdownASTNode;
+Lcom/richtext/parser/MarkdownASTNode$NodeType;
+
+# Utilities
+Lcom/richtext/utils/UtilsKt;

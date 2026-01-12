@@ -10,14 +10,14 @@ import android.text.TextPaint
 import android.text.style.LeadingMarginSpan
 import android.text.style.MetricAffectingSpan
 import com.richtext.renderer.BlockStyle
-import com.richtext.styles.StyleConfig
+import com.richtext.renderer.SpanStyleCache
 import com.richtext.utils.applyBlockStyleFont
 import com.richtext.utils.applyColorPreserving
 
 abstract class BaseListSpan(
   val depth: Int,
   protected val context: Context?,
-  protected val richTextStyle: StyleConfig?,
+  protected val styleCache: SpanStyleCache?,
   protected val blockStyle: BlockStyle,
   protected val marginLeft: Float,
   protected val gapWidth: Float,
@@ -72,36 +72,19 @@ abstract class BaseListSpan(
     start: Int,
   )
 
-  // --- Text Styling ---
-
   private fun applyTextStyle(tp: TextPaint) {
     val ctx = context ?: return
     tp.textSize = blockStyle.fontSize
 
-    // Preserve bold/italic styles while applying custom block font
-    val preservedStyle = (tp.typeface?.style ?: Typeface.NORMAL) and (Typeface.BOLD or Typeface.ITALIC)
+    val preservedStyle = (tp.typeface?.style ?: 0) and (Typeface.BOLD or Typeface.ITALIC)
     tp.applyBlockStyleFont(blockStyle, ctx)
     if (preservedStyle != 0) {
-      tp.typeface = Typeface.create(tp.typeface ?: Typeface.DEFAULT, (tp.typeface?.style ?: 0) or preservedStyle)
+      tp.typeface = tp.typeface?.let { Typeface.create(it, it.style or preservedStyle) }
     }
 
-    // Apply color while respecting specific inline colors (links, code, etc.)
-    if (richTextStyle != null) {
-      tp.applyColorPreserving(blockStyle.color, *getColorsToPreserve().toIntArray())
-    } else {
-      tp.color = blockStyle.color
-    }
+    styleCache?.let { tp.applyColorPreserving(blockStyle.color, *it.colorsToPreserve) }
+      ?: run { tp.color = blockStyle.color }
   }
-
-  private fun getColorsToPreserve() =
-    buildList {
-      richTextStyle?.run {
-        getStrongColor()?.takeIf { it != 0 }?.let { add(it) }
-        getEmphasisColor()?.takeIf { it != 0 }?.let { add(it) }
-        getLinkColor().takeIf { it != 0 }?.let { add(it) }
-        getCodeStyle().color.takeIf { it != 0 }?.let { add(it) }
-      }
-    }
 
   // --- Helper Methods ---
 

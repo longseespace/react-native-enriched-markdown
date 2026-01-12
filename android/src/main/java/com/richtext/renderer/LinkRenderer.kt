@@ -18,7 +18,7 @@ class LinkRenderer(
 
     factory.renderWithSpan(builder, { factory.renderChildren(node, builder, onLinkPress) }) { start, end, blockStyle ->
       builder.setSpan(
-        LinkSpan(url, onLinkPress, config.style, blockStyle, factory.context),
+        LinkSpan(url, onLinkPress, factory.styleCache, blockStyle, factory.context),
         start,
         end,
         SPAN_FLAGS_EXCLUSIVE_EXCLUSIVE,

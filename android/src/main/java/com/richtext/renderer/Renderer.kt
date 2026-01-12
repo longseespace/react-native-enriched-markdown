@@ -43,6 +43,7 @@ class Renderer {
     collectedImageSpans.clear()
 
     val builder = SpannableStringBuilder()
+
     renderNode(document, builder, onLinkPress, factory)
 
     // Remove trailing margin from last block element
