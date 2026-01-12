@@ -52,24 +52,21 @@ class Renderer {
     return SpannableString(builder)
   }
 
-  /** Removes MarginBottomSpan from the last block element to eliminate bottom margin */
+  /** Removes trailing margin to eliminate bottom spacing */
   private fun removeTrailingMargin(builder: SpannableStringBuilder) {
     if (builder.isEmpty()) return
 
-    // Find all MarginBottomSpan instances
     val spans = builder.getSpans(0, builder.length, MarginBottomSpan::class.java)
     if (spans.isEmpty()) return
 
-    // Find the span that ends at the latest position (last block element)
     val lastSpan = spans.maxByOrNull { builder.getSpanEnd(it) } ?: return
     val spanEnd = builder.getSpanEnd(lastSpan)
 
-    // Remove trailing newlines first (they're added for spacing)
+    // Remove trailing newlines (added for block spacing)
     while (builder.isNotEmpty() && builder.last() == '\n') {
       builder.delete(builder.length - 1, builder.length)
     }
 
-    // Remove the last MarginBottomSpan if it's at or near the end
     if (spanEnd >= builder.length) {
       builder.removeSpan(lastSpan)
     }
