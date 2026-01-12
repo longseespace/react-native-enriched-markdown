@@ -43,10 +43,7 @@ fun TextPaint.applyColorPreserving(
   }
 }
 
-// Typeface cache to avoid expensive typeface creation for every span
 private val typefaceCache = mutableMapOf<String, Typeface>()
-
-// Font weight cache to avoid parsing strings repeatedly
 private val fontWeightCache = mutableMapOf<String?, Int>()
 
 /**
