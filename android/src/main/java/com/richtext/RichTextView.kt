@@ -36,7 +36,6 @@ class RichTextView
     private val executor = Executors.newSingleThreadExecutor()
     private var currentRenderId = 0L
 
-    // Layout manager for ShadowNode measurement
     val layoutManager = RichTextViewLayoutManager(this)
 
     var richTextStyle: StyleConfig? = null
@@ -123,7 +122,6 @@ class RichTextView
         span.registerTextView(this)
       }
 
-      // Trigger layout recalculation via ShadowNode
       layoutManager.invalidateLayout()
     }
 
