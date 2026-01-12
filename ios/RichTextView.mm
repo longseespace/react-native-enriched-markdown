@@ -137,6 +137,8 @@ using namespace facebook::react;
   // isSelectable controls text selection and link previews
   // Default to YES to match the prop default
   _textView.selectable = YES;
+  // Hide initially to prevent flash before content is rendered
+  _textView.hidden = YES;
 
   // Add tap gesture recognizer
   UITapGestureRecognizer *tapRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self
@@ -196,20 +198,24 @@ using namespace facebook::react;
   // Capture state needed for background rendering
   StyleConfig *config = [_config copy];
   MarkdownParser *parser = _parser;
+  NSUInteger inputLength = markdownString.length;
+  NSDate *scheduleStart = [NSDate date];
 
   // Dispatch heavy work to background queue
   dispatch_async(_renderQueue, ^{
-    // Parse AST on background thread
+    // 1. Parse Markdown → AST (C++ md4c parser)
+    NSDate *parseStart = [NSDate date];
     MarkdownASTNode *ast = [parser parseMarkdown:markdownString];
     if (!ast) {
       return;
     }
+    NSTimeInterval parseTime = [[NSDate date] timeIntervalSinceDate:parseStart] * 1000;
+    NSUInteger nodeCount = ast.children.count;
 
-    // Create fresh renderer and context for this render (thread-safe)
+    // 2. Render AST → NSAttributedString
+    NSDate *renderStart = [NSDate date];
     AttributedRenderer *renderer = [[AttributedRenderer alloc] initWithConfig:config];
     RenderContext *context = [RenderContext new];
-
-    // Build attributed string on background thread
     NSMutableAttributedString *attributedText = [renderer renderRoot:ast context:context];
 
     // Add link attributes
@@ -219,6 +225,14 @@ using namespace facebook::react;
       NSString *url = context.linkURLs[i];
       [attributedText addAttribute:@"linkURL" value:url range:range];
     }
+    NSTimeInterval renderTime = [[NSDate date] timeIntervalSinceDate:renderStart] * 1000;
+    NSUInteger styledLength = attributedText.length;
+
+    NSLog(@"┌──────────────────────────────────────────────");
+    NSLog(@"│ 📝 Input: %lu chars of Markdown", (unsigned long)inputLength);
+    NSLog(@"│ ⚡ md4c (C++ native): %.0fms → %lu AST nodes", parseTime, (unsigned long)nodeCount);
+    NSLog(@"│ 🎨 NSAttributedString render: %.0fms → %lu styled chars", renderTime, (unsigned long)styledLength);
+    NSLog(@"└──────────────────────────────────────────────");
 
     // Apply result on main thread
     dispatch_async(dispatch_get_main_queue(), ^{
@@ -228,8 +242,41 @@ using namespace facebook::react;
       }
 
       [self applyRenderedText:attributedText];
+
+      NSTimeInterval totalTime = [[NSDate date] timeIntervalSinceDate:scheduleStart] * 1000;
+      NSLog(@"✅ Total time to display: %.0fms", totalTime);
     });
   });
+}
+
+// Synchronous rendering for mock view measurement (no UI updates needed)
+- (void)renderMarkdownSynchronously:(NSString *)markdownString
+{
+  if (!markdownString || markdownString.length == 0) {
+    return;
+  }
+
+  _cachedMarkdown = [markdownString copy];
+
+  // Parse and render synchronously
+  MarkdownASTNode *ast = [_parser parseMarkdown:markdownString];
+  if (!ast) {
+    return;
+  }
+
+  AttributedRenderer *renderer = [[AttributedRenderer alloc] initWithConfig:_config];
+  RenderContext *context = [RenderContext new];
+  NSMutableAttributedString *attributedText = [renderer renderRoot:ast context:context];
+
+  // Add link attributes
+  for (NSUInteger i = 0; i < context.linkRanges.count; i++) {
+    NSValue *rangeValue = context.linkRanges[i];
+    NSRange range = [rangeValue rangeValue];
+    NSString *url = context.linkURLs[i];
+    [attributedText addAttribute:@"linkURL" value:url range:range];
+  }
+
+  _textView.attributedText = attributedText;
 }
 
 - (void)applyRenderedText:(NSMutableAttributedString *)attributedText
@@ -254,8 +301,13 @@ using namespace facebook::react;
   [_textView setNeedsDisplay];
   [self setNeedsLayout];
 
-  // Request height recalculation from shadow node
+  // Request height recalculation from shadow node FIRST
   [self requestHeightUpdate];
+
+  // Show text view on next run loop, after layout has settled
+  if (_textView.hidden) {
+    dispatch_async(dispatch_get_main_queue(), ^{ self->_textView.hidden = NO; });
+  }
 }
 
 - (void)updateProps:(Props::Shared const &)props oldProps:(Props::Shared const &)oldProps

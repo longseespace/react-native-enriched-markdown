@@ -24,7 +24,8 @@ public:
 
   Size measureContent(const LayoutContext &layoutContext, const LayoutConstraints &layoutConstraints) const override;
 
-  static ShadowNodeTraits BaseTraits() {
+  static ShadowNodeTraits BaseTraits()
+  {
     auto traits = ConcreteViewShadowNode::BaseTraits();
     traits.set(ShadowNodeTraits::Trait::LeafYogaNode);
     traits.set(ShadowNodeTraits::Trait::MeasurableYogaNode);
@@ -33,6 +34,9 @@ public:
 
 private:
   int localHeightRecalculationCounter_{0};
+
+  // Creates mock view off-screen for initial measurement when real view doesn't exist
+  id setupMockRichTextView_(CGFloat width) const;
 };
 
 } // namespace facebook::react
