@@ -12,16 +12,16 @@ import android.text.TextPaint
 import android.text.style.LeadingMarginSpan
 import android.text.style.MetricAffectingSpan
 import com.richtext.renderer.BlockStyle
+import com.richtext.renderer.SpanStyleCache
 import com.richtext.styles.BlockquoteStyle
-import com.richtext.styles.StyleConfig
 import com.richtext.utils.applyBlockStyleFont
 import com.richtext.utils.applyColorPreserving
 
 class BlockquoteSpan(
   private val style: BlockquoteStyle,
   val depth: Int,
-  private val context: Context? = null,
-  private val richTextStyle: StyleConfig? = null,
+  private val context: Context,
+  private val styleCache: SpanStyleCache,
 ) : MetricAffectingSpan(),
   LeadingMarginSpan {
   private val levelSpacing: Float = style.borderWidth + style.gapWidth
@@ -80,36 +80,17 @@ class BlockquoteSpan(
 
   @SuppressLint("WrongConstant") // Result of mask is always valid: 0, 1, 2, or 3
   private fun applyTextStyle(tp: TextPaint) {
-    if (context == null) return
     tp.textSize = blockStyle.fontSize
     val preserved = (tp.typeface?.style ?: 0) and BOLD_ITALIC_MASK
     tp.applyBlockStyleFont(blockStyle, context)
     if (preserved != 0) {
       tp.typeface = Typeface.create(tp.typeface ?: Typeface.DEFAULT, preserved)
     }
-    if (richTextStyle != null) {
-      tp.applyColorPreserving(blockStyle.color, *getColorsToPreserve().toIntArray())
-    } else {
-      tp.color = blockStyle.color
-    }
+    tp.applyColorPreserving(blockStyle.color, *styleCache.colorsToPreserve)
   }
 
   companion object {
     private const val BOLD_ITALIC_MASK = Typeface.BOLD or Typeface.ITALIC
-  }
-
-  private fun getColorsToPreserve(): List<Int> {
-    if (richTextStyle == null) return emptyList()
-    return buildList {
-      richTextStyle.getStrongColor()?.takeIf { it != 0 }?.let { add(it) }
-      richTextStyle.getEmphasisColor()?.takeIf { it != 0 }?.let { add(it) }
-      richTextStyle.getLinkColor().takeIf { it != 0 }?.let { add(it) }
-      richTextStyle
-        .getCodeStyle()
-        .color
-        .takeIf { it != 0 }
-        ?.let { add(it) }
-    }
   }
 
   private fun shouldSkipDrawing(
