@@ -13,15 +13,15 @@ import android.text.style.LineBackgroundSpan
 import android.text.style.MetricAffectingSpan
 import androidx.core.graphics.withSave
 import com.swmansion.enriched.markdown.renderer.BlockStyle
+import com.swmansion.enriched.markdown.renderer.SpanStyleCache
 import com.swmansion.enriched.markdown.styles.CodeBlockStyle
-import com.swmansion.enriched.markdown.styles.StyleConfig
 import com.swmansion.enriched.markdown.utils.applyBlockStyleFont
 import com.swmansion.enriched.markdown.utils.applyColorPreserving
 
 class CodeBlockSpan(
   private val style: CodeBlockStyle,
   private val context: Context,
-  private val styleConfig: StyleConfig,
+  private val styleCache: SpanStyleCache,
 ) : MetricAffectingSpan(),
   LineBackgroundSpan,
   LeadingMarginSpan {
@@ -183,19 +183,6 @@ class CodeBlockSpan(
 
     tp.applyBlockStyleFont(blockStyle, context)
 
-    tp.applyColorPreserving(blockStyle.color, *getColorsToPreserve().toIntArray())
-  }
-
-  private fun getColorsToPreserve(): List<Int> {
-    val colors = mutableListOf<Int>()
-    styleConfig.getStrongColor()?.takeIf { it != 0 }?.let { colors.add(it) }
-    styleConfig.getEmphasisColor()?.takeIf { it != 0 }?.let { colors.add(it) }
-    styleConfig.getLinkColor().takeIf { it != 0 }?.let { colors.add(it) }
-    styleConfig
-      .getCodeStyle()
-      .color
-      .takeIf { it != 0 }
-      ?.let { colors.add(it) }
-    return colors
+    tp.applyColorPreserving(blockStyle.color, *styleCache.colorsToPreserve)
   }
 }

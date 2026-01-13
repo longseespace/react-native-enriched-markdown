@@ -41,7 +41,7 @@ class CodeBlockRenderer(
     // 1. Apply CodeBlockSpan (Handles Background, Borders, and Horizontal Padding)
     // Matches the logic in the updated CodeBlockSpan for full-width support
     builder.setSpan(
-      CodeBlockSpan(style, factory.context, config.style),
+      CodeBlockSpan(style, factory.context, factory.styleCache),
       start,
       end,
       SPAN_FLAGS_EXCLUSIVE_EXCLUSIVE,
