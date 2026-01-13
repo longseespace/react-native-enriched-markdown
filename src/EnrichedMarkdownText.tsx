@@ -5,7 +5,7 @@ import EnrichedMarkdownTextNativeComponent, {
 import { normalizeMarkdownStyle } from './normalizeMarkdownStyle';
 import type { ViewStyle, TextStyle } from 'react-native';
 
-export interface ParagraphStyle {
+interface ParagraphStyle {
   fontSize?: number;
   fontFamily?: string;
   fontWeight?: string;
@@ -14,7 +14,7 @@ export interface ParagraphStyle {
   lineHeight?: number;
 }
 
-export interface HeadingStyle {
+interface HeadingStyle {
   fontSize?: number;
   fontFamily?: string;
   fontWeight?: string;
@@ -23,7 +23,7 @@ export interface HeadingStyle {
   lineHeight?: number;
 }
 
-export interface BlockquoteStyle {
+interface BlockquoteStyle {
   fontSize?: number;
   fontFamily?: string;
   fontWeight?: string;
@@ -34,14 +34,10 @@ export interface BlockquoteStyle {
   borderColor?: string;
   borderWidth?: number;
   gapWidth?: number;
-  /**
-   * Background color for blockquotes. Defaults to transparent.
-   * Note: When a non-transparent backgroundColor is set, text selection within blockquotes will not be visible (iOS only).
-   */
   backgroundColor?: string;
 }
 
-export interface ListStyle {
+interface ListStyle {
   fontSize?: number;
   fontFamily?: string;
   fontWeight?: string;
@@ -56,7 +52,7 @@ export interface ListStyle {
   marginLeft?: number;
 }
 
-export interface CodeBlockStyle {
+interface CodeBlockStyle {
   fontSize?: number;
   fontFamily?: string;
   fontWeight?: string;
@@ -70,32 +66,32 @@ export interface CodeBlockStyle {
   padding?: number;
 }
 
-export interface LinkStyle {
+interface LinkStyle {
   color?: string;
   underline?: boolean;
 }
 
-export interface StrongStyle {
+interface StrongStyle {
   color?: string;
 }
 
-export interface EmphasisStyle {
+interface EmphasisStyle {
   color?: string;
 }
 
-export interface CodeStyle {
+interface CodeStyle {
   color?: string;
   backgroundColor?: string;
   borderColor?: string;
 }
 
-export interface ImageStyle {
+interface ImageStyle {
   height?: number;
   borderRadius?: number;
   marginBottom?: number;
 }
 
-export interface InlineImageStyle {
+interface InlineImageStyle {
   size?: number;
 }
 

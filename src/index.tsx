@@ -3,15 +3,4 @@ export { default as EnrichedMarkdownTextNativeComponent } from './EnrichedMarkdo
 export type {
   EnrichedMarkdownTextProps,
   MarkdownStyle,
-  ParagraphStyle,
-  HeadingStyle,
-  BlockquoteStyle,
-  ListStyle,
-  CodeBlockStyle,
-  LinkStyle,
-  StrongStyle,
-  EmphasisStyle,
-  CodeStyle,
-  ImageStyle,
-  InlineImageStyle,
 } from './EnrichedMarkdownText';
