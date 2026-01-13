@@ -111,7 +111,7 @@ using namespace facebook::react;
     _parser = [[MarkdownParser alloc] init];
 
     // Serial queue for background rendering
-    _renderQueue = dispatch_queue_create("com.enrichedmarkdown.render", DISPATCH_QUEUE_SERIAL);
+    _renderQueue = dispatch_queue_create("com.swmansion.enriched.markdown.render", DISPATCH_QUEUE_SERIAL);
     _currentRenderId = 0;
 
     [self setupTextView];
