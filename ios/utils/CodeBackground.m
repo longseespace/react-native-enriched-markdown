@@ -184,9 +184,7 @@ static const CGFloat kCodeBackgroundBorderWidth = 0.5;
   if (range.location == NSNotFound || range.length == 0 || !textStorage) {
     return [_config paragraphFontSize] * 1.2;
   }
-  NSNumber *lineHeightValue = [textStorage attribute:@"RichTextBlockLineHeight"
-                                             atIndex:range.location
-                                      effectiveRange:NULL];
+  NSNumber *lineHeightValue = [textStorage attribute:@"BlockLineHeight" atIndex:range.location effectiveRange:NULL];
   return lineHeightValue ? [lineHeightValue doubleValue] : ([_config paragraphFontSize] * 1.2);
 }
 
