@@ -33,6 +33,8 @@
   ],
   "scripts": {
     "example": "yarn workspace react-native-enriched-markdown-example",
+    "android:build:release": "cd example && npx react-native build-android --mode=release",
+    "android:test:release": "cd example && yarn android --mode release",
     "test": "jest",
     "typecheck": "tsc",
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
