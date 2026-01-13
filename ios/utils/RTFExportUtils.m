@@ -40,7 +40,7 @@ static void processInlineCodes(NSMutableAttributedString *text, UIColor *bgColor
   if (!bgColor)
     return;
 
-  [text enumerateAttribute:RichTextCodeAttributeName
+  [text enumerateAttribute:CodeAttributeName
                    inRange:NSMakeRange(0, text.length)
                    options:0
                 usingBlock:^(id value, NSRange range, BOOL *stop) {

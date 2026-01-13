@@ -287,7 +287,7 @@ static BOOL isInlineCodeSpan(NSDictionary *attrs, BOOL isCodeBlock)
   if (isCodeBlock)
     return NO;
 
-  NSNumber *codeAttr = attrs[RichTextCodeAttributeName];
+  NSNumber *codeAttr = attrs[CodeAttributeName];
   if ([codeAttr boolValue])
     return YES;
 
