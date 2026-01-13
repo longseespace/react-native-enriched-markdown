@@ -36,22 +36,27 @@ class CodeBlockSpan(
   private val path = Path()
   private val rect = RectF()
   private val arcRect = RectF()
-
   private val radiiArray = FloatArray(8)
 
-  private val bgPaint =
-    Paint(Paint.ANTI_ALIAS_FLAG).apply {
-      this.style = Paint.Style.FILL
+  companion object {
+    private val sharedBackgroundPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL }
+    private val sharedBorderPaint =
+      Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        style = Paint.Style.STROKE
+        strokeCap = Paint.Cap.BUTT
+        strokeJoin = Paint.Join.ROUND
+      }
+  }
+
+  private fun configureBackgroundPaint(): Paint =
+    sharedBackgroundPaint.apply {
       color = this@CodeBlockSpan.style.backgroundColor
     }
 
-  private val borderPaint =
-    Paint(Paint.ANTI_ALIAS_FLAG).apply {
-      this.style = Paint.Style.STROKE
-      this.strokeWidth = this@CodeBlockSpan.style.borderWidth
-      this.color = this@CodeBlockSpan.style.borderColor
-      this.strokeCap = Paint.Cap.BUTT
-      this.strokeJoin = Paint.Join.ROUND
+  private fun configureBorderPaint(): Paint =
+    sharedBorderPaint.apply {
+      strokeWidth = this@CodeBlockSpan.style.borderWidth
+      color = this@CodeBlockSpan.style.borderColor
     }
 
   override fun getLeadingMargin(first: Boolean): Int = style.padding.toInt()
@@ -127,8 +132,11 @@ class CodeBlockSpan(
     path.reset()
     path.addRoundRect(rect, radiiArray, Path.Direction.CW)
 
+    val backgroundPaint = configureBackgroundPaint()
+    val borderPaint = configureBorderPaint()
+
     canvas.withSave {
-      drawPath(path, bgPaint)
+      drawPath(path, backgroundPaint)
 
       if (style.borderWidth > 0) {
         val bLeft = rect.left

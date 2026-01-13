@@ -18,18 +18,20 @@ class CodeBackgroundSpan(
   companion object {
     private const val CORNER_RADIUS = 6.0f
     private const val BORDER_WIDTH = 1.0f
+
+    private val sharedBackgroundPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL }
+    private val sharedBorderPaint =
+      Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        style = Paint.Style.STROKE
+        strokeWidth = BORDER_WIDTH
+        strokeJoin = Paint.Join.ROUND
+        strokeCap = Paint.Cap.ROUND
+      }
   }
 
+  // Reusable drawing objects per instance
   private val rect = RectF()
   private val path = Path()
-  private val bgPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL }
-  private val borderPaint =
-    Paint(Paint.ANTI_ALIAS_FLAG).apply {
-      style = Paint.Style.STROKE
-      strokeWidth = BORDER_WIDTH
-      strokeJoin = Paint.Join.ROUND
-      strokeCap = Paint.Cap.ROUND
-    }
 
   override fun drawBackground(
     canvas: Canvas,
@@ -63,8 +65,8 @@ class CodeBackgroundSpan(
 
     // 3. Apply Style
     val codeStyle = style.getCodeStyle()
-    bgPaint.color = codeStyle.backgroundColor
-    borderPaint.color = codeStyle.borderColor
+    sharedBackgroundPaint.color = codeStyle.backgroundColor
+    sharedBorderPaint.color = codeStyle.borderColor
 
     drawShapes(canvas, isFirst, isLast)
   }
@@ -92,10 +94,10 @@ class CodeBackgroundSpan(
 
     path.reset()
     path.addRoundRect(rect, radii, Path.Direction.CW)
-    canvas.drawPath(path, bgPaint)
+    canvas.drawPath(path, sharedBackgroundPaint)
 
     if (isFirst && isLast) {
-      canvas.drawPath(path, borderPaint)
+      canvas.drawPath(path, sharedBorderPaint)
     } else {
       drawOpenBorders(canvas, isFirst, isLast)
     }
@@ -129,7 +131,7 @@ class CodeBackgroundSpan(
       path.moveTo(rect.left, rect.bottom)
       path.lineTo(rect.right, rect.bottom)
     }
-    canvas.drawPath(path, borderPaint)
+    canvas.drawPath(path, sharedBorderPaint)
   }
 
   private fun createRadii(
