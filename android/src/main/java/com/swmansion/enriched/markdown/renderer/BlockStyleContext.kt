@@ -24,10 +24,34 @@ data class BlockStyle(
   val color: Int,
 )
 
+private class MutableBlockStyle {
+  var fontSize: Float = 0f
+  var fontFamily: String = ""
+  var fontWeight: String = ""
+  var color: Int = 0
+  var isDirty: Boolean = false
+
+  fun updateFrom(style: BaseBlockStyle) {
+    fontSize = style.fontSize
+    fontFamily = style.fontFamily
+    fontWeight = style.fontWeight
+    color = style.color
+    isDirty = true
+  }
+
+  fun toImmutable(): BlockStyle = BlockStyle(fontSize, fontFamily, fontWeight, color)
+
+  fun clear() {
+    isDirty = false
+  }
+}
+
 class BlockStyleContext {
   var currentBlockType = BlockType.NONE
     private set
-  private var currentBlockStyle: BlockStyle? = null
+
+  private val mutableBlockStyle = MutableBlockStyle()
+  private var cachedBlockStyle: BlockStyle? = null
   private var currentHeadingLevel = 0
 
   var blockquoteDepth = 0
@@ -47,13 +71,10 @@ class BlockStyleContext {
   ) {
     currentBlockType = type
     currentHeadingLevel = headingLevel
-    currentBlockStyle =
-      BlockStyle(
-        fontSize = style.fontSize,
-        fontFamily = style.fontFamily,
-        fontWeight = style.fontWeight,
-        color = style.color,
-      )
+    // Update mutable style in place - no allocation here
+    mutableBlockStyle.updateFrom(style)
+    // Invalidate cached immutable copy
+    cachedBlockStyle = null
   }
 
   // Unified Setters
@@ -114,20 +135,27 @@ class BlockStyleContext {
     orderedListItemNumbers.clear()
   }
 
-  fun requireBlockStyle(): BlockStyle =
-    currentBlockStyle ?: throw IllegalStateException(
-      "BlockStyle is null. Inline renderers must be used within a block context.",
-    )
+  fun requireBlockStyle(): BlockStyle {
+    if (!mutableBlockStyle.isDirty) {
+      throw IllegalStateException(
+        "BlockStyle is null. Inline renderers must be used within a block context.",
+      )
+    }
+    // Create immutable copy only when needed, cache for reuse within same block
+    return cachedBlockStyle ?: mutableBlockStyle.toImmutable().also { cachedBlockStyle = it }
+  }
 
   fun clearBlockStyle() {
     currentBlockType = BlockType.NONE
-    currentBlockStyle = null
+    mutableBlockStyle.clear()
+    cachedBlockStyle = null
     currentHeadingLevel = 0
   }
 
   fun resetForNewRender() {
     currentBlockType = BlockType.NONE
-    currentBlockStyle = null
+    mutableBlockStyle.clear()
+    cachedBlockStyle = null
     currentHeadingLevel = 0
     blockquoteDepth = 0
     listDepth = 0
