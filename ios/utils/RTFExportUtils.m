@@ -35,7 +35,7 @@ static void collectLineStartsInRange(NSString *string, NSRange range, void (^han
 
 #pragma mark - Inline Code Processing
 
-static void processInlineCodes(NSMutableAttributedString *text, UIColor *bgColor)
+static void processCodes(NSMutableAttributedString *text, UIColor *bgColor)
 {
   if (!bgColor)
     return;
@@ -261,11 +261,11 @@ NSAttributedString *prepareAttributedStringForRTFExport(NSAttributedString *attr
 
   NSMutableAttributedString *prepared = [attributedString mutableCopy];
 
-  UIColor *inlineCodeBgColor = [styleConfig codeBackgroundColor];
+  UIColor *codeBgColor = [styleConfig codeBackgroundColor];
   UIColor *codeBlockBgColor = [styleConfig codeBlockBackgroundColor];
   UIColor *blockquoteBgColor = [styleConfig blockquoteBackgroundColor];
 
-  processInlineCodes(prepared, inlineCodeBgColor);
+  processCodes(prepared, codeBgColor);
   processCodeBlocks(prepared, codeBlockBgColor);
   processBlockquotes(prepared, blockquoteBgColor);
   processLists(prepared);

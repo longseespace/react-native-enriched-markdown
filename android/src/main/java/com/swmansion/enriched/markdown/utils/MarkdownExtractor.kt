@@ -5,10 +5,10 @@ import android.widget.TextView
 import com.swmansion.enriched.markdown.EnrichedMarkdownText
 import com.swmansion.enriched.markdown.spans.BlockquoteSpan
 import com.swmansion.enriched.markdown.spans.CodeBlockSpan
+import com.swmansion.enriched.markdown.spans.CodeSpan
 import com.swmansion.enriched.markdown.spans.EmphasisSpan
 import com.swmansion.enriched.markdown.spans.HeadingSpan
 import com.swmansion.enriched.markdown.spans.ImageSpan
-import com.swmansion.enriched.markdown.spans.InlineCodeSpan
 import com.swmansion.enriched.markdown.spans.LinkSpan
 import com.swmansion.enriched.markdown.spans.OrderedListSpan
 import com.swmansion.enriched.markdown.spans.StrongSpan
@@ -263,13 +263,13 @@ object MarkdownExtractor {
   ): String {
     val hasStrong = spannable.getSpans(start, end, StrongSpan::class.java).isNotEmpty()
     val hasEmphasis = spannable.getSpans(start, end, EmphasisSpan::class.java).isNotEmpty()
-    val hasInlineCode = spannable.getSpans(start, end, InlineCodeSpan::class.java).isNotEmpty()
+    val hasCode = spannable.getSpans(start, end, CodeSpan::class.java).isNotEmpty()
     val linkSpans = spannable.getSpans(start, end, LinkSpan::class.java)
 
     var result = text
 
     // Innermost first
-    if (hasInlineCode && linkSpans.isEmpty()) {
+    if (hasCode && linkSpans.isEmpty()) {
       result = "`$result`"
     }
     if (hasEmphasis) {

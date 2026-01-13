@@ -2,11 +2,11 @@ package com.swmansion.enriched.markdown.renderer
 
 import android.text.SpannableStringBuilder
 import com.swmansion.enriched.markdown.parser.MarkdownASTNode
-import com.swmansion.enriched.markdown.spans.InlineCodeBackgroundSpan
-import com.swmansion.enriched.markdown.spans.InlineCodeSpan
+import com.swmansion.enriched.markdown.spans.CodeBackgroundSpan
+import com.swmansion.enriched.markdown.spans.CodeSpan
 import com.swmansion.enriched.markdown.utils.SPAN_FLAGS_EXCLUSIVE_EXCLUSIVE
 
-class InlineCodeRenderer(
+class CodeRenderer(
   private val config: RendererConfig,
 ) : NodeRenderer {
   override fun render(
@@ -21,13 +21,13 @@ class InlineCodeRenderer(
 
     factory.renderWithSpan(builder, { builder.append(codeText) }) { start, end, blockStyle ->
       builder.setSpan(
-        InlineCodeSpan(factory.styleCache, blockStyle),
+        CodeSpan(factory.styleCache, blockStyle),
         start,
         end,
         SPAN_FLAGS_EXCLUSIVE_EXCLUSIVE,
       )
       builder.setSpan(
-        InlineCodeBackgroundSpan(config.style),
+        CodeBackgroundSpan(config.style),
         start,
         end,
         SPAN_FLAGS_EXCLUSIVE_EXCLUSIVE,

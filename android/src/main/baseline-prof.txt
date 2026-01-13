@@ -25,7 +25,7 @@ Lcom/swmansion/enriched/markdown/renderer/ListRenderer;
 Lcom/swmansion/enriched/markdown/renderer/ListItemRenderer;
 Lcom/swmansion/enriched/markdown/renderer/BlockquoteRenderer;
 Lcom/swmansion/enriched/markdown/renderer/CodeBlockRenderer;
-Lcom/swmansion/enriched/markdown/renderer/InlineCodeRenderer;
+Lcom/swmansion/enriched/markdown/renderer/CodeRenderer;
 Lcom/swmansion/enriched/markdown/renderer/ImageRenderer;
 Lcom/swmansion/enriched/markdown/renderer/LineBreakRenderer;
 Lcom/swmansion/enriched/markdown/renderer/DocumentRenderer;
@@ -33,7 +33,7 @@ Lcom/swmansion/enriched/markdown/renderer/DocumentRenderer;
 # Spans
 Lcom/swmansion/enriched/markdown/spans/StrongSpan;
 Lcom/swmansion/enriched/markdown/spans/EmphasisSpan;
-Lcom/swmansion/enriched/markdown/spans/InlineCodeSpan;
+Lcom/swmansion/enriched/markdown/spans/CodeSpan;
 Lcom/swmansion/enriched/markdown/spans/TextSpan;
 Lcom/swmansion/enriched/markdown/spans/HeadingSpan;
 Lcom/swmansion/enriched/markdown/spans/LinkSpan;
@@ -44,7 +44,7 @@ Lcom/swmansion/enriched/markdown/spans/UnorderedListSpan;
 Lcom/swmansion/enriched/markdown/spans/OrderedListSpan;
 Lcom/swmansion/enriched/markdown/spans/BlockquoteSpan;
 Lcom/swmansion/enriched/markdown/spans/CodeBlockSpan;
-Lcom/swmansion/enriched/markdown/spans/InlineCodeBackgroundSpan;
+Lcom/swmansion/enriched/markdown/spans/CodeBackgroundSpan;
 Lcom/swmansion/enriched/markdown/spans/ImageSpan;
 
 # Style Configuration

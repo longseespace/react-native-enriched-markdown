@@ -12,7 +12,7 @@ import com.swmansion.enriched.markdown.styles.StyleConfig
 import kotlin.math.max
 import kotlin.math.min
 
-class InlineCodeBackgroundSpan(
+class CodeBackgroundSpan(
   private val style: StyleConfig,
 ) : LineBackgroundSpan {
   companion object {

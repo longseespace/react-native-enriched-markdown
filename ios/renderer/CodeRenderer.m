@@ -1,4 +1,4 @@
-#import "InlineCodeRenderer.h"
+#import "CodeRenderer.h"
 #import "CodeBackground.h"
 #import "FontUtils.h"
 #import "MarkdownASTNode.h"
@@ -6,7 +6,7 @@
 #import "RendererFactory.h"
 #import "StyleConfig.h"
 
-@implementation InlineCodeRenderer {
+@implementation CodeRenderer {
   RendererFactory *_rendererFactory;
   StyleConfig *_config;
 }

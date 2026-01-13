@@ -3,7 +3,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface InlineCodeRenderer : NSObject <NodeRenderer>
+@interface CodeRenderer : NSObject <NodeRenderer>
 - (instancetype)initWithRendererFactory:(id)rendererFactory config:(id)config;
 @end
 

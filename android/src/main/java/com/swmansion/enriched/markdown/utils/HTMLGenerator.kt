@@ -7,10 +7,10 @@ import android.text.style.StyleSpan
 import android.text.style.UnderlineSpan
 import com.swmansion.enriched.markdown.spans.BlockquoteSpan
 import com.swmansion.enriched.markdown.spans.CodeBlockSpan
+import com.swmansion.enriched.markdown.spans.CodeSpan
 import com.swmansion.enriched.markdown.spans.EmphasisSpan
 import com.swmansion.enriched.markdown.spans.HeadingSpan
 import com.swmansion.enriched.markdown.spans.ImageSpan
-import com.swmansion.enriched.markdown.spans.InlineCodeSpan
 import com.swmansion.enriched.markdown.spans.LinkSpan
 import com.swmansion.enriched.markdown.spans.OrderedListSpan
 import com.swmansion.enriched.markdown.spans.StrongSpan
@@ -83,9 +83,9 @@ object HTMLGenerator {
     val blockquoteParagraphMargin = "0 0 4px 0"
     val inlineImageHeight = "1.2em"
     val inlineImageVerticalAlign = "-0.2em"
-    val inlineCodePadding = "2px 4px"
-    val inlineCodeBorderRadius = "4px"
-    val inlineCodeFontSize = "0.7em"
+    val codePadding = "2px 4px"
+    val codeBorderRadius = "4px"
+    val codeFontSize = "0.7em"
 
     // Headings (array for O(1) lookup)
     val headingFontSizes: IntArray
@@ -655,7 +655,7 @@ object HTMLGenerator {
     val underlineSpans = text.getSpans(start, end, UnderlineSpan::class.java)
     val strikethroughSpans = text.getSpans(start, end, StrikethroughSpan::class.java)
     val linkSpans = text.getSpans(start, end, LinkSpan::class.java)
-    val inlineCodeSpans = text.getSpans(start, end, InlineCodeSpan::class.java)
+    val codeSpans = text.getSpans(start, end, CodeSpan::class.java)
 
     val isBold =
       strongSpans.isNotEmpty() ||
@@ -666,7 +666,7 @@ object HTMLGenerator {
     val isUnderline = underlineSpans.isNotEmpty()
     val isStrikethrough = strikethroughSpans.isNotEmpty()
     val link = linkSpans.firstOrNull()
-    val isInlineCode = inlineCodeSpans.isNotEmpty() && !isCodeBlock
+    val isCode = codeSpans.isNotEmpty() && !isCodeBlock
 
     link?.let {
       html.append("<a href=\"")
@@ -679,18 +679,18 @@ object HTMLGenerator {
         .append(";\">")
     }
 
-    if (isInlineCode) {
+    if (isCode) {
       html
         .append("<code style=\"background-color: ")
         .append(styles.codeBgColor)
         .append("; color: ")
         .append(styles.codeColor)
         .append("; padding: ")
-        .append(styles.inlineCodePadding)
+        .append(styles.codePadding)
         .append("; border-radius: ")
-        .append(styles.inlineCodeBorderRadius)
+        .append(styles.codeBorderRadius)
         .append("; font-size: ")
-        .append(styles.inlineCodeFontSize)
+        .append(styles.codeFontSize)
         .append("; font-family: Menlo, Monaco, Consolas, monospace;\">")
     }
 
@@ -719,7 +719,7 @@ object HTMLGenerator {
     if (isStrikethrough) html.append("</s>")
     if (isItalic) html.append("</em>")
     if (isBold) html.append("</strong>")
-    if (isInlineCode) html.append("</code>")
+    if (isCode) html.append("</code>")
     if (link != null) html.append("</a>")
   }
 

@@ -6,7 +6,7 @@ import android.text.style.MetricAffectingSpan
 import com.swmansion.enriched.markdown.renderer.BlockStyle
 import com.swmansion.enriched.markdown.renderer.SpanStyleCache
 
-class InlineCodeSpan(
+class CodeSpan(
   private val styleCache: SpanStyleCache,
   private val blockStyle: BlockStyle,
 ) : MetricAffectingSpan() {

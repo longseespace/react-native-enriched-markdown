@@ -13,8 +13,8 @@ static const CGFloat kBlockquoteVerticalPadding = 8.0;
 static const CGFloat kBlockquoteParagraphSpacing = 4.0;
 static const CGFloat kNestedBlockquoteTopMargin = 8.0;
 static const CGFloat kDefaultListIndent = 24.0;
-static const CGFloat kInlineCodePadding = 2.0;
-static const CGFloat kInlineCodeBorderRadius = 4.0;
+static const CGFloat kCodePadding = 2.0;
+static const CGFloat kCodeBorderRadius = 4.0;
 
 #pragma mark - Paragraph Types
 
@@ -282,7 +282,7 @@ static BOOL isMonospaceFont(UIFont *font)
          [fontName containsString:@"monaco"] || [fontName containsString:@"consolas"];
 }
 
-static BOOL isInlineCodeSpan(NSDictionary *attrs, BOOL isCodeBlock)
+static BOOL isCodeSpan(NSDictionary *attrs, BOOL isCodeBlock)
 {
   if (isCodeBlock)
     return NO;
@@ -444,7 +444,7 @@ static void generateInlineHTML(NSMutableString *html, NSAttributedString *attrib
                         NSNumber *underline = attrs[NSUnderlineStyleAttributeName];
                         NSNumber *strikethrough = attrs[NSStrikethroughStyleAttributeName];
                         id linkAttr = attrs[NSLinkAttributeName];
-                        BOOL isInlineCode = isInlineCodeSpan(attrs, isCodeBlock);
+                        BOOL isCode = isCodeSpan(attrs, isCodeBlock);
 
                         BOOL isBold = NO, isItalic = NO;
                         if (font) {
@@ -461,13 +461,13 @@ static void generateInlineHTML(NSMutableString *html, NSAttributedString *attrib
                                              styles.linkUnderline ? @"underline" : @"none"];
                         }
 
-                        if (isInlineCode) {
+                        if (isCode) {
                           [html appendFormat:
                                     @"<code style=\"background-color: %@; color: %@; "
                                     @"padding: %.0fpx %.0fpx; border-radius: %.0fpx; "
                                     @"font-size: 0.7em; font-family: Menlo, Monaco, Consolas, monospace;\">",
-                                    styles.codeBackgroundColor, styles.codeColor, kInlineCodePadding,
-                                    kInlineCodePadding * 2, kInlineCodeBorderRadius];
+                                    styles.codeBackgroundColor, styles.codeColor, kCodePadding, kCodePadding * 2,
+                                    kCodeBorderRadius];
                         }
 
                         if (isBold) {
@@ -502,7 +502,7 @@ static void generateInlineHTML(NSMutableString *html, NSAttributedString *attrib
                           [html appendString:@"</em>"];
                         if (isBold)
                           [html appendString:@"</strong>"];
-                        if (isInlineCode)
+                        if (isCode)
                           [html appendString:@"</code>"];
                         if (linkAttr)
                           [html appendString:@"</a>"];
