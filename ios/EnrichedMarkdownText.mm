@@ -1,5 +1,6 @@
 #import "EnrichedMarkdownText.h"
 #import "AttributedRenderer.h"
+#import "CodeBlockBackground.h"
 #import "EditMenuUtils.h"
 #import "FontUtils.h"
 #import "ImageAttachment.h"
@@ -63,7 +64,7 @@ using namespace facebook::react;
     return CGSizeMake(maxWidth, defaultHeight);
   }
 
-  // Find last non-newline character to exclude trailing spacing from measurement
+  // Find last content character (exclude trailing newlines from measurement)
   NSRange lastContent = [text.string rangeOfCharacterFromSet:[[NSCharacterSet newlineCharacterSet] invertedSet]
                                                      options:NSBackwardsSearch];
   if (lastContent.location == NSNotFound) {
@@ -76,7 +77,14 @@ using namespace facebook::react;
                                      options:NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading
                                      context:nil];
 
-  return CGSizeMake(maxWidth, ceil(boundingRect.size.height));
+  CGFloat measuredHeight = boundingRect.size.height;
+
+  // Compensate for iOS not measuring trailing newlines (code block bottom padding)
+  if ([CodeBlockBackground isLastElementCodeBlock:text]) {
+    measuredHeight += [_config codeBlockPadding];
+  }
+
+  return CGSizeMake(maxWidth, ceil(measuredHeight));
 }
 
 - (void)updateState:(const facebook::react::State::Shared &)state
@@ -233,12 +241,6 @@ using namespace facebook::react;
     NSTimeInterval renderTime = [[NSDate date] timeIntervalSinceDate:renderStart] * 1000;
     NSUInteger styledLength = attributedText.length;
 
-    NSLog(@"┌──────────────────────────────────────────────");
-    NSLog(@"│ 📝 Input: %lu chars of Markdown", (unsigned long)inputLength);
-    NSLog(@"│ ⚡ md4c (C++ native): %.0fms → %lu AST nodes", parseTime, (unsigned long)nodeCount);
-    NSLog(@"│ 🎨 NSAttributedString render: %.0fms → %lu styled chars", renderTime, (unsigned long)styledLength);
-    NSLog(@"└──────────────────────────────────────────────");
-
     // Apply result on main thread
     dispatch_async(dispatch_get_main_queue(), ^{
       // Check if this render is still current
@@ -249,7 +251,12 @@ using namespace facebook::react;
       [self applyRenderedText:attributedText];
 
       NSTimeInterval totalTime = [[NSDate date] timeIntervalSinceDate:scheduleStart] * 1000;
-      NSLog(@"✅ Total time to display: %.0fms", totalTime);
+      NSLog(@"┌──────────────────────────────────────────────");
+      NSLog(@"│ 📝 Input: %lu chars of Markdown", (unsigned long)inputLength);
+      NSLog(@"│ ⚡ md4c (C++ native): %.0fms → %lu AST nodes", parseTime, (unsigned long)nodeCount);
+      NSLog(@"│ 🎨 NSAttributedString render: %.0fms → %lu styled chars", renderTime, (unsigned long)styledLength);
+      NSLog(@"│ ✅ Total time to display: %.0fms", totalTime);
+      NSLog(@"└──────────────────────────────────────────────");
     });
   });
 }

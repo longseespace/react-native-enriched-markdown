@@ -15,6 +15,28 @@ NSString *const CodeBlockAttributeName = @"CodeBlock";
   return self;
 }
 
++ (BOOL)isLastElementCodeBlock:(NSAttributedString *)text
+{
+  if (text.length == 0)
+    return NO;
+
+  // Find the last non-newline character (actual content)
+  NSRange lastContent = [text.string rangeOfCharacterFromSet:[[NSCharacterSet newlineCharacterSet] invertedSet]
+                                                     options:NSBackwardsSearch];
+  if (lastContent.location == NSNotFound)
+    return NO;
+
+  // Check if it's inside a code block
+  NSNumber *isCodeBlock = [text attribute:CodeBlockAttributeName atIndex:lastContent.location effectiveRange:nil];
+  if (!isCodeBlock.boolValue)
+    return NO;
+
+  // Verify the code block extends to the end of text
+  NSRange codeBlockRange;
+  [text attribute:CodeBlockAttributeName atIndex:lastContent.location effectiveRange:&codeBlockRange];
+  return NSMaxRange(codeBlockRange) == text.length;
+}
+
 - (void)drawBackgroundsForGlyphRange:(NSRange)glyphsToShow
                        layoutManager:(NSLayoutManager *)layoutManager
                        textContainer:(NSTextContainer *)textContainer
@@ -42,29 +64,24 @@ NSString *const CodeBlockAttributeName = @"CodeBlock";
                                 atPoint:(CGPoint)origin
 {
   NSRange glyphRange = [layoutManager glyphRangeForCharacterRange:range actualCharacterRange:NULL];
+  CGRect blockRect = [layoutManager boundingRectForGlyphRange:glyphRange inTextContainer:textContainer];
 
-  __block CGRect blockRect = CGRectNull;
-  [layoutManager enumerateLineFragmentsForGlyphRange:glyphRange
-                                          usingBlock:^(CGRect rect, CGRect usedRect, NSTextContainer *tc,
-                                                       NSRange lineRange, BOOL *stop) {
-                                            CGRect lineRect = rect;
-                                            lineRect.origin.x += origin.x;
-                                            lineRect.origin.y += origin.y;
-                                            // Union the rects to create a single block
-                                            blockRect =
-                                                CGRectIsNull(blockRect) ? lineRect : CGRectUnion(blockRect, lineRect);
-                                          }];
-
-  if (CGRectIsNull(blockRect))
+  if (CGRectIsEmpty(blockRect))
     return;
 
   blockRect.origin.x = origin.x;
+  blockRect.origin.y += origin.y;
   blockRect.size.width = textContainer.size.width;
+
+  // Compensate for iOS not measuring trailing newlines (bottom padding)
+  // Only for the LAST code block (the one that ends at text.length)
+  BOOL isLastCodeBlock = (NSMaxRange(range) == layoutManager.textStorage.length);
+  if (isLastCodeBlock) {
+    blockRect.size.height += [_config codeBlockPadding];
+  }
 
   CGFloat borderWidth = [_config codeBlockBorderWidth];
   CGFloat borderRadius = [_config codeBlockBorderRadius];
-
-  // Inset the drawing by half the border width
   CGFloat inset = borderWidth / 2.0;
   CGRect insetRect = CGRectInset(blockRect, inset, inset);
   UIBezierPath *path = [UIBezierPath bezierPathWithRoundedRect:insetRect cornerRadius:MAX(0, borderRadius - inset)];
