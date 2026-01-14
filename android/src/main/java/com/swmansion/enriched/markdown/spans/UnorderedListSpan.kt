@@ -9,7 +9,7 @@ import com.swmansion.enriched.markdown.renderer.SpanStyleCache
 import com.swmansion.enriched.markdown.styles.ListStyle
 
 class UnorderedListSpan(
-  private val style: ListStyle,
+  private val listStyle: ListStyle,
   depth: Int,
   context: Context,
   styleCache: SpanStyleCache,
@@ -19,15 +19,27 @@ class UnorderedListSpan(
     styleCache = styleCache,
     blockStyle =
       BlockStyle(
-        fontSize = style.fontSize,
-        fontFamily = style.fontFamily,
-        fontWeight = style.fontWeight,
-        color = style.color,
+        fontSize = listStyle.fontSize,
+        fontFamily = listStyle.fontFamily,
+        fontWeight = listStyle.fontWeight,
+        color = listStyle.color,
       ),
-    marginLeft = style.marginLeft,
-    gapWidth = style.gapWidth,
+    marginLeft = listStyle.marginLeft,
+    gapWidth = listStyle.gapWidth,
   ) {
-  private val radius: Float = style.bulletSize / 2f
+  companion object {
+    private val sharedBulletPaint =
+      Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        style = Paint.Style.FILL
+      }
+  }
+
+  private val radius: Float = listStyle.bulletSize / 2f
+
+  private fun configureBulletPaint(): Paint =
+    sharedBulletPaint.apply {
+      color = listStyle.bulletColor
+    }
 
   override fun drawMarker(
     c: Canvas,
@@ -40,9 +52,7 @@ class UnorderedListSpan(
     layout: Layout?,
     start: Int,
   ) {
-    p.style = Paint.Style.FILL
-    p.color = style.bulletColor
-    p.isAntiAlias = true
+    val bulletPaint = configureBulletPaint()
 
     // 1. Calculate the right-hand boundary of the margin
     val rightBoundaryX = x + ((depth + 1) * marginLeft) * dir
@@ -54,6 +64,6 @@ class UnorderedListSpan(
     val fm = p.fontMetrics
     val bulletY = baseline + (fm.ascent + fm.descent) / 2f
 
-    c.drawCircle(bulletX, bulletY, radius, p)
+    c.drawCircle(bulletX, bulletY, radius, bulletPaint)
   }
 }

@@ -28,12 +28,17 @@ class OrderedListSpan(
     marginLeft = listStyle.marginLeft,
     gapWidth = listStyle.gapWidth,
   ) {
-  private val markerPaint =
-    TextPaint().apply {
+  companion object {
+    private val sharedMarkerPaint = TextPaint().apply { isAntiAlias = true }
+  }
+
+  private val markerTypeface = SpanStyleCache.getTypefaceWithWeight(listStyle.fontFamily, listStyle.markerFontWeight)
+
+  private fun configureMarkerPaint(): TextPaint =
+    sharedMarkerPaint.apply {
       textSize = listStyle.fontSize
       color = listStyle.markerColor
-      isAntiAlias = true
-      typeface = SpanStyleCache.getTypefaceWithWeight(listStyle.fontFamily, listStyle.markerFontWeight)
+      typeface = markerTypeface
     }
 
   var itemNumber: Int = 1
@@ -50,6 +55,7 @@ class OrderedListSpan(
     layout: Layout?,
     start: Int,
   ) {
+    val markerPaint = configureMarkerPaint()
     val text = "$itemNumber."
     val textWidth = markerPaint.measureText(text)
 

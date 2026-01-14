@@ -60,14 +60,9 @@ class BlockquoteSpan(
     // Essential check from original: only the deepest span draws to prevent over-rendering background
     if (shouldSkipDrawing(text, start)) return
 
-    val originalStyle = p.style
-    val originalColor = p.color
+    drawBackground(c, top, bottom, layout)
 
-    drawBackground(c, p, top, bottom, layout)
-
-    p.style = Paint.Style.FILL
-    p.color = blockquoteStyle.borderColor
-
+    val borderPaint = configureBorderPaint()
     val borderTop = top.toFloat()
     val borderBottom = bottom.toFloat()
     val containerLeft = layout?.getLineLeft(0) ?: 0f
@@ -75,11 +70,8 @@ class BlockquoteSpan(
     for (level in 0..depth) {
       val borderX = containerLeft + (levelSpacing * level * dir)
       val borderRight = borderX + (blockquoteStyle.borderWidth * dir)
-      c.drawRect(borderX, borderTop, borderRight, borderBottom, p)
+      c.drawRect(borderX, borderTop, borderRight, borderBottom, borderPaint)
     }
-
-    p.style = originalStyle
-    p.color = originalColor
   }
 
   @SuppressLint("WrongConstant") // Result of mask is always valid: 0, 1, 2, or 3
@@ -95,7 +87,20 @@ class BlockquoteSpan(
 
   companion object {
     private const val BOLD_ITALIC_MASK = Typeface.BOLD or Typeface.ITALIC
+
+    private val sharedBorderPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL }
+    private val sharedBackgroundPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL }
   }
+
+  private fun configureBorderPaint(): Paint =
+    sharedBorderPaint.apply {
+      color = blockquoteStyle.borderColor
+    }
+
+  private fun configureBackgroundPaint(bgColor: Int): Paint =
+    sharedBackgroundPaint.apply {
+      color = bgColor
+    }
 
   private fun shouldSkipDrawing(
     text: CharSequence?,
@@ -119,14 +124,12 @@ class BlockquoteSpan(
 
   private fun drawBackground(
     c: Canvas,
-    p: Paint,
     top: Int,
     bottom: Int,
     layout: Layout?,
   ) {
     val bgColor = blockquoteStyle.backgroundColor?.takeIf { it != Color.TRANSPARENT } ?: return
-    p.style = Paint.Style.FILL
-    p.color = bgColor
-    c.drawRect(0f, top.toFloat(), layout?.width?.toFloat() ?: 0f, bottom.toFloat(), p)
+    val backgroundPaint = configureBackgroundPaint(bgColor)
+    c.drawRect(0f, top.toFloat(), layout?.width?.toFloat() ?: 0f, bottom.toFloat(), backgroundPaint)
   }
 }
