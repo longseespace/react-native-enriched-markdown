@@ -41,6 +41,8 @@ class UnorderedListSpan(
       color = listStyle.bulletColor
     }
 
+  override fun getMarkerWidth(): Float = radius
+
   override fun drawMarker(
     c: Canvas,
     p: Paint,
@@ -54,13 +56,11 @@ class UnorderedListSpan(
   ) {
     val bulletPaint = configureBulletPaint()
 
-    // 1. Calculate the right-hand boundary of the margin
-    val rightBoundaryX = x + ((depth + 1) * marginLeft) * dir
+    // Calculate bullet position based on depth
+    // depth 0: radius, depth 1: marginLeft + radius, etc.
+    val bulletX = (depth * marginLeft + radius) * dir
 
-    // 2. Center bullet in the space before the text
-    val bulletX = rightBoundaryX - (gapWidth / 2f) * dir
-
-    // 3. Vertical centering based on font metrics
+    // Vertical centering based on font metrics
     val fm = p.fontMetrics
     val bulletY = baseline + (fm.ascent + fm.descent) / 2f
 

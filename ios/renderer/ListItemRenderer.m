@@ -47,7 +47,11 @@ NSString *const ListItemNumberAttribute = @"ListItemNumber";
 
   // 3. Pre-calculate invariant metadata for this item
   NSInteger currentDepth = context.listDepth - 1;
-  CGFloat indent = (currentDepth + 1) * [_config listStyleMarginLeft] + [_config listStyleGapWidth];
+  // Root items: just marker width + gap (flush to left edge)
+  // Nested items: add marginLeft for each nesting level
+  CGFloat minMarkerWidth = (context.listType == ListTypeOrdered) ? [_config effectiveListMarginLeftForNumber]
+                                                                 : [_config effectiveListMarginLeftForBullet];
+  CGFloat indent = minMarkerWidth + [_config effectiveListGapWidth] + (currentDepth * [_config listStyleMarginLeft]);
   CGFloat configLineHeight = [_config listStyleLineHeight];
 
   // Pre-wrap numbers to avoid repeated allocations in the block

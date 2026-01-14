@@ -186,6 +186,9 @@
 - (CGFloat)listStyleMarginLeft;
 - (void)setListStyleMarginLeft:(CGFloat)newValue;
 - (UIFont *)listMarkerFont;
+- (CGFloat)effectiveListGapWidth;
+- (CGFloat)effectiveListMarginLeftForBullet;
+- (CGFloat)effectiveListMarginLeftForNumber;
 // Code block properties
 - (CGFloat)codeBlockFontSize;
 - (void)setCodeBlockFontSize:(CGFloat)newValue;

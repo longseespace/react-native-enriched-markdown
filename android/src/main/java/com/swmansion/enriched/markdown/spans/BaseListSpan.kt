@@ -28,6 +28,8 @@ abstract class BaseListSpan(
   private var cachedText: CharSequence? = null
   private var cachedHasDeeperSpanByPosition = mutableMapOf<Int, Boolean>()
 
+  protected abstract fun getMarkerWidth(): Float
+
   // --- MetricAffectingSpan Implementation ---
 
   override fun updateMeasureState(tp: TextPaint) = applyTextStyle(tp)
@@ -37,9 +39,17 @@ abstract class BaseListSpan(
   // --- LeadingMarginSpan Implementation ---
 
   override fun getLeadingMargin(first: Boolean): Int {
-    // Incremental margin calculation to support Android's span accumulation
-    return (marginLeft + (if (depth == 0) gapWidth else 0f)).toInt()
+    // Root items: just marker width + gap (flush to left edge)
+    // Nested items: add marginLeft for each nesting level
+    return if (depth == 0) {
+      val effectiveGap = gapWidth.coerceAtLeast(DEFAULT_MIN_GAP)
+      (getMarkerWidth() + effectiveGap).toInt()
+    } else {
+      marginLeft.toInt()
+    }
   }
+
+  protected fun getEffectiveGapWidth(): Float = gapWidth.coerceAtLeast(DEFAULT_MIN_GAP)
 
   override fun drawLeadingMargin(
     c: Canvas,
@@ -92,6 +102,7 @@ abstract class BaseListSpan(
 
   companion object {
     private const val BOLD_ITALIC_MASK = Typeface.BOLD or Typeface.ITALIC // 3
+    private const val DEFAULT_MIN_GAP = 4f
   }
 
   // --- Helper Methods ---

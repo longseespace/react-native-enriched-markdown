@@ -1210,6 +1210,27 @@
   return _listMarkerFont;
 }
 
+static const CGFloat kDefaultMinGap = 4.0;
+
+- (CGFloat)effectiveListGapWidth
+{
+  return MAX(_listStyleGapWidth, kDefaultMinGap);
+}
+
+- (CGFloat)effectiveListMarginLeftForBullet
+{
+  // Just the minimum width needed for bullet (radius)
+  return _listStyleBulletSize / 2.0;
+}
+
+- (CGFloat)effectiveListMarginLeftForNumber
+{
+  // Reserve width for numbers up to 99 (matching Android)
+  UIFont *font = [self listMarkerFont];
+  return
+      [@"99." sizeWithAttributes:@{NSFontAttributeName : font ?: [UIFont systemFontOfSize:_listStyleFontSize]}].width;
+}
+
 // Code block properties
 - (CGFloat)codeBlockFontSize
 {

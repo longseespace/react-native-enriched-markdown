@@ -41,6 +41,11 @@ class OrderedListSpan(
       typeface = markerTypeface
     }
 
+  override fun getMarkerWidth(): Float {
+    val paint = configureMarkerPaint()
+    return paint.measureText("99.")
+  }
+
   var itemNumber: Int = 1
     private set
 
@@ -59,11 +64,10 @@ class OrderedListSpan(
     val text = "$itemNumber."
     val textWidth = markerPaint.measureText(text)
 
-    // Indentation calculation based on depth and margin
-    val textStartX = x + ((depth + 1) * marginLeft) * dir
-
-    // Precise marker placement relative to the text start point
-    val markerX = textStartX - (textWidth + (gapWidth / 4f)) * dir
+    // Calculate marker position based on depth
+    // depth 0: markerWidth, depth 1: marginLeft + markerWidth, etc.
+    val markerRightEdge = (depth * marginLeft + getMarkerWidth()) * dir
+    val markerX = markerRightEdge - textWidth * dir
 
     c.drawText(text, markerX, baseline.toFloat(), markerPaint)
   }

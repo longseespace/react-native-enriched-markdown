@@ -30,7 +30,7 @@ extern NSString *const ListItemNumberAttribute;
     return;
 
   // Cache gap and track paragraphs to prevent double-drawing on wrapped lines
-  CGFloat gap = [_config listStyleGapWidth];
+  CGFloat gap = [_config effectiveListGapWidth];
   NSMutableSet *drawnParagraphs = [NSMutableSet set];
 
   [layoutManager
