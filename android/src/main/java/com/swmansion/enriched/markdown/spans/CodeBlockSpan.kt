@@ -19,7 +19,7 @@ import com.swmansion.enriched.markdown.utils.applyBlockStyleFont
 import com.swmansion.enriched.markdown.utils.applyColorPreserving
 
 class CodeBlockSpan(
-  private val style: CodeBlockStyle,
+  private val codeBlockStyle: CodeBlockStyle,
   private val context: Context,
   private val styleCache: SpanStyleCache,
 ) : MetricAffectingSpan(),
@@ -27,10 +27,10 @@ class CodeBlockSpan(
   LeadingMarginSpan {
   private val blockStyle =
     BlockStyle(
-      fontSize = style.fontSize,
-      fontFamily = style.fontFamily,
-      fontWeight = style.fontWeight,
-      color = style.color,
+      fontSize = codeBlockStyle.fontSize,
+      fontFamily = codeBlockStyle.fontFamily,
+      fontWeight = codeBlockStyle.fontWeight,
+      color = codeBlockStyle.color,
     )
 
   private val path = Path()
@@ -50,16 +50,16 @@ class CodeBlockSpan(
 
   private fun configureBackgroundPaint(): Paint =
     sharedBackgroundPaint.apply {
-      color = this@CodeBlockSpan.style.backgroundColor
+      color = codeBlockStyle.backgroundColor
     }
 
   private fun configureBorderPaint(): Paint =
     sharedBorderPaint.apply {
-      strokeWidth = this@CodeBlockSpan.style.borderWidth
-      color = this@CodeBlockSpan.style.borderColor
+      strokeWidth = codeBlockStyle.borderWidth
+      color = codeBlockStyle.borderColor
     }
 
-  override fun getLeadingMargin(first: Boolean): Int = style.padding.toInt()
+  override fun getLeadingMargin(first: Boolean): Int = codeBlockStyle.padding.toInt()
 
   override fun drawLeadingMargin(
     c: Canvas?,
@@ -102,7 +102,7 @@ class CodeBlockSpan(
     val isFirstLine = start == spanStart
     val isLastLine = end == spanEnd || (spanEnd <= end && (spanEnd == text.length || text[spanEnd - 1] == '\n'))
 
-    val inset = style.borderWidth / 2f
+    val inset = codeBlockStyle.borderWidth / 2f
 
     rect.set(
       left.toFloat() + inset,
@@ -111,7 +111,7 @@ class CodeBlockSpan(
       bottom.toFloat() - (if (isLastLine) inset else 0f),
     )
 
-    val radius = style.borderRadius
+    val radius = codeBlockStyle.borderRadius
     val adjRadius = if (radius > inset) radius - inset else radius
 
     // Reset and fill radii array based on boundary state
@@ -138,7 +138,7 @@ class CodeBlockSpan(
     canvas.withSave {
       drawPath(path, backgroundPaint)
 
-      if (style.borderWidth > 0) {
+      if (codeBlockStyle.borderWidth > 0) {
         val bLeft = rect.left
         val bRight = rect.right
         val bTop = rect.top

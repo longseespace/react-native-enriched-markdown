@@ -26,17 +26,17 @@ import android.text.style.LineHeightSpan as AndroidLineHeightSpan
 class ImageSpan(
   context: Context,
   val imageUrl: String,
-  style: StyleConfig,
+  styleConfig: StyleConfig,
   val isInline: Boolean = false,
 ) : AndroidImageSpan(
-    createInitialDrawable(style, imageUrl, isInline),
+    createInitialDrawable(styleConfig, imageUrl, isInline),
     imageUrl,
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) ALIGN_CENTER else ALIGN_BASELINE,
   ),
   AndroidLineHeightSpan {
   private var loadedDrawable: Drawable? = null
-  private val imageStyle = style.imageStyle
-  private val height: Int = if (isInline) calculateInlineImageSize(style) else imageStyle.height.toInt()
+  private val imageStyle = styleConfig.imageStyle
+  private val height: Int = if (isInline) calculateInlineImageSize(styleConfig) else imageStyle.height.toInt()
   private val borderRadiusPx: Int = (imageStyle.borderRadius * context.resources.displayMetrics.density).toInt()
 
   private var cachedWidth: Int = MINIMUM_VALID_DIMENSION

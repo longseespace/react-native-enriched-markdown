@@ -8,11 +8,11 @@ import com.swmansion.enriched.markdown.styles.StyleConfig
 
 class HeadingSpan(
   val level: Int,
-  style: StyleConfig,
+  styleConfig: StyleConfig,
 ) : MetricAffectingSpan() {
-  private val fontSize: Float = style.headingStyles[level]!!.fontSize
-  private val color: Int = style.headingStyles[level]!!.color
-  private val cachedTypeface: Typeface? = style.headingTypefaces[level]
+  private val fontSize: Float = styleConfig.headingStyles[level]!!.fontSize
+  private val color: Int = styleConfig.headingStyles[level]!!.color
+  private val cachedTypeface: Typeface? = styleConfig.headingTypefaces[level]
 
   override fun updateDrawState(tp: TextPaint) {
     applyHeadingStyle(tp)

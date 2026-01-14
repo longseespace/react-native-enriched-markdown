@@ -13,7 +13,7 @@ import kotlin.math.max
 import kotlin.math.min
 
 class CodeBackgroundSpan(
-  private val style: StyleConfig,
+  private val styleConfig: StyleConfig,
 ) : LineBackgroundSpan {
   companion object {
     private const val CORNER_RADIUS = 6.0f
@@ -64,7 +64,7 @@ class CodeBackgroundSpan(
     rect.set(min(startX, endX), top.toFloat(), max(startX, endX), finalBottom.toFloat())
 
     // 3. Apply Style
-    val codeStyle = style.codeStyle
+    val codeStyle = styleConfig.codeStyle
     sharedBackgroundPaint.color = codeStyle.backgroundColor
     sharedBorderPaint.color = codeStyle.borderColor
 

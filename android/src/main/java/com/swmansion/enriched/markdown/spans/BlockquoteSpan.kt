@@ -18,19 +18,19 @@ import com.swmansion.enriched.markdown.utils.applyBlockStyleFont
 import com.swmansion.enriched.markdown.utils.applyColorPreserving
 
 class BlockquoteSpan(
-  private val style: BlockquoteStyle,
+  private val blockquoteStyle: BlockquoteStyle,
   val depth: Int,
   private val context: Context,
   private val styleCache: SpanStyleCache,
 ) : MetricAffectingSpan(),
   LeadingMarginSpan {
-  private val levelSpacing: Float = style.borderWidth + style.gapWidth
+  private val levelSpacing: Float = blockquoteStyle.borderWidth + blockquoteStyle.gapWidth
   private val blockStyle =
     BlockStyle(
-      fontSize = style.fontSize,
-      fontFamily = style.fontFamily,
-      fontWeight = style.fontWeight,
-      color = style.color,
+      fontSize = blockquoteStyle.fontSize,
+      fontFamily = blockquoteStyle.fontFamily,
+      fontWeight = blockquoteStyle.fontWeight,
+      color = blockquoteStyle.color,
     )
 
   // Cache for shouldSkipDrawing to avoid repeated getSpans() calls during draw passes
@@ -66,7 +66,7 @@ class BlockquoteSpan(
     drawBackground(c, p, top, bottom, layout)
 
     p.style = Paint.Style.FILL
-    p.color = style.borderColor
+    p.color = blockquoteStyle.borderColor
 
     val borderTop = top.toFloat()
     val borderBottom = bottom.toFloat()
@@ -74,7 +74,7 @@ class BlockquoteSpan(
 
     for (level in 0..depth) {
       val borderX = containerLeft + (levelSpacing * level * dir)
-      val borderRight = borderX + (style.borderWidth * dir)
+      val borderRight = borderX + (blockquoteStyle.borderWidth * dir)
       c.drawRect(borderX, borderTop, borderRight, borderBottom, p)
     }
 
@@ -124,7 +124,7 @@ class BlockquoteSpan(
     bottom: Int,
     layout: Layout?,
   ) {
-    val bgColor = style.backgroundColor?.takeIf { it != Color.TRANSPARENT } ?: return
+    val bgColor = blockquoteStyle.backgroundColor?.takeIf { it != Color.TRANSPARENT } ?: return
     p.style = Paint.Style.FILL
     p.color = bgColor
     c.drawRect(0f, top.toFloat(), layout?.width?.toFloat() ?: 0f, bottom.toFloat(), p)

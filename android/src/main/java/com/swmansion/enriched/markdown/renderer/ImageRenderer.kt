@@ -31,7 +31,7 @@ class ImageRenderer(
       ImageSpan(
         context = context,
         imageUrl = imageUrl,
-        style = config.style,
+        styleConfig = config.style,
         isInline = isInline,
       )
 
