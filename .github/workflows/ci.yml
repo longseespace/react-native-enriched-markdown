@@ -68,6 +68,9 @@ jobs:
       - name: Setup
         uses: ./.github/actions/setup
 
+      - name: Build library and generate codegen
+        run: yarn prepare
+
       - name: Cache turborepo for Android
         uses: actions/cache@v4
         with:
@@ -123,6 +126,9 @@ jobs:
 
       - name: Setup
         uses: ./.github/actions/setup
+
+      - name: Build library and generate codegen
+        run: yarn prepare
 
       - name: Set up Xcode
         uses: maxim-lobanov/setup-xcode@v1
