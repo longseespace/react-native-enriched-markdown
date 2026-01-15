@@ -155,8 +155,8 @@ object MeasurementStore {
     }
 
     val layout = builder.build()
-    // Add small buffer to prevent edge-case clipping
-    val measuredHeight = layout.height.toFloat() + 1f
+    val measuredHeight = layout.height.toFloat()
+
     return YogaMeasureOutput.make(
       PixelUtil.toDIPFromPixel(maxWidth),
       PixelUtil.toDIPFromPixel(measuredHeight),

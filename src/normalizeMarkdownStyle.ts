@@ -29,21 +29,13 @@ const getSystemFont = () =>
     default: 'sans-serif',
   });
 
-// Helper to get platform-specific line height multiplier
-const getLineHeightMultiplier = (baseMultiplier: number) =>
-  Platform.select({
-    ios: baseMultiplier * 0.75, // Tighter line height on iOS
-    android: baseMultiplier,
-    default: baseMultiplier,
-  });
-
 const paragraphDefaultStyles: MarkdownStyleInternal['paragraph'] = {
   fontSize: 16,
   fontFamily: getSystemFont(),
   fontWeight: 'normal',
   color: defaultTextColor,
   marginBottom: 20,
-  lineHeight: 16 * getLineHeightMultiplier(1.6),
+  lineHeight: 16,
 };
 
 const defaultH1Style: MarkdownStyleInternal['h1'] = {
@@ -52,7 +44,7 @@ const defaultH1Style: MarkdownStyleInternal['h1'] = {
   fontWeight: 'bold',
   color: defaultHeadingColor,
   marginBottom: 12,
-  lineHeight: 32 * getLineHeightMultiplier(1.2),
+  lineHeight: 32,
 };
 
 const defaultH2Style: MarkdownStyleInternal['h2'] = {
@@ -61,7 +53,7 @@ const defaultH2Style: MarkdownStyleInternal['h2'] = {
   fontWeight: 'bold',
   color: defaultHeadingColor,
   marginBottom: 12,
-  lineHeight: 24 * getLineHeightMultiplier(1.25),
+  lineHeight: 24,
 };
 
 const defaultH3Style: MarkdownStyleInternal['h3'] = {
@@ -70,7 +62,7 @@ const defaultH3Style: MarkdownStyleInternal['h3'] = {
   fontWeight: 'bold',
   color: defaultHeadingColor,
   marginBottom: 12,
-  lineHeight: 20 * getLineHeightMultiplier(1.3),
+  lineHeight: 20,
 };
 
 const defaultH4Style: MarkdownStyleInternal['h4'] = {
@@ -79,7 +71,7 @@ const defaultH4Style: MarkdownStyleInternal['h4'] = {
   fontWeight: 'bold',
   color: defaultHeadingColor,
   marginBottom: 12,
-  lineHeight: 18 * getLineHeightMultiplier(1.35),
+  lineHeight: 18,
 };
 
 const defaultH5Style: MarkdownStyleInternal['h5'] = {
@@ -88,7 +80,7 @@ const defaultH5Style: MarkdownStyleInternal['h5'] = {
   fontWeight: 'bold',
   color: defaultHeadingColor,
   marginBottom: 12,
-  lineHeight: 17 * getLineHeightMultiplier(1.4),
+  lineHeight: 17,
 };
 
 const defaultH6Style: MarkdownStyleInternal['h6'] = {
@@ -97,7 +89,7 @@ const defaultH6Style: MarkdownStyleInternal['h6'] = {
   fontWeight: 'bold',
   color: defaultHeadingColor,
   marginBottom: 12,
-  lineHeight: 16 * getLineHeightMultiplier(1.4),
+  lineHeight: 16,
 };
 
 const defaultLinkColor = processColor('#2563EB') as ColorValue;
@@ -140,7 +132,7 @@ const defaultBlockquoteStyle: MarkdownStyleInternal['blockquote'] = {
   fontWeight: 'normal',
   color: processColor('#374151') as ColorValue,
   marginBottom: 20,
-  lineHeight: 16 * getLineHeightMultiplier(1.6),
+  lineHeight: 16,
   borderColor: defaultBlockquoteBorderColor,
   borderWidth: 4,
   gapWidth: 16,
@@ -156,7 +148,7 @@ const defaultListStyle: MarkdownStyleInternal['list'] = {
   fontWeight: 'normal',
   color: defaultTextColor,
   marginBottom: 16,
-  lineHeight: 17 * getLineHeightMultiplier(1.6),
+  lineHeight: 17,
   bulletColor: defaultListBulletColor,
   bulletSize: 6,
   markerColor: defaultListMarkerColor,
@@ -177,7 +169,7 @@ const defaultCodeBlockStyle: MarkdownStyleInternal['codeBlock'] = {
   fontWeight: 'normal',
   color: defaultCodeBlockTextColor,
   marginBottom: 24,
-  lineHeight: 14 * getLineHeightMultiplier(1.6),
+  lineHeight: 14,
   backgroundColor: defaultCodeBlockBackgroundColor,
   borderColor: defaultCodeBlockBorderColor,
   borderRadius: 8,
@@ -207,7 +199,8 @@ export const normalizeMarkdownStyle = (
       normalizeColor(style.paragraph?.color) ?? paragraphDefaultStyles.color,
     marginBottom:
       style.paragraph?.marginBottom ?? paragraphDefaultStyles.marginBottom,
-    lineHeight: paragraphDefaultStyles.lineHeight,
+    lineHeight:
+      style.paragraph?.lineHeight ?? paragraphDefaultStyles.lineHeight,
   };
 
   const h1: MarkdownStyleInternal['h1'] = {

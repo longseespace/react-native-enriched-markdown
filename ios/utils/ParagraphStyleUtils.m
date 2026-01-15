@@ -48,15 +48,9 @@ void applyLineHeight(NSMutableAttributedString *output, NSRange range, CGFloat l
   }
 
   NSMutableParagraphStyle *style = getOrCreateParagraphStyle(output, range.location);
-  UIFont *font = [output attribute:NSFontAttributeName atIndex:range.location effectiveRange:NULL];
-  if (!font) {
-    return;
-  }
 
-  style.lineHeightMultiple = lineHeight / font.pointSize;
-  style.minimumLineHeight = 0;
-  style.maximumLineHeight = 0;
-  style.lineSpacing = 0;
+  style.minimumLineHeight = lineHeight;
+  style.maximumLineHeight = lineHeight;
 
   [output addAttribute:NSParagraphStyleAttributeName value:style range:range];
 }
