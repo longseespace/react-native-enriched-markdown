@@ -361,7 +361,9 @@ The library provides sensible default styles for all Markdown elements out of th
 > [!NOTE]
 > **Performance:** Memoize the `markdownStyle` prop with `useMemo` to avoid unnecessary re-renders:
 > ```tsx
-> const markdownStyle = useMemo(() => ({
+> import type { MarkdownStyle } from 'react-native-enriched-markdown';
+>
+> const markdownStyle: MarkdownStyle = useMemo(() => ({
 >   paragraph: { fontSize: 16 },
 >   h1: { fontSize: 32 },
 > }), []);
