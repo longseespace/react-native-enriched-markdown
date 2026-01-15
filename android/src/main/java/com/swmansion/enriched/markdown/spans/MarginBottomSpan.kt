@@ -37,6 +37,12 @@ class MarginBottomSpan(
         fm.ascent = 0
         fm.descent = marginPixels
         fm.bottom = marginPixels
+      } else {
+        // No content after - collapse the spacer line to zero height
+        fm.top = 0
+        fm.ascent = 0
+        fm.descent = 0
+        fm.bottom = 0
       }
       return
     }

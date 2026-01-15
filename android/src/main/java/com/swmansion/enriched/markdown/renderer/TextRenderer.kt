@@ -17,13 +17,6 @@ class TextRenderer : NodeRenderer {
 
     val blockType = factory.blockStyleContext.currentBlockType
 
-    // Skip TextSpan for paragraph text - it will use TextView's default style
-    // Only apply TextSpan for headings, blockquotes, code blocks, lists where style differs
-    if (blockType == BlockType.PARAGRAPH) {
-      builder.append(content)
-      return
-    }
-
     factory.renderWithSpan(builder, { builder.append(content) }) { start, end, blockStyle ->
       builder.setSpan(
         TextSpan(blockStyle, factory.context),
