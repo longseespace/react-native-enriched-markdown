@@ -1,3 +1,5 @@
+<img src="https://github.com/user-attachments/assets/20849db7-4b5e-48d9-98ec-60b7b845c469" alt="react-native-enriched-markdown by Software Mansion" width="100%">
+
 # react-native-enriched-markdown
 
 `react-native-enriched-markdown` is a powerful React Native library that renders Markdown content as native text:
