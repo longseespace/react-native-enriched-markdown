@@ -56,6 +56,14 @@ interface EmphasisStyle {
   color?: string;
 }
 
+interface StrikethroughStyle {
+  /**
+   * Color of the strikethrough line.
+   * @platform iOS
+   */
+  color?: string;
+}
+
 interface CodeStyle {
   color?: string;
   backgroundColor?: string;
@@ -93,6 +101,7 @@ export interface MarkdownStyle {
   link?: LinkStyle;
   strong?: StrongStyle;
   em?: EmphasisStyle;
+  strikethrough?: StrikethroughStyle;
   code?: CodeStyle;
   image?: ImageStyle;
   inlineImage?: InlineImageStyle;
