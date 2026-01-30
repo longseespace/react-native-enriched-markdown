@@ -13,6 +13,7 @@
 #import "RuntimeKeys.h"
 #import "StyleConfig.h"
 #import "TextViewLayoutManager.h"
+#import <React/RCTUtils.h>
 #import <objc/runtime.h>
 
 #import <ReactNativeEnrichedMarkdown/EnrichedMarkdownTextComponentDescriptor.h>
@@ -49,6 +50,11 @@ using namespace facebook::react;
 
   EnrichedMarkdownTextShadowNode::ConcreteState::Shared _state;
   int _heightUpdateCounter;
+
+  // Font scale tracking
+  CGFloat _currentFontScale;
+  BOOL _allowFontScaling;
+  CGFloat _maxFontSizeMultiplier;
 }
 
 + (ComponentDescriptorProvider)componentDescriptorProvider
@@ -133,10 +139,51 @@ using namespace facebook::react;
     _renderQueue = dispatch_queue_create("com.swmansion.enriched.markdown.render", DISPATCH_QUEUE_SERIAL);
     _currentRenderId = 0;
 
+    // Initialize font scale from current content size category
+    _allowFontScaling = YES;
+    _maxFontSizeMultiplier = 0;
+    _currentFontScale = RCTFontSizeMultiplier();
+
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(contentSizeCategoryDidChange:)
+                                                 name:UIContentSizeCategoryDidChangeNotification
+                                               object:nil];
+
     [self setupTextView];
   }
 
   return self;
+}
+
+- (void)dealloc
+{
+  [[NSNotificationCenter defaultCenter] removeObserver:self name:UIContentSizeCategoryDidChangeNotification object:nil];
+}
+
+- (CGFloat)effectiveFontScale
+{
+  // If font scaling is disabled, always return 1.0 (no scaling)
+  return _allowFontScaling ? _currentFontScale : 1.0;
+}
+
+- (void)contentSizeCategoryDidChange:(NSNotification *)notification
+{
+  if (!_allowFontScaling) {
+    return;
+  }
+
+  CGFloat newFontScale = RCTFontSizeMultiplier();
+  if (_currentFontScale != newFontScale) {
+    _currentFontScale = newFontScale;
+
+    if (_config != nil) {
+      [_config setFontScaleMultiplier:[self effectiveFontScale]];
+    }
+
+    if (_cachedMarkdown != nil && _cachedMarkdown.length > 0) {
+      [self renderMarkdownContent:_cachedMarkdown];
+    }
+  }
 }
 
 - (void)setupTextView
@@ -228,6 +275,10 @@ using namespace facebook::react;
   NSUInteger inputLength = markdownString.length;
   NSDate *scheduleStart = [NSDate date];
 
+  // Capture font scaling settings
+  BOOL allowFontScaling = _allowFontScaling;
+  CGFloat maxFontSizeMultiplier = _maxFontSizeMultiplier;
+
   // Dispatch heavy work to background queue
   dispatch_async(_renderQueue, ^{
     // 1. Parse Markdown → AST (C++ md4c parser)
@@ -243,6 +294,8 @@ using namespace facebook::react;
     NSDate *renderStart = [NSDate date];
     AttributedRenderer *renderer = [[AttributedRenderer alloc] initWithConfig:config];
     RenderContext *context = [RenderContext new];
+    context.allowFontScaling = allowFontScaling;
+    context.maxFontSizeMultiplier = maxFontSizeMultiplier;
     NSMutableAttributedString *attributedText = [renderer renderRoot:ast context:context];
 
     // Add link attributes
@@ -293,6 +346,8 @@ using namespace facebook::react;
 
   AttributedRenderer *renderer = [[AttributedRenderer alloc] initWithConfig:_config];
   RenderContext *context = [RenderContext new];
+  context.allowFontScaling = _allowFontScaling;
+  context.maxFontSizeMultiplier = _maxFontSizeMultiplier;
   NSMutableAttributedString *attributedText = [renderer renderRoot:ast context:context];
 
   for (NSUInteger i = 0; i < context.linkRanges.count; i++) {
@@ -345,6 +400,7 @@ using namespace facebook::react;
 
   if (_config == nil) {
     _config = [[StyleConfig alloc] init];
+    [_config setFontScaleMultiplier:[self effectiveFontScale]];
   }
 
   // Paragraph style
@@ -1081,6 +1137,26 @@ using namespace facebook::react;
   // https://developer.apple.com/documentation/uikit/uitextview/isselectable
   if (_textView.selectable != newViewProps.isSelectable) {
     _textView.selectable = newViewProps.isSelectable;
+  }
+
+  if (newViewProps.allowFontScaling != oldViewProps.allowFontScaling) {
+    _allowFontScaling = newViewProps.allowFontScaling;
+
+    if (_config != nil) {
+      [_config setFontScaleMultiplier:[self effectiveFontScale]];
+    }
+
+    stylePropChanged = YES;
+  }
+
+  if (newViewProps.maxFontSizeMultiplier != oldViewProps.maxFontSizeMultiplier) {
+    _maxFontSizeMultiplier = newViewProps.maxFontSizeMultiplier;
+
+    if (_config != nil) {
+      [_config setMaxFontSizeMultiplier:_maxFontSizeMultiplier];
+    }
+
+    stylePropChanged = YES;
   }
 
   // Update md4cFlags

@@ -15,6 +15,9 @@ import com.swmansion.enriched.markdown.parser.Md4cFlags
 import com.swmansion.enriched.markdown.parser.Parser
 import com.swmansion.enriched.markdown.renderer.Renderer
 import com.swmansion.enriched.markdown.styles.StyleConfig
+import com.swmansion.enriched.markdown.utils.getBooleanOrDefault
+import com.swmansion.enriched.markdown.utils.getMapOrNull
+import com.swmansion.enriched.markdown.utils.getStringOrDefault
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.ceil
 
@@ -35,13 +38,41 @@ object MeasurementStore {
     val cachedSize: Long,
     val spannable: CharSequence?,
     val paintParams: PaintParams,
-    val markdownHash: Int, // Hash of markdown + style to detect content changes
+    val markdownHash: Int,
   )
 
   private val data = ConcurrentHashMap<Int, MeasurementParams>()
 
+  // Store font scaling settings per view ID
+  private data class FontScalingSettings(
+    val allowFontScaling: Boolean = true,
+    val maxFontSizeMultiplier: Float = 0f,
+  )
+
+  private val fontScalingSettings = ConcurrentHashMap<Int, FontScalingSettings>()
+
+  private fun resolveFontScalingSettings(
+    viewId: Int?,
+    props: ReadableMap?,
+  ): FontScalingSettings {
+    val stored = viewId?.let { fontScalingSettings[it] }
+    return FontScalingSettings(
+      allowFontScaling =
+        props?.takeIf { it.hasKey("allowFontScaling") }?.getBoolean("allowFontScaling")
+          ?: stored?.allowFontScaling
+          ?: true,
+      maxFontSizeMultiplier =
+        props?.takeIf { it.hasKey("maxFontSizeMultiplier") }?.getDouble("maxFontSizeMultiplier")?.toFloat()
+          ?: stored?.maxFontSizeMultiplier
+          ?: 0f,
+    )
+  }
+
   private val measurePaint = TextPaint()
   private val measureRenderer = Renderer()
+
+  @Volatile
+  private var lastKnownFontScale: Float = 1.0f
 
   /** Updates measurement with rendered Spannable. Returns true if height changed. */
   fun store(
@@ -74,8 +105,8 @@ object MeasurementStore {
     props: ReadableMap?,
   ): Long {
     // Early exit for empty markdown
-    val markdown = props?.getString("markdown")
-    if (markdown.isNullOrEmpty()) {
+    val markdown = props.getStringOrDefault("markdown", "")
+    if (markdown.isEmpty()) {
       return YogaMeasureOutput.make(PixelUtil.toDIPFromPixel(width), 0f)
     }
 
@@ -94,20 +125,35 @@ object MeasurementStore {
     return size
   }
 
+  fun updateFontScalingSettings(
+    viewId: Int,
+    allowFontScaling: Boolean,
+    maxFontSizeMultiplier: Float,
+  ) {
+    fontScalingSettings[viewId] = FontScalingSettings(allowFontScaling, maxFontSizeMultiplier)
+  }
+
+  fun clearFontScalingSettings(viewId: Int) {
+    fontScalingSettings.remove(viewId)
+  }
+
   private fun getMeasureByIdInternal(
     context: Context,
     id: Int?,
     width: Float,
     props: ReadableMap?,
   ): Long {
-    val safeId = id ?: return measureAndCache(context, null, width, props)
-    val cached = data[safeId] ?: return measureAndCache(context, safeId, width, props)
+    val (allowFontScaling, maxFontSizeMultiplier) = resolveFontScalingSettings(id, props)
 
-    val currentHash = computePropsHash(props)
+    val fontScale = checkAndUpdateFontScale(context, allowFontScaling, maxFontSizeMultiplier)
 
-    // Content changed - need full re-render
+    val safeId = id ?: return measureAndCache(context, null, width, props, allowFontScaling, fontScale, maxFontSizeMultiplier)
+    val cached = data[safeId] ?: return measureAndCache(context, safeId, width, props, allowFontScaling, fontScale, maxFontSizeMultiplier)
+
+    val currentHash = computePropsHash(props, allowFontScaling, fontScale, maxFontSizeMultiplier)
+
     if (cached.markdownHash != currentHash) {
-      return measureAndCache(context, safeId, width, props)
+      return measureAndCache(context, safeId, width, props, allowFontScaling, fontScale, maxFontSizeMultiplier)
     }
 
     // Width changed - re-measure with cached spannable
@@ -120,12 +166,48 @@ object MeasurementStore {
     return cached.cachedSize
   }
 
-  private fun computePropsHash(props: ReadableMap?): Int {
-    val markdown = props?.getString("markdown") ?: ""
-    val styleMap = props?.getMap("markdownStyle")
-    val md4cFlagsMap = props?.getMap("md4cFlags")
-    // Combine markdown hash with style hash and md4cFlags for change detection
-    return markdown.hashCode() * 31 + (styleMap?.hashCode() ?: 0) * 31 + (md4cFlagsMap?.hashCode() ?: 0)
+  private fun computePropsHash(
+    props: ReadableMap?,
+    allowFontScaling: Boolean,
+    fontScale: Float,
+    maxFontSizeMultiplier: Float,
+  ): Int {
+    val markdown = props.getStringOrDefault("markdown", "")
+    val styleMap = props.getMapOrNull("markdownStyle")
+    val md4cFlagsMap = props.getMapOrNull("md4cFlags")
+    var result = markdown.hashCode()
+    result = 31 * result + (styleMap?.hashCode() ?: 0)
+    result = 31 * result + (md4cFlagsMap?.hashCode() ?: 0)
+    result = 31 * result + fontScale.toBits()
+    result = 31 * result + allowFontScaling.hashCode()
+    result = 31 * result + maxFontSizeMultiplier.toBits()
+    return result
+  }
+
+  private fun checkAndUpdateFontScale(
+    context: Context,
+    allowFontScaling: Boolean,
+    maxFontSizeMultiplier: Float,
+  ): Float {
+    if (!allowFontScaling) {
+      // Clear cache if we switched from scaling to non-scaling
+      if (lastKnownFontScale != 1.0f) {
+        lastKnownFontScale = 1.0f
+        data.clear()
+      }
+      return 1.0f
+    }
+
+    var currentFontScale = context.resources.configuration.fontScale
+
+    if (maxFontSizeMultiplier >= 1.0f && currentFontScale > maxFontSizeMultiplier) {
+      currentFontScale = maxFontSizeMultiplier
+    }
+    if (currentFontScale != lastKnownFontScale) {
+      lastKnownFontScale = currentFontScale
+      data.clear()
+    }
+    return currentFontScale
   }
 
   private fun measureAndCache(
@@ -133,20 +215,23 @@ object MeasurementStore {
     id: Int?,
     width: Float,
     props: ReadableMap?,
+    allowFontScaling: Boolean,
+    fontScale: Float,
+    maxFontSizeMultiplier: Float,
   ): Long {
-    val markdown = props?.getString("markdown") ?: ""
-    val styleMap = props?.getMap("markdownStyle")
-    val md4cFlagsMap = props?.getMap("md4cFlags")
+    val markdown = props.getStringOrDefault("markdown", "")
+    val styleMap = props.getMapOrNull("markdownStyle")
+    val md4cFlagsMap = props.getMapOrNull("md4cFlags")
     val md4cFlags =
       Md4cFlags(
-        underline = md4cFlagsMap?.getBoolean("underline") ?: false,
+        underline = md4cFlagsMap.getBooleanOrDefault("underline", false),
       )
-    val fontSize = getInitialFontSize(styleMap)
+    val fontSize = getInitialFontSize(styleMap, context, allowFontScaling, fontScale, maxFontSizeMultiplier)
     val paintParams = PaintParams(Typeface.DEFAULT, fontSize)
-    val propsHash = computePropsHash(props)
+    val propsHash = computePropsHash(props, allowFontScaling, fontScale, maxFontSizeMultiplier)
 
     // Parse and render markdown for accurate measurement
-    val spannable = tryRenderMarkdown(markdown, styleMap, context, md4cFlags)
+    val spannable = tryRenderMarkdown(markdown, styleMap, context, md4cFlags, allowFontScaling, maxFontSizeMultiplier)
     val textToMeasure = spannable ?: markdown
     val size = measure(width, textToMeasure, paintParams)
 
@@ -161,13 +246,15 @@ object MeasurementStore {
     markdown: String,
     styleMap: ReadableMap?,
     context: Context,
-    md4cFlags: Md4cFlags = Md4cFlags.DEFAULT,
+    md4cFlags: Md4cFlags,
+    allowFontScaling: Boolean,
+    maxFontSizeMultiplier: Float,
   ): CharSequence? {
     if (styleMap == null) return null
 
     return try {
       val ast = Parser.shared.parseMarkdown(markdown, md4cFlags) ?: return null
-      val style = StyleConfig(styleMap, context)
+      val style = StyleConfig(styleMap, context, allowFontScaling, maxFontSizeMultiplier)
       measureRenderer.configure(style, context)
       measureRenderer.renderDocument(ast, null)
     } catch (e: Exception) {
@@ -176,9 +263,27 @@ object MeasurementStore {
     }
   }
 
-  private fun getInitialFontSize(styleMap: ReadableMap?): Float {
-    val fontSize = styleMap?.getMap("paragraph")?.getDouble("fontSize")?.toFloat() ?: 16f
-    return ceil(PixelUtil.toPixelFromSP(fontSize))
+  private fun getInitialFontSize(
+    styleMap: ReadableMap?,
+    context: Context,
+    allowFontScaling: Boolean,
+    fontScale: Float,
+    maxFontSizeMultiplier: Float,
+  ): Float {
+    val fontSizeSp = styleMap?.getMap("paragraph")?.getDouble("fontSize")?.toFloat() ?: 16f
+    val density = context.resources.displayMetrics.density
+
+    if (!allowFontScaling) {
+      return ceil(fontSizeSp * density)
+    }
+
+    val cappedFontScale =
+      if (maxFontSizeMultiplier >= 1.0f && fontScale > maxFontSizeMultiplier) {
+        maxFontSizeMultiplier
+      } else {
+        fontScale
+      }
+    return ceil(fontSizeSp * cappedFontScale * density)
   }
 
   private fun measure(

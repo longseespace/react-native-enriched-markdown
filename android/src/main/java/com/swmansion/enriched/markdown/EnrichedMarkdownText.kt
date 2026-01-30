@@ -1,6 +1,7 @@
 package com.swmansion.enriched.markdown
 
 import android.content.Context
+import android.content.res.Configuration
 import android.graphics.Color
 import android.os.Build
 import android.os.Handler
@@ -50,6 +51,12 @@ class EnrichedMarkdownText
     var md4cFlags: Md4cFlags = Md4cFlags.DEFAULT
       private set
 
+    private var lastKnownFontScale: Float = context.resources.configuration.fontScale
+    private var markdownStyleMap: ReadableMap? = null
+
+    private var allowFontScaling: Boolean = true
+    private var maxFontSizeMultiplier: Float = 0f
+
     init {
       setBackgroundColor(Color.TRANSPARENT)
       includeFontPadding = false // Must match setIncludePad(false) in MeasurementStore
@@ -67,17 +74,68 @@ class EnrichedMarkdownText
     }
 
     fun setMarkdownStyle(style: ReadableMap?) {
-      val newStyle = style?.let { StyleConfig(it, context) }
+      markdownStyleMap = style
+      // Register font scaling settings when style is set (view should have ID by now)
+      updateMeasurementStoreFontScaling()
+      val newStyle = style?.let { StyleConfig(it, context, allowFontScaling, maxFontSizeMultiplier) }
       if (markdownStyle == newStyle) return
       markdownStyle = newStyle
       updateJustificationMode(newStyle)
       scheduleRender()
     }
 
+    override fun onConfigurationChanged(newConfig: Configuration) {
+      super.onConfigurationChanged(newConfig)
+
+      if (!allowFontScaling) {
+        return
+      }
+
+      val newFontScale = newConfig.fontScale
+      if (newFontScale != lastKnownFontScale) {
+        lastKnownFontScale = newFontScale
+        recreateStyleConfig()
+        scheduleRenderIfNeeded()
+      }
+    }
+
     fun setMd4cFlags(flags: Md4cFlags) {
       if (md4cFlags == flags) return
       md4cFlags = flags
-      scheduleRender()
+      scheduleRenderIfNeeded()
+    }
+
+    fun setAllowFontScaling(allow: Boolean) {
+      if (allowFontScaling == allow) return
+      allowFontScaling = allow
+      updateMeasurementStoreFontScaling()
+      recreateStyleConfig()
+      scheduleRenderIfNeeded()
+    }
+
+    fun setMaxFontSizeMultiplier(multiplier: Float) {
+      if (maxFontSizeMultiplier == multiplier) return
+      maxFontSizeMultiplier = multiplier
+      updateMeasurementStoreFontScaling()
+      recreateStyleConfig()
+      scheduleRenderIfNeeded()
+    }
+
+    private fun updateMeasurementStoreFontScaling() {
+      MeasurementStore.updateFontScalingSettings(id, allowFontScaling, maxFontSizeMultiplier)
+    }
+
+    private fun scheduleRenderIfNeeded() {
+      if (currentMarkdown.isNotEmpty()) {
+        scheduleRender()
+      }
+    }
+
+    private fun recreateStyleConfig() {
+      markdownStyleMap?.let { styleMap ->
+        markdownStyle = StyleConfig(styleMap, context, allowFontScaling, maxFontSizeMultiplier)
+        updateJustificationMode(markdownStyle)
+      }
     }
 
     private fun updateJustificationMode(style: StyleConfig?) {
