@@ -2,6 +2,7 @@ import { useMemo, useCallback } from 'react';
 import EnrichedMarkdownTextNativeComponent, {
   type NativeProps,
   type LinkPressEvent,
+  type LinkLongPressEvent,
 } from './EnrichedMarkdownTextNativeComponent';
 import { normalizeMarkdownStyle } from './normalizeMarkdownStyle';
 import type { ViewStyle, TextStyle, NativeSyntheticEvent } from 'react-native';
@@ -142,7 +143,12 @@ export interface Md4cFlags {
 export interface EnrichedMarkdownTextProps
   extends Omit<
     NativeProps,
-    'markdownStyle' | 'style' | 'onLinkPress' | 'md4cFlags'
+    | 'markdownStyle'
+    | 'style'
+    | 'onLinkPress'
+    | 'onLinkLongPress'
+    | 'md4cFlags'
+    | 'enableLinkPreview'
   > {
   /**
    * Style configuration for markdown elements
@@ -157,6 +163,28 @@ export interface EnrichedMarkdownTextProps
    * Receives the link URL directly.
    */
   onLinkPress?: (event: LinkPressEvent) => void;
+  /**
+   * Callback fired when a link is long pressed.
+   * Receives the link URL directly.
+   * - iOS: When provided, automatically disables the system link preview (unless `enableLinkPreview` is explicitly set to `true`).
+   * - Android: Handles long press gestures on links.
+   */
+  onLinkLongPress?: (event: LinkLongPressEvent) => void;
+  /**
+   * Controls whether the system link preview is shown on long press (iOS only).
+   *
+   * When `true`, long-pressing a link shows the native iOS link preview.
+   * When `false`, the system preview is suppressed.
+   *
+   * Defaults to `true`, but automatically becomes `false` when `onLinkLongPress` is provided.
+   * Set explicitly to override the automatic behavior.
+   *
+   * Android: No-op.
+   *
+   * @default true
+   * @platform ios
+   */
+  enableLinkPreview?: boolean;
   /**
    * MD4C parser flags configuration.
    * Controls how the markdown parser interprets certain syntax.
@@ -194,6 +222,8 @@ export const EnrichedMarkdownText = ({
   markdownStyle = {},
   containerStyle,
   onLinkPress,
+  onLinkLongPress,
+  enableLinkPreview,
   selectable = true,
   md4cFlags = defaultMd4cFlags,
   allowFontScaling = true,
@@ -221,11 +251,21 @@ export const EnrichedMarkdownText = ({
     [onLinkPress]
   );
 
+  const handleLinkLongPress = useCallback(
+    (e: NativeSyntheticEvent<LinkLongPressEvent>) => {
+      const { url } = e.nativeEvent;
+      onLinkLongPress?.({ url });
+    },
+    [onLinkLongPress]
+  );
+
   return (
     <EnrichedMarkdownTextNativeComponent
       markdown={markdown}
       markdownStyle={normalizedStyle}
       onLinkPress={handleLinkPress}
+      onLinkLongPress={handleLinkLongPress}
+      enableLinkPreview={onLinkLongPress == null && (enableLinkPreview ?? true)}
       selectable={selectable}
       md4cFlags={normalizedMd4cFlags}
       allowFontScaling={allowFontScaling}

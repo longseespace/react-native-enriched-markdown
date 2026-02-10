@@ -11,6 +11,7 @@ import com.facebook.react.uimanager.annotations.ReactProp
 import com.facebook.react.viewmanagers.EnrichedMarkdownTextManagerDelegate
 import com.facebook.react.viewmanagers.EnrichedMarkdownTextManagerInterface
 import com.facebook.yoga.YogaMeasureMode
+import com.swmansion.enriched.markdown.events.LinkLongPressEvent
 import com.swmansion.enriched.markdown.events.LinkPressEvent
 import com.swmansion.enriched.markdown.parser.Md4cFlags
 
@@ -35,6 +36,7 @@ class EnrichedMarkdownTextManager :
   override fun getExportedCustomDirectEventTypeConstants(): MutableMap<String, Any> {
     val map = mutableMapOf<String, Any>()
     map.put(LinkPressEvent.EVENT_NAME, mapOf("registrationName" to LinkPressEvent.EVENT_NAME))
+    map.put(LinkLongPressEvent.EVENT_NAME, mapOf("registrationName" to LinkLongPressEvent.EVENT_NAME))
     return map
   }
 
@@ -45,6 +47,10 @@ class EnrichedMarkdownTextManager :
   ) {
     view?.setOnLinkPressCallback { url ->
       emitOnLinkPress(view, url)
+    }
+
+    view?.setOnLinkLongPressCallback { url ->
+      emitOnLinkLongPress(view, url)
     }
 
     view?.setMarkdownContent(markdown ?: "No markdown content")
@@ -102,6 +108,15 @@ class EnrichedMarkdownTextManager :
     view?.setAllowTrailingMargin(allowTrailingMargin)
   }
 
+  @ReactProp(name = "enableLinkPreview", defaultBoolean = true)
+  override fun setEnableLinkPreview(
+    view: EnrichedMarkdownText?,
+    enableLinkPreview: Boolean,
+  ) {
+    // This prop is only used on iOS (to control the system link preview on long press).
+    // Required by the codegen interface but is a no-op on Android.
+  }
+
   override fun setPadding(
     view: EnrichedMarkdownText,
     left: Int,
@@ -121,6 +136,18 @@ class EnrichedMarkdownTextManager :
     val surfaceId = UIManagerHelper.getSurfaceId(context)
     val eventDispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, view.id)
     val event = LinkPressEvent(surfaceId, view.id, url)
+
+    eventDispatcher?.dispatchEvent(event)
+  }
+
+  private fun emitOnLinkLongPress(
+    view: EnrichedMarkdownText,
+    url: String,
+  ) {
+    val context = view.context as com.facebook.react.bridge.ReactContext
+    val surfaceId = UIManagerHelper.getSurfaceId(context)
+    val eventDispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, view.id)
+    val event = LinkLongPressEvent(surfaceId, view.id, url)
 
     eventDispatcher?.dispatchEvent(event)
   }

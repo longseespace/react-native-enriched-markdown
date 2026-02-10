@@ -119,6 +119,10 @@ export interface LinkPressEvent {
   url: string;
 }
 
+export interface LinkLongPressEvent {
+  url: string;
+}
+
 /**
  * MD4C parser flags configuration.
  * Controls how the markdown parser interprets certain syntax.
@@ -149,6 +153,26 @@ export interface NativeProps extends ViewProps {
    * Receives the URL that was tapped.
    */
   onLinkPress?: CodegenTypes.BubblingEventHandler<LinkPressEvent>;
+  /**
+   * Callback fired when a link is long pressed.
+   * Receives the URL that was long pressed.
+   * - iOS: When provided, overrides the system link preview behavior.
+   * - Android: Handles long press gestures on links.
+   */
+  onLinkLongPress?: CodegenTypes.BubblingEventHandler<LinkLongPressEvent>;
+  /**
+   * Controls whether the system link preview is shown on long press (iOS only).
+   *
+   * When `true` (default), long-pressing a link shows the native iOS link preview.
+   * When `false`, the system preview is suppressed.
+   *
+   * Automatically set to `false` when `onLinkLongPress` is provided (unless explicitly overridden).
+   *
+   * Android: No-op (Android doesn't have a system link preview).
+   *
+   * @default true
+   */
+  enableLinkPreview?: CodegenTypes.WithDefault<boolean, true>;
   /**
    * - iOS: Controls text selection and link previews on long press.
    * - Android: Controls text selection.
