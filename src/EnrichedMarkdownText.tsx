@@ -4,6 +4,7 @@ import EnrichedMarkdownTextNativeComponent, {
   type LinkPressEvent,
   type LinkLongPressEvent,
 } from './EnrichedMarkdownTextNativeComponent';
+import EnrichedMarkdownNativeComponent from './EnrichedMarkdownNativeComponent';
 import { normalizeMarkdownStyle } from './normalizeMarkdownStyle';
 import type { ViewStyle, TextStyle, NativeSyntheticEvent } from 'react-native';
 
@@ -104,6 +105,19 @@ interface ThematicBreakStyle {
   marginBottom?: number;
 }
 
+interface TableStyle extends BaseBlockStyle {
+  headerFontFamily?: string;
+  headerBackgroundColor?: string;
+  headerTextColor?: string;
+  rowEvenBackgroundColor?: string;
+  rowOddBackgroundColor?: string;
+  borderColor?: string;
+  borderWidth?: number;
+  borderRadius?: number;
+  cellPaddingHorizontal?: number;
+  cellPaddingVertical?: number;
+}
+
 export interface MarkdownStyle {
   paragraph?: ParagraphStyle;
   h1?: HeadingStyle;
@@ -124,6 +138,7 @@ export interface MarkdownStyle {
   image?: ImageStyle;
   inlineImage?: InlineImageStyle;
   thematicBreak?: ThematicBreakStyle;
+  table?: TableStyle;
 }
 
 /**
@@ -211,6 +226,13 @@ export interface EnrichedMarkdownTextProps
    * @default false
    */
   allowTrailingMargin?: boolean;
+  /**
+   * Specifies which Markdown flavor to use for rendering.
+   * - `'commonmark'` (default): standard CommonMark renderer (single TextView).
+   * - `'github'`: GitHub Flavored Markdown — container-based renderer with support for tables and other GFM extensions.
+   * @default 'commonmark'
+   */
+  flavor?: 'commonmark' | 'github';
 }
 
 const defaultMd4cFlags: Md4cFlags = {
@@ -229,6 +251,7 @@ export const EnrichedMarkdownText = ({
   allowFontScaling = true,
   maxFontSizeMultiplier,
   allowTrailingMargin = false,
+  flavor = 'commonmark',
   ...rest
 }: EnrichedMarkdownTextProps) => {
   const normalizedStyle = useMemo(
@@ -259,22 +282,26 @@ export const EnrichedMarkdownText = ({
     [onLinkLongPress]
   );
 
-  return (
-    <EnrichedMarkdownTextNativeComponent
-      markdown={markdown}
-      markdownStyle={normalizedStyle}
-      onLinkPress={handleLinkPress}
-      onLinkLongPress={handleLinkLongPress}
-      enableLinkPreview={onLinkLongPress == null && (enableLinkPreview ?? true)}
-      selectable={selectable}
-      md4cFlags={normalizedMd4cFlags}
-      allowFontScaling={allowFontScaling}
-      maxFontSizeMultiplier={maxFontSizeMultiplier}
-      allowTrailingMargin={allowTrailingMargin}
-      style={containerStyle}
-      {...rest}
-    />
-  );
+  const sharedProps = {
+    markdown,
+    markdownStyle: normalizedStyle,
+    onLinkPress: handleLinkPress,
+    onLinkLongPress: handleLinkLongPress,
+    enableLinkPreview: onLinkLongPress == null && (enableLinkPreview ?? true),
+    selectable,
+    md4cFlags: normalizedMd4cFlags,
+    allowFontScaling,
+    maxFontSizeMultiplier,
+    allowTrailingMargin,
+    style: containerStyle,
+    ...rest,
+  };
+
+  if (flavor === 'github') {
+    return <EnrichedMarkdownNativeComponent {...sharedProps} />;
+  }
+
+  return <EnrichedMarkdownTextNativeComponent {...sharedProps} />;
 };
 
 export default EnrichedMarkdownText;

@@ -93,6 +93,19 @@ interface ThematicBreakStyleInternal {
   marginBottom: CodegenTypes.Float;
 }
 
+interface TableStyleInternal extends BaseBlockStyleInternal {
+  headerFontFamily: string;
+  headerBackgroundColor: ColorValue;
+  headerTextColor: ColorValue;
+  rowEvenBackgroundColor: ColorValue;
+  rowOddBackgroundColor: ColorValue;
+  borderColor: ColorValue;
+  borderWidth: CodegenTypes.Float;
+  borderRadius: CodegenTypes.Float;
+  cellPaddingHorizontal: CodegenTypes.Float;
+  cellPaddingVertical: CodegenTypes.Float;
+}
+
 export interface MarkdownStyleInternal {
   paragraph: ParagraphStyleInternal;
   h1: HeadingStyleInternal;
@@ -113,6 +126,7 @@ export interface MarkdownStyleInternal {
   image: ImageStyleInternal;
   inlineImage: InlineImageStyleInternal;
   thematicBreak: ThematicBreakStyleInternal;
+  table: TableStyleInternal;
 }
 
 export interface LinkPressEvent {
@@ -207,4 +221,6 @@ export interface NativeProps extends ViewProps {
   allowTrailingMargin?: CodegenTypes.WithDefault<boolean, false>;
 }
 
-export default codegenNativeComponent<NativeProps>('EnrichedMarkdownText');
+export default codegenNativeComponent<NativeProps>('EnrichedMarkdownText', {
+  interfaceOnly: true,
+});

@@ -25,6 +25,12 @@ data class MarkdownASTNode(
     ListItem,
     CodeBlock,
     ThematicBreak,
+    Table,
+    TableHead,
+    TableBody,
+    TableRow,
+    TableHeaderCell,
+    TableCell,
   }
 
   fun getAttribute(key: String): String? = attributes[key]

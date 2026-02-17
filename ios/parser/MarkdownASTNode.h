@@ -18,7 +18,13 @@ typedef NS_ENUM(NSInteger, MarkdownNodeType) {
   MarkdownNodeTypeOrderedList,
   MarkdownNodeTypeListItem,
   MarkdownNodeTypeCodeBlock,
-  MarkdownNodeTypeThematicBreak
+  MarkdownNodeTypeThematicBreak,
+  MarkdownNodeTypeTable,
+  MarkdownNodeTypeTableHead,
+  MarkdownNodeTypeTableBody,
+  MarkdownNodeTypeTableRow,
+  MarkdownNodeTypeTableHeaderCell,
+  MarkdownNodeTypeTableCell
 };
 
 @interface MarkdownASTNode : NSObject
