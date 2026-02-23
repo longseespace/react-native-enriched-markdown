@@ -58,9 +58,18 @@ NSUInteger applyBlockSpacingBefore(NSMutableAttributedString *output, NSUInteger
     return 0;
   }
 
+  CGFloat spacing = marginTop;
+
+  // At index 0 the spacer \n produces a 1pt line fragment (minimumLineHeight=1)
+  // on top of paragraphSpacing. Subtract it so the total equals the desired margin.
+  // For non-zero positions the 1pt is intentional inter-block spacing.
+  if (insertionPoint == 0) {
+    spacing = MAX(0, marginTop - 1.0);
+  }
+
   NSMutableParagraphStyle *spacerStyle = [kBlockSpacerTemplate mutableCopy];
   spacerStyle.baseWritingDirection = currentWritingDirection();
-  spacerStyle.paragraphSpacing = marginTop;
+  spacerStyle.paragraphSpacing = spacing;
 
   NSAttributedString *spacer =
       [[NSAttributedString alloc] initWithString:@"\n" attributes:@{NSParagraphStyleAttributeName : spacerStyle}];
