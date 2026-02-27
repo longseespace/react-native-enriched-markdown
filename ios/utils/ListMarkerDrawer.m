@@ -58,6 +58,19 @@ extern NSString *const TaskCheckedAttribute;
                                    return;
                                  [drawnParagraphs addObject:@(paraRange.location)];
 
+                                 // Draw marker only for the first paragraph of a list item.
+                                 // This avoids repeating markers for multi-paragraph items
+                                 // (e.g. fenced code blocks inside an ordered list item).
+                                 NSRange listItemRange = NSMakeRange(NSNotFound, 0);
+                                 id listItemToken = [storage attribute:ListItemNumberAttribute
+                                                               atIndex:charRange.location
+                                                 longestEffectiveRange:&listItemRange
+                                                               inRange:NSMakeRange(0, storage.length)];
+                                 if (!listItemToken || listItemRange.location == NSNotFound ||
+                                     paraRange.location != listItemRange.location) {
+                                   return;
+                                 }
+
                                  // 3. Calculate Layout Coordinates
                                  CGPoint glyphLoc = [layoutManager locationForGlyphAtIndex:glyphRange.location];
                                  CGFloat baselineY = origin.y + rect.origin.y + glyphLoc.y;
