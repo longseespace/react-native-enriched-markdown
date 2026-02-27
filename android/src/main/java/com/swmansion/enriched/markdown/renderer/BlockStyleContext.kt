@@ -41,6 +41,21 @@ private class MutableBlockStyle {
 
   fun toImmutable(): BlockStyle = BlockStyle(fontSize, fontFamily, fontWeight, color)
 
+  fun snapshotOrNull(): BlockStyle? = if (isDirty) toImmutable() else null
+
+  fun restoreFrom(snapshot: BlockStyle?) {
+    if (snapshot == null) {
+      clear()
+      return
+    }
+
+    fontSize = snapshot.fontSize
+    fontFamily = snapshot.fontFamily
+    fontWeight = snapshot.fontWeight
+    color = snapshot.color
+    isDirty = true
+  }
+
   fun clear() {
     isDirty = false
   }
@@ -63,6 +78,12 @@ class BlockStyleContext {
   private val orderedListItemNumbers = ArrayDeque<Int>()
 
   enum class ListType { UNORDERED, ORDERED }
+
+  data class BlockStyleSnapshot(
+    val blockType: BlockType,
+    val blockStyle: BlockStyle?,
+    val headingLevel: Int,
+  )
 
   private fun updateBlockStyle(
     type: BlockType,
@@ -137,6 +158,20 @@ class BlockStyleContext {
     }
 
     return cachedBlockStyle ?: mutableBlockStyle.toImmutable().also { cachedBlockStyle = it }
+  }
+
+  fun captureBlockStyle(): BlockStyleSnapshot =
+    BlockStyleSnapshot(
+      blockType = currentBlockType,
+      blockStyle = mutableBlockStyle.snapshotOrNull(),
+      headingLevel = currentHeadingLevel,
+    )
+
+  fun restoreBlockStyle(snapshot: BlockStyleSnapshot) {
+    currentBlockType = snapshot.blockType
+    currentHeadingLevel = snapshot.headingLevel
+    mutableBlockStyle.restoreFrom(snapshot.blockStyle)
+    cachedBlockStyle = snapshot.blockStyle
   }
 
   fun clearBlockStyle() {
