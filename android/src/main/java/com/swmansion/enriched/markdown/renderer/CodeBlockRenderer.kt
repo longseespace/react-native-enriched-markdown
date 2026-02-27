@@ -23,7 +23,6 @@ class CodeBlockRenderer(
     val start = builder.length
     val style = config.style.codeBlockStyle
     val context = factory.blockStyleContext
-    val previousBlockStyle = context.captureBlockStyle()
 
     applyMarginTop(builder, start, style.marginTop)
 
@@ -35,7 +34,7 @@ class CodeBlockRenderer(
     try {
       factory.renderChildren(node, builder, onLinkPress, onLinkLongPress)
     } finally {
-      context.restoreBlockStyle(previousBlockStyle)
+      context.popBlockStyle()
     }
 
     if (builder.length == contentStart) return

@@ -22,7 +22,6 @@ class BlockquoteRenderer(
     val style = config.style.blockquoteStyle
     val context = factory.blockStyleContext
     val depth = context.blockquoteDepth
-    val previousBlockStyle = context.captureBlockStyle()
 
     // Track depth to handle nested indentation levels
     context.blockquoteDepth = depth + 1
@@ -31,7 +30,7 @@ class BlockquoteRenderer(
     try {
       factory.renderChildren(node, builder, onLinkPress, onLinkLongPress)
     } finally {
-      context.restoreBlockStyle(previousBlockStyle)
+      context.popBlockStyle()
       context.blockquoteDepth = depth
     }
 
