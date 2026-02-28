@@ -278,6 +278,111 @@ const defaultMd4cFlags: Md4cFlags = {
   underline: false,
 };
 
+const BRACKET_DISPLAY_MATH_BLOCK_REGEX =
+  /(^|\n)[ \t]*\\\[[ \t]*\n?([\s\S]*?)\n?[ \t]*\\\][ \t]*(?=\n|$)/g;
+const INLINE_PAREN_MATH_REGEX = /(^|[^\\])\\\(([\s\S]*?)\\\)/g;
+
+type MarkdownSegment = {
+  type: 'text' | 'code';
+  content: string;
+};
+
+const parseFenceOpening = (
+  line: string
+): { markerChar: '`' | '~'; markerLength: number } | null => {
+  const trimmed = line.trimStart();
+  const leadingSpaces = line.length - trimmed.length;
+  if (leadingSpaces > 3) return null;
+
+  const match = trimmed.match(/^(`{3,}|~{3,})(.*)$/);
+  if (!match) return null;
+  const marker = match[1] ?? '';
+  if (marker.length === 0) return null;
+  const markerChar = marker[0] as '`' | '~';
+  return {
+    markerChar,
+    markerLength: marker.length,
+  };
+};
+
+const isFenceClosing = (
+  line: string,
+  markerChar: '`' | '~',
+  markerLength: number
+): boolean => {
+  const trimmed = line.trimStart();
+  const leadingSpaces = line.length - trimmed.length;
+  if (leadingSpaces > 3) return false;
+  const marker = markerChar === '`' ? '`' : '~';
+  const regex = new RegExp(`^${marker}{${markerLength},}\\s*$`);
+  return regex.test(trimmed);
+};
+
+const splitByFencedCodeBlocks = (markdown: string): MarkdownSegment[] => {
+  if (!markdown.includes('```') && !markdown.includes('~~~')) {
+    return [{ type: 'text', content: markdown }];
+  }
+
+  const lines = markdown.split('\n');
+  const segments: MarkdownSegment[] = [];
+  let buffer: string[] = [];
+  let inFence = false;
+  let fenceMarkerChar: '`' | '~' = '`';
+  let fenceMarkerLength = 3;
+
+  const pushBuffer = (type: 'text' | 'code') => {
+    if (buffer.length === 0) return;
+    segments.push({ type, content: buffer.join('\n') });
+    buffer = [];
+  };
+
+  for (const line of lines) {
+    if (!inFence) {
+      const opening = parseFenceOpening(line);
+      if (opening) {
+        pushBuffer('text');
+        inFence = true;
+        fenceMarkerChar = opening.markerChar;
+        fenceMarkerLength = opening.markerLength;
+      }
+      buffer.push(line);
+      continue;
+    }
+
+    buffer.push(line);
+    if (isFenceClosing(line, fenceMarkerChar, fenceMarkerLength)) {
+      pushBuffer('code');
+      inFence = false;
+    }
+  }
+
+  pushBuffer(inFence ? 'code' : 'text');
+  return segments;
+};
+
+const normalizeMathDelimitersInText = (markdown: string): string => {
+  const withDisplayMath = markdown.replace(
+    BRACKET_DISPLAY_MATH_BLOCK_REGEX,
+    (_match, leadingNewline: string, rawBody: string) =>
+      `${leadingNewline}\n\n$$\n${rawBody.trim()}\n$$\n`
+  );
+  return withDisplayMath.replace(
+    INLINE_PAREN_MATH_REGEX,
+    (_match, prefix: string, rawBody: string) => `${prefix}$${rawBody}$`
+  );
+};
+
+const normalizeMathDelimiters = (markdown: string): string => {
+  const segments = splitByFencedCodeBlocks(markdown);
+  return segments
+    .map((segment) =>
+      segment.type === 'text'
+        ? normalizeMathDelimitersInText(segment.content)
+        : segment.content
+    )
+    .join('\n');
+};
+
 export const EnrichedMarkdownText = ({
   markdown,
   markdownStyle = {},
@@ -294,6 +399,10 @@ export const EnrichedMarkdownText = ({
   flavor = 'commonmark',
   ...rest
 }: EnrichedMarkdownTextProps) => {
+  const normalizedMarkdown = useMemo(
+    () => normalizeMathDelimiters(markdown),
+    [markdown]
+  );
   const normalizedStyle = useMemo(
     () => normalizeMarkdownStyle(markdownStyle),
     [markdownStyle]
@@ -331,7 +440,7 @@ export const EnrichedMarkdownText = ({
   );
 
   const sharedProps = {
-    markdown,
+    markdown: normalizedMarkdown,
     markdownStyle: normalizedStyle,
     onLinkPress: handleLinkPress,
     onLinkLongPress: handleLinkLongPress,
