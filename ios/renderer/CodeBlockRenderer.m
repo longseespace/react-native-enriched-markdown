@@ -90,6 +90,10 @@ static BOOL ENRMColorIsDark(UIColor *color)
   CGFloat marginBottom = [_config codeBlockMarginBottom];
 
   NSUInteger blockStart = output.length;
+  if (blockStart > 0 && ![output.string hasSuffix:@"\n"]) {
+    [output appendAttributedString:kNewlineAttributedString];
+    blockStart = output.length;
+  }
   blockStart += applyBlockSpacingBefore(output, blockStart, marginTop);
 
   // Top Padding: Inserted as a spacer character inside the background area
