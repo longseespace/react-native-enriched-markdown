@@ -9,6 +9,7 @@
 #import "ListItemRenderer.h"
 #import "ListRenderer.h"
 #import "MarkdownASTNode.h"
+#import "MathRenderer.h"
 #import "ParagraphRenderer.h"
 #import "RenderContext.h"
 #import "StrikethroughRenderer.h"
@@ -93,6 +94,10 @@
       return [[CodeBlockRenderer alloc] initWithRendererFactory:self config:_config];
     case MarkdownNodeTypeThematicBreak:
       return [[ThematicBreakRenderer alloc] initWithRendererFactory:self config:_config];
+    case MarkdownNodeTypeInlineMath:
+      return [[MathRenderer alloc] initWithRendererFactory:self config:_config isDisplay:NO];
+    case MarkdownNodeTypeDisplayMath:
+      return [[MathRenderer alloc] initWithRendererFactory:self config:_config isDisplay:YES];
     default:
       return nil;
   }

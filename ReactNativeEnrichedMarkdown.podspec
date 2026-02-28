@@ -18,6 +18,7 @@ Pod::Spec.new do |s|
   s.resources = "ios/highlighting/Resources/*"
   s.frameworks = "JavaScriptCore"
   s.swift_version = "5.0"
+  s.dependency "SwiftMath-pod", ">= 2.0.1.pod"
 
   # Set header search paths to cpp/md4c and cpp/parser, add preprocessor definitions
   s.pod_target_xcconfig = {

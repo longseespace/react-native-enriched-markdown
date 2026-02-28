@@ -31,6 +31,8 @@ data class MarkdownASTNode(
     TableRow,
     TableHeaderCell,
     TableCell,
+    InlineMath,
+    DisplayMath,
   }
 
   fun getAttribute(key: String): String? = attributes[key]

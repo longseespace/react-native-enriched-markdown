@@ -60,6 +60,10 @@ static jint nodeTypeToJavaOrdinal(NodeType type) {
       return 22;
     case NodeType::TableCell:
       return 23;
+    case NodeType::InlineMath:
+      return 24;
+    case NodeType::DisplayMath:
+      return 25;
     default:
       return 0;
   }

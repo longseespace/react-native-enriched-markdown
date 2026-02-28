@@ -4,8 +4,8 @@ import android.text.SpannableStringBuilder
 import android.text.style.ForegroundColorSpan
 import com.swmansion.enriched.markdown.utils.text.span.SPAN_FLAGS_EXCLUSIVE_EXCLUSIVE
 import dev.snipme.highlights.Highlights
-import dev.snipme.highlights.model.ColorHighlight
 import dev.snipme.highlights.model.CodeHighlight
+import dev.snipme.highlights.model.ColorHighlight
 import dev.snipme.highlights.model.SyntaxLanguage
 import dev.snipme.highlights.model.SyntaxTheme
 
@@ -115,4 +115,3 @@ internal class CodeSyntaxHighlighter {
     }
   }
 }
-

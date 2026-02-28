@@ -70,6 +70,18 @@ static void serializeNode(MarkdownASTNode *node, NSMutableString *buffer)
       break;
     }
 
+    case MarkdownNodeTypeInlineMath:
+      [buffer appendString:@"$"];
+      serializeChildren(node, buffer);
+      [buffer appendString:@"$"];
+      break;
+
+    case MarkdownNodeTypeDisplayMath:
+      [buffer appendString:@"$$\n"];
+      serializeChildren(node, buffer);
+      [buffer appendString:@"\n$$"];
+      break;
+
     case MarkdownNodeTypeParagraph:
     default:
       serializeChildren(node, buffer);

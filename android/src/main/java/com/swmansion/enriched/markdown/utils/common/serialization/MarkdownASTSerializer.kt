@@ -80,6 +80,18 @@ object MarkdownASTSerializer {
         buffer.append(")")
       }
 
+      NodeType.InlineMath -> {
+        buffer.append("$")
+        appendChildren(node, buffer)
+        buffer.append("$")
+      }
+
+      NodeType.DisplayMath -> {
+        buffer.append("$$\n")
+        appendChildren(node, buffer)
+        buffer.append("\n$$")
+      }
+
       else -> {
         appendChildren(node, buffer)
       }
