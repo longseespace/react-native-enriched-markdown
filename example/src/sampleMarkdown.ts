@@ -1,351 +1,377 @@
 export const sampleMarkdown = `
-# The Hidden World of Forest Ecosystems
+# Markdown Renderer Test Document
 
-Forests cover approximately **31% of the Earth's land surface**, providing habitat for countless species and playing a vital role in our planet's health. These magnificent ecosystems have existed for over *300 million years*, evolving alongside the creatures that call them home.
+> This document intentionally includes a wide variety of Markdown elements and edge cases.
 
-![Misty forest at sunrise](https://images.unsplash.com/photo-1448375240586-882707db888b?w=800)
+---
 
-## Why Forests Matter
+## Table of Contents
 
-Forests are often called the *lungs of the Earth*. They absorb **carbon dioxide** and release oxygen through photosynthesis — a process essential for all life on our planet. A single mature tree can absorb up to \`48 pounds\` of CO₂ per year.
+1. [Headings](#headings)
+2. [Text Formatting](#text-formatting)
+3. [Blockquotes](#blockquotes)
+4. [Lists](#lists)
+5. [Task Lists](#task-lists)
+6. [Links and References](#links-and-references)
+7. [Images](#images)
+8. [Code](#code)
+9. [Tables](#tables)
+10. [Horizontal Rules](#horizontal-rules)
+11. [HTML in Markdown](#html-in-markdown)
+12. [Footnotes](#footnotes)
+13. [Definition Lists](#definition-lists)
+14. [Math (if supported)](#math-if-supported)
+15. [Escaping Characters](#escaping-characters)
+16. [Emoji and Entities](#emoji-and-entities)
+17. [Mixed Nesting Stress Test](#mixed-nesting-stress-test)
 
-> In every walk with nature, one receives far more than he seeks.
+---
+
+## Headings
+
+# H1 Heading
+## H2 Heading
+### H3 Heading
+#### H4 Heading
+##### H5 Heading
+###### H6 Heading
+
+Alternate heading styles:
+
+Heading Level 1
+===============
+
+Heading Level 2
+---------------
+
+---
+
+## Text Formatting
+
+Plain text paragraph with **bold**, *italic*, ***bold italic***, ~~strikethrough~~, and \`inline code\`.
+
+You can also use __bold__ and _italic_ forms.
+
+Combination example: **bold with _nested italic_ and \`code\` inside**.
+
+Superscript (renderer-dependent): X^2^  
+Subscript (renderer-dependent): H~2~O  
+Highlight (renderer-dependent): ==marked text==
+
+Abbreviation example: HTML, CSS, JS.
+
+---
+
+## Blockquotes
+
+> Single-level quote.
 >
-> — John Muir
-
-### Key Benefits
-
-- **Climate regulation** through carbon sequestration
-- *Biodiversity* hotspots supporting millions of species
-- Natural water filtration and ***flood prevention***
-- Source of medicine, food, and raw materials
-- Soil erosion prevention and **nutrient cycling**
-- Recreation and *mental health* benefits
-
-### Economic Impact
-
-Forests contribute over **$1.3 trillion** to the global economy annually. They provide:
-
-- Timber and *wood products*
-- Non-timber forest products like **nuts and berries**
-- Ecotourism opportunities
-- ***Carbon credits*** for climate mitigation
-
----
-
-## The Layers of a Forest
-
-A healthy forest consists of several distinct layers, each supporting unique wildlife:
-
-- **Emergent Layer** — the tallest trees reaching above the canopy
-  - Heights exceeding *200 feet*
-  - Home to **eagles** and other raptors
-- **Canopy** — the primary layer receiving direct sunlight
-  - Home to most *bird species*
-  - Contains **90% of forest wildlife**
-  - Dense foliage creating a ***green roof***
-- **Understory** — smaller trees and saplings
-  - Receives only *2-15%* of sunlight
-  - **Shade-tolerant** plants thrive here
-- **Shrub Layer** — bushes and young trees
-  - Important for *nesting birds*
-  - Berry-producing plants
-- **Forest Floor** — decomposing matter and ground-dwelling creatures
-  - Fungi and *microorganisms*
-  - **Insects** and small mammals
-  - Nutrient-rich ***humus*** layer
-
-![Sunlight through forest canopy](https://images.unsplash.com/photo-1542273917363-3b1817f69a2d?w=800)
-
----
-
-## Types of Forests
-
-Our planet hosts remarkably diverse forest types, each adapted to its unique climate and conditions.
-
-### Tropical Rainforests
-
-Found near the equator, these forests receive **80-400 inches** of rainfall annually. They contain:
-
-- Over *50%* of all plant and animal species
-- The highest **biodiversity** on Earth
-- Trees that remain green ***year-round***
-- Multiple canopy layers
-
-> The rainforest is like a library where all the books are slowly being burned.
+> Still inside the same quote.
 >
-> — Thomas Lovejoy
+>> Nested quote level 2.
+>>
+>>> Nested quote level 3.
+>
+> Back to level 1.
 
-### Temperate Forests
-
-Located in moderate climate zones, these forests experience **four distinct seasons**:
-
-- **Deciduous trees** that shed leaves in autumn
-- Rich *understory* vegetation
-- Diverse wildlife including deer, bears, and ***songbirds***
-- Spectacular fall foliage
-
-### Boreal Forests (Taiga)
-
-The largest terrestrial biome, spanning across **Northern Russia, Canada, and Scandinavia**:
-
-- Dominated by *coniferous* trees
-- Short growing seasons of **50-100 days**
-- Home to wolves, moose, and ***lynx***
-- Stores more carbon than tropical forests
-
-![Snow-covered boreal forest](https://images.unsplash.com/photo-1418985991508-e47386d96a71?w=800)
+> ### Quoted Heading
+> - Quoted list item 1
+> - Quoted list item 2
+>
+> \`Quoted inline code\`
 
 ---
 
-## Forest Statistics by Type
+## Lists
 
-| Forest Type | Coverage | Annual Rainfall | Biodiversity | Carbon Storage |
-|------------|----------|-----------------|--------------|----------------|
-| Tropical Rainforest | ~7% of land | 80-400 inches | Highest (50%+ species) | High |
-| Temperate Forest | ~16% of land | 30-60 inches | Moderate | Moderate |
-| Boreal Forest (Taiga) | ~11% of land | 15-40 inches | Lower | Highest |
-| Mediterranean Forest | ~2% of land | 20-40 inches | Moderate | Moderate |
+### Unordered Lists
+
+- Item A
+- Item B
+  - Nested B.1
+  - Nested B.2
+    - Deep B.2.a
+- Item C
+
+* Alternate bullet 1
+* Alternate bullet 2
+  + Mixed bullet nested
+  + Another nested
+
+### Ordered Lists
+
+1. First
+2. Second
+3. Third
+   1. Third.A
+   2. Third.B
+4. Fourth
+
+1. Ordered list can
+1. also use all ones
+1. and still auto-number
+
+### Mixed List
+
+1. Step one
+   - Note A
+   - Note B
+2. Step two
+   - Subnote with \`code\`
+   - Subnote with **bold**
 
 ---
 
-## Fascinating Forest Facts
+## Task Lists
 
-Did you know that trees communicate through an underground network? Scientists call this the \`Wood Wide Web\` — a fungal network connecting tree roots across entire forests.
+- [x] Completed task
+- [ ] Incomplete task
+- [x] Another completed task
+  - [ ] Nested incomplete task
+  - [x] Nested complete task
+
+---
+
+## Links and References
+
+Inline link: [OpenAI](https://openai.com)
+
+Link with title: [Markdown Guide](https://www.markdownguide.org "Markdown Guide Website")
+
+Autolink: <https://example.com>
+
+Email autolink: <test@example.com>
+
+Reference-style link: [Example][example-ref]
+
+Collapsed reference link: [Example][]
+
+Shortcut reference link: [OpenAI]
+
+[example-ref]: https://example.com/reference "Reference Example"
+[example]: https://example.com/collapsed "Collapsed Reference"
+[openai]: https://openai.com "Shortcut Reference"
+
+---
+
+## Images
+
+Inline image:
+
+![Sample Alt Text](https://via.placeholder.com/120x60 "Placeholder Image")
+
+Reference image:
+
+![Reference Image][img-ref]
+
+[img-ref]: https://via.placeholder.com/100 "Reference Placeholder"
+
+Image wrapped in link:
+
+[![Clickable Image](https://via.placeholder.com/80)](https://example.com)
+
+---
+
+## Code
+
+Inline code example: \`const x = 42;\`
+
+Indented code block:
+
+    function indentedExample() {
+        return "Indented code block";
+    }
+
+Fenced code block (no language):
+
+\`\`\`
+No language specified
+Line 2
+\`\`\`
+
+Fenced code block (language: javascript):
 
 \`\`\`javascript
-// Example: Tree network simulation
-class TreeNetwork {
-  constructor() {
-    this.trees = [];
-    this.fungalConnections = new Map();
-  }
-  
-  connectTrees(tree1, tree2) {
-    // Trees share nutrients through mycorrhizal networks
-    this.fungalConnections.set(\`\${tree1.id}-\${tree2.id}\`, {
-      nutrientFlow: 'bidirectional',
-      signalTransmission: true
-    });
-  }
+function greet(name) {
+  console.log(\`Hello, \${name}!\`);
+}
+greet("Markdown");
+\`\`\`
+
+Fenced code block (language: python):
+
+\`\`\`python
+def fib(n):
+    a, b = 0, 1
+    out = []
+    while len(out) < n:
+        out.append(a)
+        a, b = b, a + b
+    return out
+\`\`\`
+
+Fenced code block (language: json):
+
+\`\`\`json
+{
+  "name": "Renderer Test",
+  "version": 1,
+  "features": ["tables", "footnotes", "task-lists"]
 }
 \`\`\`
 
-> Trees share nutrients and information through mycorrhizal networks, essentially "talking" to each other underground.
+---
 
-### The Science of Tree Communication
+## Tables
 
-Research has revealed remarkable findings:
+| Left Align | Center Align | Right Align |
+|:-----------|:------------:|------------:|
+| alpha      | beta         |        1234 |
+| gamma      | delta        |          56 |
+| long text that wraps | centered text |         789 |
 
-- Mother trees recognize their **offspring** and send them extra nutrients
-- Dying trees *dump* their resources into the network
-- Trees can ***warn*** neighbors about insect attacks
-- Fungi receive \`sugars\` in exchange for their services
+Table with inline formatting:
 
-### Ancient Giants
-
-Some of the oldest living organisms on Earth are trees:
-
-- **Methuselah** — a bristlecone pine over *4,850 years old*
-- **Hyperion** — the tallest known tree at ***380 feet***
-- **General Sherman** — the largest tree by volume
-- **Pando** — a clonal colony spanning *106 acres*
-- **Jomon Sugi** — a Japanese cedar over **2,000 years old**
-
-### Remarkable Adaptations
-
-Trees have evolved incredible survival strategies:
-
-- **Redwoods** can absorb fog through their *needles*
-- Baobabs store up to ***32,000 gallons*** of water
-- Some pines require \`fire\` to release their seeds
-- Mangroves filter *salt* from seawater
-
-![Mountain landscape with forest](https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800)
+| Syntax | Example |
+|--------|---------|
+| Bold   | **strong** |
+| Italic | *emphasis* |
+| Code   | \`let y = 1\` |
+| Link   | [Example](https://example.com) |
 
 ---
 
-## Forest Wildlife
+## Horizontal Rules
 
-Forests support an astonishing array of life, from microscopic organisms to apex predators.
+---
+***
+___
 
-### Mammals
+---
 
-- **Large predators** — wolves, bears, mountain lions
-- *Herbivores* — deer, elk, moose
-- ***Small mammals*** — squirrels, chipmunks, rabbits
-- Nocturnal species — bats, owls, foxes
+## HTML in Markdown
 
-### Birds
+<div>
+  <strong>Inline HTML block</strong> with <em>emphasis</em>.
+</div>
 
-Over **80% of bird species** depend on forests for:
+<span style="color: red;">Styled span (if sanitizer allows)</span>
 
-- Nesting and *breeding*
-- Food sources like ***insects and seeds***
-- Migration stopover points
-- Year-round habitat
+<details>
+  <summary>Expandable section</summary>
+  Hidden content inside details/summary.
+</details>
 
-### Insects and Invertebrates
+---
 
-The forest floor alone contains:
+## Footnotes
 
-- Thousands of *beetle* species
-- **Ants** that aerate soil
-- ***Earthworms*** that process organic matter
-- Butterflies and moths
+Here is a sentence with a footnote.[^1]
 
-> Look deep into nature, and then you will understand everything better.
+Here is another footnote reference.[^longnote]
+
+[^1]: This is the first footnote.
+[^longnote]: This is a longer footnote
+    that spans multiple lines
+    and includes \`inline code\`.
+
+---
+
+## Definition Lists
+
+Term 1
+: Definition for term 1
+
+Term 2
+: First definition for term 2
+: Second definition for term 2
+
+---
+
+## Math (if supported)
+
+Inline math: $E = mc^2$
+
+Block math:
+
+$$
+\\int_0^\\infty e^{-x} \\, dx = 1
+$$
+
+---
+
+## Escaping Characters
+
+\\*This should not be italic\\*  
+\\\`This should not be inline code\\\`  
+\\# This should not be a heading  
+\\[This should not be a link\\](https://example.com)
+
+Escaped pipe in table-like text: a \\| b \\| c
+
+---
+
+## Emoji and Entities
+
+Emoji shortcodes (renderer-dependent): :smile: :rocket: :white_check_mark:
+
+Unicode emoji: 😄 🚀 ✅
+
+HTML entities: &copy; &amp; &lt; &gt; &quot; &nbsp;
+
+---
+
+## Mixed Nesting Stress Test
+
+> 1. Quoted ordered item
+>    - Nested unordered
+>      - Deep item with **bold** and \`code\`
+>    - Another nested item
+> 2. Second quoted ordered item
 >
-> — Albert Einstein
-
----
-
-## Threats to Our Forests
-
-Despite their importance, forests face unprecedented challenges in the modern era.
-
-### Deforestation
-
-Every year, we lose approximately **10 million hectares** of forest — an area the size of *Iceland*. Primary causes include:
-
-- Agricultural expansion for ***soy and cattle***
-- Logging for timber and \`paper products\`
-- Urban development and *infrastructure*
-- Mining operations
-
-### Climate Change
-
-Rising temperatures affect forests through:
-
-- Increased **drought** frequency
-- More severe *wildfires*
-- ***Pest outbreaks*** spreading to new areas
-- Shifting growing seasons
-
-### Invasive Species
-
-Non-native species disrupt forest ecosystems:
-
-- **Emerald ash borer** has killed millions of trees
-- *Kudzu* vine smothers native vegetation
-- ***Feral pigs*** destroy understory plants
-
-![Deforested landscape](https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=800)
-
----
-
-## Protecting Our Forests
-
-Conservation efforts are critical for preserving these vital ecosystems. Here's how you can help:
-
-### Action Checklist
-
-- [x] Support *sustainable forestry* practices
-  - [x] Research certified sustainable wood products
-  - [ ] Learn about forest management practices
-- [x] Reduce paper consumption and **recycle**
-  - [x] Switch to digital documents when possible
-  - [ ] Set up paper recycling at home
-- [ ] Plant native trees in your community
-  - [ ] Join local tree planting events
-  - [ ] Choose appropriate native species
-- [ ] Donate to ***conservation organizations***
-- [ ] Choose products with \`FSC certification\`
-  - [ ] Look for FSC logo on products
-  - [ ] Support companies with sustainable practices
-- [ ] Advocate for *protected areas*
-- [ ] Reduce your **carbon footprint**
-  - [ ] Use public transportation
-  - [ ] Reduce energy consumption
-- [ ] Educate others about forest importance
-
-### Priority Actions
-
-1. ~~Ignore the problem~~ → **Take immediate action**
-2. Support *sustainable forestry* practices
-3. Reduce paper consumption and **recycle**
-4. Plant native trees in your community
-5. Donate to ***conservation organizations***
-6. Choose products with \`FSC certification\`
-7. Advocate for *protected areas*
-8. Reduce your **carbon footprint**
-9. Educate others about forest importance
-
-> The best time to plant a tree was 20 years ago. The second best time is now.
+> \`\`\`text
+> Quoted fenced code block
+> with multiple lines
+> \`\`\`
 >
-> — Chinese Proverb
+> | Quoted | Table |
+> |--------|-------|
+> | A      | B     |
 
-### Success Stories
+1. Top ordered
+   > Blockquote inside list
+   >
+   > - Quoted bullet inside ordered item
+   > - Another bullet
+2. Second item
+   \`\`\`bash
+   echo "Fenced code inside list"
+   \`\`\`
 
-Conservation efforts are making a difference:
+- Bullet item with table below:
 
-- Costa Rica *doubled* its forest cover since **1980**
-- China's tree-planting program covers ***500,000 square kilometers***
-- The Amazon Fund has protected millions of hectares
-- Community forests in *Nepal* have recovered significantly
+  | Col1 | Col2 |
+  |------|------|
+  | v1   | v2   |
 
-### Organizations Making an Impact
+- Bullet item with HTML:
 
-| Organization | Focus Area | Impact |
-|--------------|------------|--------|
-| **World Wildlife Fund** | Global conservation | Protected millions of hectares |
-| *Rainforest Alliance* | Sustainable agriculture | Certified 5M+ hectares |
-| ***The Nature Conservancy*** | Land protection | Protected 125M+ acres |
-| One Tree Planted | Reforestation | Planted 100M+ trees |
-
----
-
-## The Future of Forests
-
-Scientists and conservationists are developing innovative approaches to protect and restore forests.
-
-### Technology Solutions
-
-- **Satellite monitoring** for real-time deforestation alerts
-- *Drone planting* that can seed 100,000 trees per day
-- ***DNA barcoding*** to track illegal logging
-- AI-powered \`fire prediction\` systems
-
-\`\`\`python
-# Example: Forest monitoring with satellite data
-import satellite_imagery
-
-def detect_deforestation(region):
-    """Monitor forest cover changes using satellite imagery"""
-    current_cover = satellite_imagery.get_forest_cover(region)
-    previous_cover = satellite_imagery.get_historical_cover(region, years_ago=1)
-    
-    deforestation_rate = (previous_cover - current_cover) / previous_cover
-    if deforestation_rate > 0.05:  # 5% threshold
-        alert_conservation_team(region, deforestation_rate)
-    
-    return deforestation_rate
-\`\`\`
-
-### Restoration Efforts
-
-The UN Decade on Ecosystem Restoration aims to restore **350 million hectares** by 2030:
-
-- Focus on *native species*
-- Community-led initiatives
-- ***Agroforestry*** integration
-- Corridor connections between forests
-
-![New forest growth](https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=800)
+  <kbd>Ctrl</kbd> + <kbd>C</kbd>
 
 ---
 
-## Conclusion
+## Line Break Behavior
 
-Forests are ***irreplaceable ecosystems*** that sustain life on Earth. From the microscopic fungi beneath our feet to the towering giants that touch the sky, every element plays a crucial role.
+This line ends with two spaces.  
+So this should be a hard line break.
 
-By understanding their importance and taking action to protect them, we can ensure these magnificent landscapes thrive for generations to come. Whether you plant a single tree or support global conservation efforts, **every action matters**.
+This paragraph uses an explicit break tag.<br>
+Next line after \`<br>\`.
 
-> The clearest way into the Universe is through a forest wilderness.
->
-> — John Muir
+---
 
-Learn more about forest conservation at [World Wildlife Fund](https://www.worldwildlife.org/habitats/forest-habitat) or [Rainforest Alliance](https://www.rainforest-alliance.org).
+## Final Paragraph
 
-*Together, we can protect the forests that protect us.*
+If your renderer supports extended Markdown, most features above should render correctly.  
+If not, unsupported features should degrade gracefully as plain text.
 `;

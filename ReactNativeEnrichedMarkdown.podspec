@@ -13,14 +13,18 @@ Pod::Spec.new do |s|
   s.platforms    = { :ios => min_ios_version_supported }
   s.source       = { :git => "https://github.com/software-mansion-labs/react-native-enriched-markdown.git", :tag => "#{s.version}" }
 
-  s.source_files = "ios/**/*.{h,m,mm,cpp}", "cpp/md4c/*.{c,h}", "cpp/parser/*.{hpp,cpp}"
-  s.private_header_files = "ios/**/*.h"
+  s.source_files = "ios/**/*.{h,m,mm,cpp,swift}", "cpp/md4c/*.{c,h}", "cpp/parser/*.{hpp,cpp}"
+  s.private_header_files = "ios/**/*.h", "cpp/parser/*.hpp"
+  s.resources = "ios/highlighting/Resources/*"
+  s.frameworks = "JavaScriptCore"
+  s.swift_version = "5.0"
 
   # Set header search paths to cpp/md4c and cpp/parser, add preprocessor definitions
   s.pod_target_xcconfig = {
     'HEADER_SEARCH_PATHS' => '"$(PODS_TARGET_SRCROOT)/cpp/md4c" "$(PODS_TARGET_SRCROOT)/cpp/parser" "$(PODS_TARGET_SRCROOT)/ios/internals"',
     'GCC_PREPROCESSOR_DEFINITIONS' => '$(inherited) MD4C_USE_UTF8=1',
-    'CLANG_CXX_LANGUAGE_STANDARD' => 'c++17'
+    'CLANG_CXX_LANGUAGE_STANDARD' => 'c++17',
+    'DEFINES_MODULE' => 'YES'
   }
 
   install_modules_dependencies(s)

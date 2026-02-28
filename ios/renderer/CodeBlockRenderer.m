@@ -6,6 +6,34 @@
 #import "RenderContext.h"
 #import "RendererFactory.h"
 #import "StyleConfig.h"
+#if __has_include("ReactNativeEnrichedMarkdown-Swift.h")
+#import "ReactNativeEnrichedMarkdown-Swift.h"
+#endif
+
+static BOOL ENRMColorIsDark(UIColor *color)
+{
+  if (!color) {
+    return NO;
+  }
+
+  UIColor *resolved = color;
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 130000
+  if ([resolved respondsToSelector:@selector(resolvedColorWithTraitCollection:)]) {
+    resolved = [resolved resolvedColorWithTraitCollection:[UITraitCollection currentTraitCollection]];
+  }
+#endif
+
+  CGFloat red = 0;
+  CGFloat green = 0;
+  CGFloat blue = 0;
+  CGFloat alpha = 0;
+  if (![resolved getRed:&red green:&green blue:&blue alpha:&alpha]) {
+    return NO;
+  }
+
+  CGFloat luminance = (0.299 * red) + (0.587 * green) + (0.114 * blue);
+  return luminance < 0.5;
+}
 
 @implementation CodeBlockRenderer {
   RendererFactory *_rendererFactory;
@@ -19,6 +47,37 @@
     _config = (StyleConfig *)config;
   }
   return self;
+}
+
+- (void)applyFallbackFont:(UIFont *)font
+                    color:(UIColor *)color
+                  toRange:(NSRange)range
+                 inOutput:(NSMutableAttributedString *)output
+{
+  if (range.length == 0) {
+    return;
+  }
+
+  UIColor *resolvedColor = color ?: [UIColor blackColor];
+  NSMutableArray<NSValue *> *fontRanges = [NSMutableArray new];
+  NSMutableArray<NSValue *> *colorRanges = [NSMutableArray new];
+  [output enumerateAttributesInRange:range
+                             options:0
+                          usingBlock:^(NSDictionary<NSAttributedStringKey, id> *attrs, NSRange subrange, BOOL *stop) {
+                            if (!attrs[NSFontAttributeName]) {
+                              [fontRanges addObject:[NSValue valueWithRange:subrange]];
+                            }
+                            if (!attrs[NSForegroundColorAttributeName]) {
+                              [colorRanges addObject:[NSValue valueWithRange:subrange]];
+                            }
+                          }];
+
+  for (NSValue *value in fontRanges) {
+    [output addAttribute:NSFontAttributeName value:font range:value.rangeValue];
+  }
+  for (NSValue *value in colorRanges) {
+    [output addAttribute:NSForegroundColorAttributeName value:resolvedColor range:value.rangeValue];
+  }
 }
 
 - (void)renderNode:(MarkdownASTNode *)node into:(NSMutableAttributedString *)output context:(RenderContext *)context
@@ -54,12 +113,25 @@
 
   UIFont *codeFont = [_config codeBlockFont];
   UIColor *codeColor = [_config codeBlockColor];
-  if (codeColor) {
-    [output addAttributes:@{NSFontAttributeName : codeFont, NSForegroundColorAttributeName : codeColor}
-                    range:contentRange];
-  } else {
-    [output addAttribute:NSFontAttributeName value:codeFont range:contentRange];
+#if __has_include("ReactNativeEnrichedMarkdown-Swift.h")
+  NSString *codeContent = [output attributedSubstringFromRange:contentRange].string ?: @"";
+  NSString *language = node.attributes[@"language"];
+  UIColor *codeBackgroundColor = [_config codeBlockBackgroundColor];
+  BOOL usesDarkBackground = ENRMColorIsDark(codeBackgroundColor);
+
+  NSAttributedString *highlighted = [ENRMSyntaxHighlighterBridge
+      highlightedCode:codeContent
+             language:language
+                 font:codeFont
+        fallbackColor:(codeColor ?: [UIColor blackColor])usesDarkBackground:usesDarkBackground];
+  if (highlighted.length > 0) {
+    [output replaceCharactersInRange:contentRange withAttributedString:highlighted];
+    contentEnd = contentStart + highlighted.length;
+    contentRange = NSMakeRange(contentStart, contentEnd - contentStart);
   }
+#endif
+
+  [self applyFallbackFont:codeFont color:codeColor toRange:contentRange inOutput:output];
 
   if (lineHeight > 0) {
     applyLineHeight(output, contentRange, lineHeight);
