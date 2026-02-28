@@ -40,6 +40,11 @@ class SpanStyleCache(
         .color
         .takeIf { it != 0 }
         ?.let { add(it) }
+      style
+        .codeBlockStyle
+        .color
+        .takeIf { it != 0 }
+        ?.let { add(it) }
       style.taskListStyle.checkedTextColor
         .takeIf { it != 0 }
         ?.let { add(it) }

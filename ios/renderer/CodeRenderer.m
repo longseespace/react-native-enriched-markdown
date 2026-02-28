@@ -66,8 +66,9 @@
     }
     codeAttributes[CodeAttributeName] = @YES;
 
-    // Store block line height directly for CodeBackground to use
-    codeAttributes[@"BlockLineHeight"] = @(blockFont.lineHeight);
+    // Use inline code font line height for background sizing.
+    // Using block/paragraph line height makes inline code backgrounds too tall.
+    codeAttributes[@"BlockLineHeight"] = @(codeFont.lineHeight);
 
     [output setAttributes:codeAttributes range:range];
   }

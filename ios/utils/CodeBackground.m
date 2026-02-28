@@ -94,9 +94,15 @@ static const CGFloat kCodeBackgroundBorderWidth = 0.5;
                                                           usedRect.size.width, usedRect.size.height);
                                  }
 
-                                 // Ensure consistent height and no gaps
-                                 if (finalRect.size.height < referenceHeight) {
-                                   finalRect.size.height = referenceHeight;
+                                 // Match inline-code background height to code line height.
+                                 // TextKit line fragments can be taller (e.g. custom paragraph line-height),
+                                 // which makes inline code look like full-height highlighted rows.
+                                 if (referenceHeight > 0) {
+                                   CGFloat delta = finalRect.size.height - referenceHeight;
+                                   if (delta > 0.5 || delta < -0.5) {
+                                     finalRect.origin.y += (delta / 2.0);
+                                     finalRect.size.height = referenceHeight;
+                                   }
                                  }
 
                                  [self drawBackgroundAndBorders:finalRect

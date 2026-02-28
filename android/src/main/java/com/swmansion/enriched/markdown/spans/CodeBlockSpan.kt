@@ -190,7 +190,5 @@ class CodeBlockSpan(
     tp.textSize = blockStyle.fontSize
 
     tp.applyBlockStyleFont(blockStyle, context)
-
-    tp.applyColorPreserving(blockStyle.color, *styleCache.colorsToPreserve)
   }
 }

@@ -13,6 +13,8 @@ import com.swmansion.enriched.markdown.utils.text.span.applyMarginTop
 class CodeBlockRenderer(
   private val config: RendererConfig,
 ) : NodeRenderer {
+  private val syntaxHighlighter = CodeSyntaxHighlighter()
+
   override fun render(
     node: MarkdownASTNode,
     builder: SpannableStringBuilder,
@@ -20,6 +22,10 @@ class CodeBlockRenderer(
     onLinkLongPress: ((String) -> Unit)?,
     factory: RendererFactory,
   ) {
+    if (builder.isNotEmpty() && builder.last() != '\n') {
+      builder.append("\n")
+    }
+
     val start = builder.length
     val style = config.style.codeBlockStyle
     val context = factory.blockStyleContext
@@ -40,6 +46,8 @@ class CodeBlockRenderer(
     if (builder.length == contentStart) return
 
     val end = builder.length
+    syntaxHighlighter.apply(builder, contentStart, end, node.getAttribute("language"))
+
     val padding = style.padding.toInt()
 
     // Apply background, borders, and horizontal padding to content only
