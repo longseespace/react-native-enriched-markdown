@@ -8,6 +8,9 @@
 #import "ReactNativeEnrichedMarkdown-Swift.h"
 #endif
 
+static NSString *const kMathSourceAttributeName = @"ENRMMathSource";
+static NSString *const kMathDisplayAttributeName = @"ENRMMathDisplay";
+
 @implementation MathRenderer {
   RendererFactory *_rendererFactory;
   StyleConfig *_config;
@@ -41,16 +44,18 @@
 
   NSAttributedString *rendered = nil;
 #if __has_include("ReactNativeEnrichedMarkdown-Swift.h")
-  rendered = [ENRMMathBridge attributedMath:latex
-                                   fontSize:fontSize
-                                  textColor:(textColor ?: [UIColor blackColor])isDisplayMode:_isDisplay];
+  rendered =
+      [ENRMMathBridge attributedMath:latex
+                            fontSize:fontSize
+                           textColor:(textColor ?: [UIColor blackColor])
+                       isDisplayMode:_isDisplay];
 #endif
 
   if (!rendered || rendered.length == 0) {
-    NSString *fallback =
-        _isDisplay ? [NSString stringWithFormat:@"$$%@$$", latex] : [NSString stringWithFormat:@"$%@$", latex];
+    NSString *fallback = _isDisplay ? [NSString stringWithFormat:@"$$%@$$", latex]
+                                    : [NSString stringWithFormat:@"$%@$", latex];
     [output appendAttributedString:[[NSAttributedString alloc] initWithString:fallback
-                                                                   attributes:[context getTextAttributes]]];
+                                                                    attributes:[context getTextAttributes]]];
     return;
   }
 
@@ -60,6 +65,8 @@
     }
     NSUInteger blockStart = output.length;
     [output appendAttributedString:rendered];
+    [output addAttribute:kMathSourceAttributeName value:latex range:NSMakeRange(blockStart, rendered.length)];
+    [output addAttribute:kMathDisplayAttributeName value:@YES range:NSMakeRange(blockStart, rendered.length)];
     [output appendAttributedString:[[NSAttributedString alloc] initWithString:@"\n"]];
 
     NSUInteger blockEnd = output.length;
@@ -77,7 +84,10 @@
     return;
   }
 
+  NSUInteger inlineStart = output.length;
   [output appendAttributedString:rendered];
+  [output addAttribute:kMathSourceAttributeName value:latex range:NSMakeRange(inlineStart, rendered.length)];
+  [output addAttribute:kMathDisplayAttributeName value:@NO range:NSMakeRange(inlineStart, rendered.length)];
 }
 
 - (NSString *)extractTextFromNode:(MarkdownASTNode *)node

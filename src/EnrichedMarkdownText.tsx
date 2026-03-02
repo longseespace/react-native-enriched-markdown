@@ -287,17 +287,15 @@ type MarkdownSegment = {
   content: string;
 };
 
-const parseFenceOpening = (
-  line: string
-): { markerChar: '`' | '~'; markerLength: number } | null => {
+const parseFenceOpening = (line: string): { markerChar: '`' | '~'; markerLength: number } | null => {
   const trimmed = line.trimStart();
   const leadingSpaces = line.length - trimmed.length;
   if (leadingSpaces > 3) return null;
 
   const match = trimmed.match(/^(`{3,}|~{3,})(.*)$/);
   if (!match) return null;
-  const marker = match[1] ?? '';
-  if (marker.length === 0) return null;
+  const marker = match[1];
+  if (!marker) return null;
   const markerChar = marker[0] as '`' | '~';
   return {
     markerChar,
@@ -305,11 +303,7 @@ const parseFenceOpening = (
   };
 };
 
-const isFenceClosing = (
-  line: string,
-  markerChar: '`' | '~',
-  markerLength: number
-): boolean => {
+const isFenceClosing = (line: string, markerChar: '`' | '~', markerLength: number): boolean => {
   const trimmed = line.trimStart();
   const leadingSpaces = line.length - trimmed.length;
   if (leadingSpaces > 3) return false;
@@ -376,9 +370,7 @@ const normalizeMathDelimiters = (markdown: string): string => {
   const segments = splitByFencedCodeBlocks(markdown);
   return segments
     .map((segment) =>
-      segment.type === 'text'
-        ? normalizeMathDelimitersInText(segment.content)
-        : segment.content
+      segment.type === 'text' ? normalizeMathDelimitersInText(segment.content) : segment.content
     )
     .join('\n');
 };
@@ -399,10 +391,7 @@ export const EnrichedMarkdownText = ({
   flavor = 'commonmark',
   ...rest
 }: EnrichedMarkdownTextProps) => {
-  const normalizedMarkdown = useMemo(
-    () => normalizeMathDelimiters(markdown),
-    [markdown]
-  );
+  const normalizedMarkdown = useMemo(() => normalizeMathDelimiters(markdown), [markdown]);
   const normalizedStyle = useMemo(
     () => normalizeMarkdownStyle(markdownStyle),
     [markdownStyle]

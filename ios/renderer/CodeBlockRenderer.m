@@ -49,10 +49,7 @@ static BOOL ENRMColorIsDark(UIColor *color)
   return self;
 }
 
-- (void)applyFallbackFont:(UIFont *)font
-                    color:(UIColor *)color
-                  toRange:(NSRange)range
-                 inOutput:(NSMutableAttributedString *)output
+- (void)applyFallbackFont:(UIFont *)font color:(UIColor *)color toRange:(NSRange)range inOutput:(NSMutableAttributedString *)output
 {
   if (range.length == 0) {
     return;
@@ -123,11 +120,12 @@ static BOOL ENRMColorIsDark(UIColor *color)
   UIColor *codeBackgroundColor = [_config codeBlockBackgroundColor];
   BOOL usesDarkBackground = ENRMColorIsDark(codeBackgroundColor);
 
-  NSAttributedString *highlighted = [ENRMSyntaxHighlighterBridge
-      highlightedCode:codeContent
-             language:language
-                 font:codeFont
-        fallbackColor:(codeColor ?: [UIColor blackColor])usesDarkBackground:usesDarkBackground];
+  NSAttributedString *highlighted =
+      [ENRMSyntaxHighlighterBridge highlightedCode:codeContent
+                                          language:language
+                                              font:codeFont
+                                     fallbackColor:(codeColor ?: [UIColor blackColor])
+                                usesDarkBackground:usesDarkBackground];
   if (highlighted.length > 0) {
     [output replaceCharactersInRange:contentRange withAttributedString:highlighted];
     contentEnd = contentStart + highlighted.length;

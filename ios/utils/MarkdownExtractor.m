@@ -6,6 +6,9 @@
 #import "RuntimeKeys.h"
 #import "ThematicBreakAttachment.h"
 
+static NSString *const kMathSourceAttributeName = @"ENRMMathSource";
+static NSString *const kMathDisplayAttributeName = @"ENRMMathDisplay";
+
 #pragma mark - Extraction Context
 
 typedef struct {
@@ -159,6 +162,21 @@ NSString *_Nullable extractMarkdownFromAttributedString(NSAttributedString *attr
                           state.needsBlankLine = YES;
                           state.blockquoteDepth = -1;
                           state.listDepth = -1;
+                          return;
+                        }
+
+                        NSString *mathSource = attrs[kMathSourceAttributeName];
+                        if ([text isEqualToString:@"\uFFFC"] && mathSource.length > 0) {
+                          BOOL isDisplayMath = [attrs[kMathDisplayAttributeName] boolValue];
+                          if (isDisplayMath) {
+                            ensureBlankLine(result);
+                            [result appendFormat:@"$$\n%@\n$$\n", mathSource];
+                            state.needsBlankLine = YES;
+                            state.blockquoteDepth = -1;
+                            state.listDepth = -1;
+                          } else {
+                            [result appendFormat:@"$%@$", mathSource];
+                          }
                           return;
                         }
 

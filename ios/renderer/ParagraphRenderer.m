@@ -10,6 +10,25 @@
   StyleConfig *_config;
 }
 
+static BOOL paragraphContainsDisplayMathNode(MarkdownASTNode *node)
+{
+  if (!node) {
+    return NO;
+  }
+
+  if (node.type == MarkdownNodeTypeDisplayMath) {
+    return YES;
+  }
+
+  for (MarkdownASTNode *child in node.children) {
+    if (paragraphContainsDisplayMathNode(child)) {
+      return YES;
+    }
+  }
+
+  return NO;
+}
+
 - (instancetype)initWithRendererFactory:(id)rendererFactory config:(id)config
 {
   self = [super init];
@@ -58,8 +77,13 @@
     return;
   NSRange range = NSMakeRange(start, output.length - start);
 
-  // Avoid standard line height on block images to prevent vertical alignment issues
-  if (!isBlockImage) {
+  // Avoid forcing a fixed paragraph line height on content that includes display math
+  // attachments; that can clamp line fragments and cause equation/heading overlap.
+  BOOL hasDisplayMath = paragraphContainsDisplayMathNode(node);
+
+  // Avoid standard line height on block images and display-math paragraphs to
+  // preserve intrinsic attachment geometry.
+  if (!isBlockImage && !hasDisplayMath) {
     applyLineHeight(output, range, _config.paragraphLineHeight);
   }
 

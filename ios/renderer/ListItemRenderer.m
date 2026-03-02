@@ -23,6 +23,25 @@ NSString *const TaskIndexAttribute = @"TaskIndex";
   StyleConfig *_config;
 }
 
+static BOOL listItemContainsDisplayMathNode(MarkdownASTNode *node)
+{
+  if (!node) {
+    return NO;
+  }
+
+  if (node.type == MarkdownNodeTypeDisplayMath) {
+    return YES;
+  }
+
+  for (MarkdownASTNode *child in node.children) {
+    if (listItemContainsDisplayMathNode(child)) {
+      return YES;
+    }
+  }
+
+  return NO;
+}
+
 - (instancetype)initWithRendererFactory:(RendererFactory *)factory config:(StyleConfig *)config
 {
   if (self = [super init]) {
@@ -79,6 +98,7 @@ NSString *const TaskIndexAttribute = @"TaskIndex";
       baseMarkerWidth + [_config effectiveListGapWidth] + (nestingLevel * [_config listStyleMarginLeft]);
 
   const CGFloat lineHeightConfig = [_config listStyleLineHeight];
+  const BOOL hasDisplayMath = listItemContainsDisplayMathNode(node);
 
   // Boxing metadata for attributed string storage
   NSMutableDictionary *metadata = [@{
@@ -114,7 +134,7 @@ NSString *const TaskIndexAttribute = @"TaskIndex";
                     UIFont *currentFont = [output attribute:NSFontAttributeName
                                                     atIndex:range.location
                                              effectiveRange:NULL];
-                    if (lineHeightConfig > 0 && currentFont) {
+                    if (!hasDisplayMath && lineHeightConfig > 0 && currentFont) {
                       style.lineHeightMultiple = lineHeightConfig / currentFont.pointSize;
                     }
 

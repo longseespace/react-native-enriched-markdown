@@ -14,6 +14,25 @@ static NSString *const kNestedInfoRangeKey = @"range";
   StyleConfig *_config;
 }
 
+static BOOL blockquoteContainsDisplayMathNode(MarkdownASTNode *node)
+{
+  if (!node) {
+    return NO;
+  }
+
+  if (node.type == MarkdownNodeTypeDisplayMath) {
+    return YES;
+  }
+
+  for (MarkdownASTNode *child in node.children) {
+    if (blockquoteContainsDisplayMathNode(child)) {
+      return YES;
+    }
+  }
+
+  return NO;
+}
+
 - (instancetype)initWithRendererFactory:(id)rendererFactory config:(id)config
 {
   if (self = [super init]) {
@@ -26,6 +45,7 @@ static NSString *const kNestedInfoRangeKey = @"range";
 - (void)renderNode:(MarkdownASTNode *)node into:(NSMutableAttributedString *)output context:(RenderContext *)context
 {
   NSInteger currentDepth = context.blockquoteDepth;
+  BOOL hasDisplayMath = blockquoteContainsDisplayMathNode(node);
   context.blockquoteDepth = currentDepth + 1;
 
   [context setBlockStyle:BlockTypeBlockquote
@@ -46,7 +66,11 @@ static NSString *const kNestedInfoRangeKey = @"range";
     return;
   }
 
-  [self applyStylingAndSpacing:output start:start end:end currentDepth:currentDepth];
+  [self applyStylingAndSpacing:output
+                         start:start
+                           end:end
+                  currentDepth:currentDepth
+                hasDisplayMath:hasDisplayMath];
 }
 
 #pragma mark - Styling and Spacing
@@ -55,6 +79,7 @@ static NSString *const kNestedInfoRangeKey = @"range";
                          start:(NSUInteger)start
                            end:(NSUInteger)end
                   currentDepth:(NSInteger)currentDepth
+                hasDisplayMath:(BOOL)hasDisplayMath
 {
   NSUInteger contentStart = start;
   if (currentDepth == 0) {
@@ -71,7 +96,8 @@ static NSString *const kNestedInfoRangeKey = @"range";
                            depth:currentDepth
                     levelSpacing:levelSpacing
                  backgroundColor:[_config blockquoteBackgroundColor]
-                      lineHeight:[_config blockquoteLineHeight]];
+                      lineHeight:[_config blockquoteLineHeight]
+              applyFixedLineHeight:!hasDisplayMath];
 
   // Re-apply nested blockquote styles to restore their correct indentation
   // (applyBaseBlockquoteStyle overwrites nested indents with the parent's indent)
@@ -111,6 +137,7 @@ static NSString *const kNestedInfoRangeKey = @"range";
                     levelSpacing:(CGFloat)levelSpacing
                  backgroundColor:(UIColor *)backgroundColor
                       lineHeight:(CGFloat)lineHeight
+              applyFixedLineHeight:(BOOL)applyFixedLineHeight
 {
   NSMutableParagraphStyle *paragraphStyle = getOrCreateParagraphStyle(output, blockquoteRange.location);
   CGFloat totalIndent = [self calculateIndentForDepth:currentDepth levelSpacing:levelSpacing];
@@ -125,7 +152,9 @@ static NSString *const kNestedInfoRangeKey = @"range";
   }
   [output addAttributes:newAttributes range:blockquoteRange];
 
-  applyLineHeight(output, blockquoteRange, lineHeight);
+  if (applyFixedLineHeight) {
+    applyLineHeight(output, blockquoteRange, lineHeight);
+  }
 }
 
 - (void)reapplyNestedStyles:(NSMutableAttributedString *)output

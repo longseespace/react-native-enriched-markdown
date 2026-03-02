@@ -64,7 +64,13 @@ void copyAttributedStringToPasteboard(NSAttributedString *attributedString, NSSt
 
   NSMutableDictionary *items = [NSMutableDictionary dictionary];
 
-  items[kUTIPlainText] = attributedString.string;
+  NSString *plainText = attributedString.string ?: @"";
+  // Math and other attachments appear as object replacement chars in plain text.
+  // Prefer markdown/plain extraction when available so copied text stays meaningful.
+  if ([plainText containsString:@"\uFFFC"] && markdown.length > 0) {
+    plainText = markdown;
+  }
+  items[kUTIPlainText] = plainText;
 
   if (markdown.length > 0) {
     items[kUTIMarkdown] = markdown;

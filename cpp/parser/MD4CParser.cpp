@@ -333,10 +333,10 @@ public:
       return 0;
     }
 
-    // Handle text content (normal text, code text, latex spans, etc.)
-    if (type == MD_TEXT_NORMAL || type == MD_TEXT_CODE || type == MD_TEXT_LATEXMATH) {
-      impl->currentText.append(text, size);
-    }
+  // Handle text content (normal text, code text, latex spans, etc.)
+  if (type == MD_TEXT_NORMAL || type == MD_TEXT_CODE || type == MD_TEXT_LATEXMATH) {
+    impl->currentText.append(text, size);
+  }
 
     return 0;
   }
